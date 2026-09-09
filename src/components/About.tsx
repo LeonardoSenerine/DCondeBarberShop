@@ -11,7 +11,7 @@ export function About() {
           </h2>
 
           <blockquote className="m-0 mb-7 border-l border-silver pl-5.5">
-            <p className="m-0 font-serif text-[22px] leading-relaxed text-white text-balance-safe">{ABOUT.quote}</p>
+            <p className="m-0 font-serif text-lg leading-relaxed text-white sm:text-[22px] text-balance-safe">{ABOUT.quote}</p>
           </blockquote>
 
           {ABOUT.paragraphs.map((p) => (

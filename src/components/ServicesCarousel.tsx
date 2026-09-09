@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useServices } from "@/hooks/useCatalog";
+import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { formatCents, formatDuration } from "@/lib/format";
 import "@/styles/scroll-rails.css";
 import "@/styles/gallery-card.css";
@@ -7,6 +8,7 @@ import "@/styles/gallery-card.css";
 export function ServicesCarousel() {
   const { data: services, loading } = useServices();
   const trackRef = useRef<HTMLDivElement>(null);
+  useAutoScroll(trackRef, 0.45);
 
   function scrollByCards(dir: 1 | -1) {
     const el = trackRef.current;
@@ -53,7 +55,7 @@ export function ServicesCarousel() {
       <div className="relative">
         <div aria-hidden className="scroll-rail-fade-left" style={{ background: "linear-gradient(90deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%)" }} />
         <div aria-hidden className="scroll-rail-fade-right" style={{ background: "linear-gradient(270deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%)" }} />
-        <div ref={trackRef} className="scroll-rail relative flex gap-4 overflow-x-auto px-6 pt-1 pb-6">
+        <div ref={trackRef} className="scroll-rail relative flex gap-4 overflow-x-auto px-6 pt-4 pb-6 sm:pt-10 sm:pb-10">
           {loading && <p className="py-10 text-muted">Carregando serviços…</p>}
           {services.map((s) => (
             <div

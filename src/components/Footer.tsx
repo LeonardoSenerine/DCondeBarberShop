@@ -11,7 +11,7 @@ export function Footer({ onOpenAuth }: FooterProps) {
   const { session, isAdmin } = useAuth();
 
   return (
-    <footer className="relative overflow-hidden border-t border-border bg-ink px-6 pt-18 pb-7">
+    <footer className="relative overflow-hidden border-t border-border bg-ink px-6 pt-18 pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-7">
       <img
         src="/img/monogram.jpg"
         alt=""

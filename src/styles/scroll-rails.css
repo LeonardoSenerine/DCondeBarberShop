@@ -20,3 +20,11 @@
   z-index: 3;
   pointer-events: none;
 }
+
+.scroll-rail-fade-left {
+  left: 0;
+}
+
+.scroll-rail-fade-right {
+  right: 0;
+}

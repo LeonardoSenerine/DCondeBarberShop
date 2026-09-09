@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useBarbers, useBarberHours, useServices } from "@/hooks/useCatalog";
 import { slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
 import { MONTH_LABELS, WEEKDAY_LABELS, WEEKDAY_SHORT, formatCents, formatDuration } from "@/lib/format";
+import { BarberPhoto } from "@/components/BarberPhoto";
 
 export interface BookingDraft {
   barberId: string;
@@ -133,7 +134,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
           </p>
         </div>
 
-        <div className="mb-8 flex flex-wrap gap-3 border-b border-border pb-6">
+        <div className="mb-8 grid grid-cols-4 gap-1.5 border-b border-border pb-6 sm:flex sm:flex-wrap sm:gap-3">
           {STEP_NAMES.map((name, i) => {
             const n = i + 1;
             const active = step === n;
@@ -145,11 +146,11 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 key={name}
                 disabled={!reachable}
                 onClick={() => reachable && setStep(n)}
-                className="flex min-w-0 flex-1 basis-[180px] items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed"
+                className="flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition-colors disabled:cursor-not-allowed sm:flex-1 sm:basis-[180px] sm:flex-row sm:items-center sm:gap-3 sm:px-2.5 sm:text-left"
                 style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent" }}
               >
                 <span
-                  className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full border font-heading text-sm font-semibold"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-heading text-xs font-semibold sm:h-8.5 sm:w-8.5 sm:text-sm"
                   style={{
                     background: active || done ? SILVER_GRADIENT : "#1A1A1A",
                     borderColor: active ? "#FFFFFF" : done ? "#E0E0E0" : "#2A2A2A",
@@ -158,14 +159,14 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 >
                   {n}
                 </span>
-                <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="flex min-w-0 flex-col items-center gap-0.5 sm:items-start">
                   <span
-                    className="font-heading text-[13px] tracking-[0.16em] uppercase"
+                    className="font-heading text-[10px] tracking-[0.1em] uppercase sm:text-[13px] sm:tracking-[0.16em]"
                     style={{ color: active || done ? "#FFFFFF" : "#9E9E9E" }}
                   >
                     {name}
                   </span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-faint">
+                  <span className="hidden overflow-hidden text-ellipsis whitespace-nowrap text-xs text-faint sm:block">
                     {value}
                   </span>
                 </span>
@@ -198,10 +199,9 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                     }}
                   >
                     <span className="relative block aspect-[4/5] w-full overflow-hidden bg-ink">
-                      <img
-                        src={b.photo_path}
+                      <BarberPhoto
+                        photos={b.gallery_paths.length ? b.gallery_paths : [b.photo_path]}
                         alt=""
-                        loading="lazy"
                         className="h-full w-full object-cover"
                         style={{ objectPosition: "center 22%" }}
                       />

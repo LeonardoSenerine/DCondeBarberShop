@@ -1,5 +1,6 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useGallery } from "@/hooks/useCatalog";
+import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { BRAND } from "@/data/content";
 import "@/styles/scroll-rails.css";
 import "@/styles/gallery-card.css";
@@ -11,6 +12,13 @@ interface GalleryProps {
 export function Gallery({ onOpenLightbox }: GalleryProps) {
   const { data: photos, loading } = useGallery();
   const railRef = useRef<HTMLDivElement>(null);
+  useAutoScroll(railRef, 0.4, photos.length > 2);
+
+  // Rendered twice back-to-back so the auto-scroll can loop seamlessly.
+  const loopedPhotos = useMemo(
+    () => (photos.length > 2 ? [...photos, ...photos.map((p) => ({ ...p, id: `${p.id}-dup` }))] : photos),
+    [photos],
+  );
 
   function scrollByCard(dir: 1 | -1) {
     const el = railRef.current;
@@ -51,9 +59,9 @@ export function Gallery({ onOpenLightbox }: GalleryProps) {
         <div className="relative">
           <div aria-hidden className="scroll-rail-fade-left" style={{ background: "linear-gradient(90deg,#0A0A0A 0%,rgba(10,10,10,0.85) 40%,rgba(10,10,10,0) 100%)" }} />
           <div aria-hidden className="scroll-rail-fade-right" style={{ background: "linear-gradient(270deg,#0A0A0A 0%,rgba(10,10,10,0.85) 40%,rgba(10,10,10,0) 100%)" }} />
-          <div ref={railRef} className="scroll-rail flex gap-4 py-3 [animation:dc-up_700ms_ease_both]">
+          <div ref={railRef} className="scroll-rail flex gap-4 overflow-x-auto py-4 sm:py-10 [animation:dc-up_700ms_ease_both]">
             {loading && <p className="py-10 text-muted">Carregando galeria…</p>}
-            {photos.map((g) => (
+            {loopedPhotos.map((g) => (
               <button
                 key={g.id}
                 onClick={() => onOpenLightbox(g.image_path)}

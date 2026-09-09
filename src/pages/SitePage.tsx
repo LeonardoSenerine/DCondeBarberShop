@@ -6,6 +6,7 @@ import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ServicesCarousel } from "@/components/ServicesCarousel";
 import { Ambiente } from "@/components/Ambiente";
 import { Gallery } from "@/components/Gallery";
+import { LightBanner } from "@/components/LightBanner";
 import { Perks } from "@/components/Perks";
 import { About } from "@/components/About";
 import { Contact } from "@/components/Contact";
@@ -65,6 +66,7 @@ export function SitePage() {
       <ServicesCarousel />
       <Ambiente onOpenLightbox={setLightbox} />
       <Gallery onOpenLightbox={setLightbox} />
+      <LightBanner />
       <Perks />
       <About />
       <Contact />

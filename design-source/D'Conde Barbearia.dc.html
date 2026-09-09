@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Archivo:wght@400;500;600&family=Newsreader:ital,wght@0,300;0,400;1,300&family=Pirata+One&display=swap" rel="stylesheet" />
+<link rel="icon" href="img/monogram.jpg" />
+<meta name="ext-resource-dependency" content="img/corte-01.jpg" data-resource-id="corte1" />
+<meta name="ext-resource-dependency" content="img/corte-02.jpg" data-resource-id="corte2" />
+<meta name="ext-resource-dependency" content="img/corte-03.jpg" data-resource-id="corte3" />
+<meta name="ext-resource-dependency" content="img/corte-04.jpg" data-resource-id="corte4" />
+<meta name="ext-resource-dependency" content="img/barba.jpg" data-resource-id="barba" />
+<meta name="ext-resource-dependency" content="img/salao-01.jpg" data-resource-id="salao1" />
+<meta name="ext-resource-dependency" content="img/salao-02.jpg" data-resource-id="salao2" />
+<meta name="ext-resource-dependency" content="img/salao-03.jpg" data-resource-id="salao3" />
+<meta name="ext-resource-dependency" content="img/salao-04.jpg" data-resource-id="salao4" />
+<meta name="ext-resource-dependency" content="img/salao-05.jpg" data-resource-id="salao5" />
+<template id="__bundler_thumbnail" data-bg-color="#0A0A0A">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#0A0A0A"/><text x="100" y="128" text-anchor="middle" font-family="Georgia,serif" font-size="96" fill="#E0E0E0">D</text></svg>
+</template>
+
+<style>
+  body { margin:0; background:#0A0A0A; color:#A3A3A3; font-family:'Archivo',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#FFFFFF; text-decoration:none; }
+  a:hover { color:#E0E0E0; }
+  ::selection { background:#E0E0E0; color:#0A0A0A; }
+  [data-nav="desktop"] { display:flex; }
+  [data-nav="burger"] { display:none; }
+  [data-nav="bottombar"] { display:none; }
+  @media (max-width: 899px) {
+    [data-nav="desktop"] { display:none; }
+    [data-nav="burger"] { display:flex; }
+    [data-nav="bottombar"] { display:block; }
+    [data-nav="wa"] { bottom:96px; }
+  }
+  [data-book] { display:block; }
+  [data-step3] { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:20px; align-items:start; }
+  @media (max-width: 799px) { [data-step3] { grid-template-columns:minmax(0,1fr); } }
+  [data-gal] { display:flex; gap:16px; overflow-x:auto; padding:12px 2px 18px; scrollbar-width:none; -ms-overflow-style:none; }
+  [data-gal]::-webkit-scrollbar { display:none; }
+  [data-gal] > * { flex:0 0 calc((100% - 32px) / 3); height:440px; scroll-snap-align:start; }
+  @media (max-width: 899px) { [data-gal] > * { flex:0 0 84%; height:360px; } }
+  [data-svc] [data-svc-bio] { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; transition:none; }
+  [data-svc]:hover [data-svc-bio], [data-svc]:focus-within [data-svc-bio] { -webkit-line-clamp:8; }
+  [data-cut] { transition:transform 450ms ease, box-shadow 450ms ease; }
+  [data-cut] img { transition:transform 600ms cubic-bezier(0.22,0.61,0.36,1); }
+  [data-cut] [data-cut-info] { opacity:0; transform:translateY(14px); transition:opacity 320ms ease, transform 320ms ease; }
+  [data-cut]:hover { transform:scale(1.035); z-index:2; box-shadow:0 26px 60px rgba(0,0,0,0.65); }
+  [data-cut]:hover img { transform:scale(1.08); }
+  [data-cut]:hover [data-cut-info], [data-cut]:focus-visible [data-cut-info] { opacity:1; transform:none; }
+  @keyframes dcUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+  @keyframes dcZoom { from { transform:scale(1.12); } to { transform:scale(1); } }
+  @keyframes dcLine { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  @keyframes dcFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+</style>
+</helmet>
+<div style="background:#0A0A0A; overflow-x:hidden; font-family:'Archivo',sans-serif; font-size:16px; line-height:1.6;">
+<sc-if value="{{ isSite }}" hint-placeholder-val="{{ true }}">
+
+  <header style="position:fixed; top:0; left:0; right:0; z-index:80; background:{{ headerBg }}; backdrop-filter:{{ headerBlur }}; borderBottom:1px solid {{ headerBorder }}; transition:all 300ms ease;">
+    <div style="max-width:1240px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:24px;">
+      <a href="#inicio" style="display:flex; align-items:center; height:44px; flex-shrink:0;">
+        <img src="img/monogram.jpg" alt="D'Conde Barbearia" style="width:52px; height:44px; objectFit:contain; filter:brightness(1.25) contrast(3.4); mixBlendMode:screen;" />
+      </a>
+      <nav style="display:flex; align-items:center; gap:34px;">
+        <div data-nav="desktop" style="gap:34px; alignItems:center;">
+          <a href="#inicio" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Início</a>
+          <a href="#servicos" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Serviços</a>
+          <a href="#galeria" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Galeria</a>
+          <a href="#shop" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Shop</a>
+          <a href="#sobre" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Sobre</a>
+          <a href="#contato" style="fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:400; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF;" style-hover="color:#9E9E9E">Contato</a>
+          <button onClick="{{ openAccount }}" style="background:transparent; border:0; padding:0; cursor:pointer; fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.18em; textTransform:uppercase; color:#A3A3A3;" style-hover="color:#FFFFFF">{{ accountLabel }}</button>
+        </div>
+        <a href="#agendar" style="display:flex; alignItems:center; height:44px; padding:0 26px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase;" style-hover="filter:brightness(1.12)">Agendar</a>
+        <button onClick="{{ toggleMenu }}" aria-label="Menu" data-nav="burger" style="width:44px; height:44px; alignItems:center; justifyContent:center; background:transparent; border:1px solid #2A2A2A; borderRadius:8px; cursor:pointer; flexDirection:column; gap:5px;">
+          <span style="display:block; width:18px; height:1px; background:#FFFFFF;"></span>
+          <span style="display:block; width:18px; height:1px; background:#FFFFFF;"></span>
+          <span style="display:block; width:18px; height:1px; background:#FFFFFF;"></span>
+        </button>
+      </nav>
+    </div>
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="borderTop:1px solid #2A2A2A; background:#0A0A0A; padding:12px 24px 22px; display:flex; flexDirection:column;">
+        <a href="#inicio" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Início</a>
+        <a href="#servicos" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Serviços</a>
+        <a href="#galeria" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Galeria</a>
+        <a href="#shop" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Shop</a>
+        <a href="#sobre" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Sobre</a>
+        <a href="#contato" onClick="{{ closeMenu }}" style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#FFFFFF; padding:14px 0; borderBottom:1px solid #1A1A1A;">Contato</a>
+        <button onClick="{{ openAccount }}" style="textAlign:left; background:transparent; border:0; padding:14px 0; cursor:pointer; fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.18em; textTransform:uppercase; color:#A3A3A3;">{{ accountLabel }}</button>
+      </div>
+    </sc-if>
+  </header>
+
+  <section id="inicio" data-screen-label="Hero" style="position:relative; minHeight:100vh; display:flex; alignItems:center; background:#0A0A0A; overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute; right:0; top:0; bottom:0; width:{{ heroPhotoW }}; overflow:hidden;">
+      <img src="img/hero-barba.jpg" alt="" style="width:100%; height:100%; objectFit:cover; objectPosition:center 30%; filter:contrast(1.08) brightness(0.86); animation:dcZoom 2600ms cubic-bezier(0.22,0.61,0.36,1) both;" />
+      <span style="position:absolute; inset:0; background:{{ heroFade }};"></span>
+    </div>
+    <img src="img/monogram.jpg" alt="" style="position:absolute; left:-8%; bottom:-10%; width:min(48vw,560px); opacity:0.05; filter:contrast(3.2); mixBlendMode:screen; pointerEvents:none;" />
+    <div style="position:relative; zIndex:2; width:100%; maxWidth:1240px; margin:0 auto; padding:150px 24px 120px;">
+      <div style="maxWidth:{{ heroTextW }};">
+        <div data-reveal="1" style="animation:dcUp 700ms ease both; display:flex; alignItems:center; gap:14px; marginBottom:26px;">
+          <span style="width:56px; height:1px; background:linear-gradient(90deg,transparent,#E0E0E0); transformOrigin:left; animation:dcLine 900ms 240ms ease both;"></span>
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:400; letterSpacing:0.42em; textTransform:uppercase; color:#E0E0E0;">Itatiba · Só com hora marcada</span>
+        </div>
+        <h1 data-reveal="1" style="animation:dcUp 700ms 120ms ease both; margin:0 0 20px; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(42px,6vw,88px); lineHeight:0.94; letterSpacing:0.01em; textTransform:uppercase; color:#FFFFFF; textWrap:balance;">Do fade<br />ao desenho.</h1>
+        <p data-reveal="1" style="animation:dcUp 700ms 180ms ease both; margin:0 0 22px; fontFamily:'Pirata One',serif; fontSize:clamp(24px,3vw,38px); lineHeight:1.15; letterSpacing:0.02em; color:#E0E0E0;">A arte de afiar seu visual</p>
+        <p data-reveal="1" style="animation:dcUp 700ms 240ms ease both; margin:0 0 40px; fontFamily:'Newsreader',Georgia,serif; fontSize:19px; lineHeight:1.6; color:#C9C9C9; maxWidth:44ch;">Fade, barba, desenho e cor. Daniel e João Lima na cadeira, um cliente por vez.</p>
+        <div data-reveal="1" style="animation:dcUp 700ms 360ms ease both; display:flex; flexWrap:wrap; gap:14px; marginBottom:38px;">
+          <a href="#agendar" style="display:flex; alignItems:center; height:56px; padding:0 34px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:14px; fontWeight:600; letterSpacing:0.22em; textTransform:uppercase; boxShadow:0 18px 40px rgba(0,0,0,0.55);" style-hover="filter:brightness(1.12)">Agendar agora</a>
+          <a href="#servicos" style="display:flex; alignItems:center; height:56px; padding:0 34px; borderRadius:8px; border:1px solid #FFFFFF; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:14px; fontWeight:500; letterSpacing:0.22em; textTransform:uppercase;" style-hover="background:rgba(255,255,255,0.08)">Ver serviços</a>
+        </div>
+        <div data-reveal="1" style="animation:dcUp 700ms 460ms ease both; display:flex; flexWrap:wrap; gap:28px; paddingTop:26px; borderTop:1px solid #2A2A2A;">
+          <span style="display:flex; flexDirection:column; gap:4px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:600; color:#FFFFFF; lineHeight:1;">17</span>
+            <span style="fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#9E9E9E;">Serviços</span>
+          </span>
+          <span style="display:flex; flexDirection:column; gap:4px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:600; color:#FFFFFF; lineHeight:1;">2024</span>
+            <span style="fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#9E9E9E;">Desde</span>
+          </span>
+          <span style="display:flex; flexDirection:column; gap:4px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:600; color:#FFFFFF; lineHeight:1;">Seg—Sáb</span>
+            <span style="fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#9E9E9E;">Atendimento</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agendar" data-screen-label="Agendamento" style="position:relative; background:#0A0A0A; padding:72px 24px 112px; marginTop:0; zIndex:5;">
+    <div data-reveal="1" style="animation:dcUp 900ms 420ms ease both; maxWidth:1240px; margin:0 auto; background:#141414; border:1px solid #2A2A2A; borderRadius:8px; boxShadow:0 40px 90px rgba(0,0,0,0.8); padding:clamp(24px,4vw,48px);">
+      <div style="display:flex; flexWrap:wrap; alignItems:flex-end; justifyContent:space-between; gap:18px; marginBottom:34px;">
+        <div>
+          <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(28px,3.4vw,42px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Reserve seu horário</h2>
+        </div>
+        <p style="margin:0; fontSize:15px; color:#A3A3A3; maxWidth:38ch;">Monte o atendimento em quatro passos. A confirmação abre a agenda oficial da barbearia.</p>
+      </div>
+
+      <div style="display:flex; flexWrap:wrap; gap:12px; marginBottom:34px; paddingBottom:26px; borderBottom:1px solid #2A2A2A;">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+          <button onClick="{{ st.onClick }}" style="display:flex; alignItems:center; gap:12px; flex:1 1 180px; minWidth:0; padding:8px 10px; borderRadius:8px; textAlign:left; background:{{ st.rowBg }}; border:0; cursor:{{ st.cursor }}; transition:all 250ms ease;">
+            <span style="flexShrink:0; width:34px; height:34px; borderRadius:50%; display:flex; alignItems:center; justifyContent:center; fontFamily:'Oswald',sans-serif; fontSize:14px; fontWeight:600; background:{{ st.bg }}; color:{{ st.fg }}; border:1px solid {{ st.bc }};">{{ st.n }}</span>
+            <span style="display:flex; flexDirection:column; gap:2px; minWidth:0;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.16em; textTransform:uppercase; color:{{ st.label }};">{{ st.name }}</span>
+              <span style="fontSize:12px; color:#7A7A7A; overflow:hidden; textOverflow:ellipsis; whiteSpace:nowrap;">{{ st.value }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div data-book="1">
+        <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+        <div style="minWidth:0; maxWidth:560px;">
+          <h3 style="margin:0 0 6px; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Escolha o profissional</h3>
+          <p style="margin:0 0 18px; fontSize:14px; color:#9E9E9E;">A agenda mostrada depois é a dele.</p>
+          <div style="display:grid; gridTemplateColumns:{{ barberCols }}; gap:16px;">
+            <sc-for list="{{ barberOpts }}" as="b" hint-placeholder-count="2">
+              <button onClick="{{ b.onClick }}" style="display:flex; flexDirection:column; width:100%; padding:0; textAlign:left; cursor:pointer; borderRadius:10px; overflow:hidden; background:{{ b.bg }}; border:1px solid {{ b.bc }}; boxShadow:{{ b.shadow }}; transition:all 300ms ease;" style-hover="borderColor:#E0E0E0">
+                <span style="position:relative; display:block; width:100%; aspectRatio:4/5; overflow:hidden; background:#0A0A0A;">
+                  <img src="{{ b.photo }}" data-bphoto="{{ b.id }}" loading="lazy" alt="" style="width:100%; height:100%; objectFit:cover; objectPosition:center 22%; transition:opacity 500ms ease;" />
+                  <span style="position:absolute; inset:0; background:linear-gradient(to top,rgba(10,10,10,0.9) 0%,rgba(10,10,10,0.1) 55%,rgba(10,10,10,0) 100%);"></span>
+                  <span style="position:absolute; right:12px; top:12px; width:22px; height:22px; borderRadius:50%; display:flex; alignItems:center; justifyContent:center; background:{{ b.dotBg }}; border:1px solid {{ b.dotBc }}; color:#0A0A0A; fontSize:12px; lineHeight:1;">{{ b.check }}</span>
+                  <span style="position:absolute; left:16px; right:16px; bottom:14px; display:flex; flexDirection:column; gap:3px;">
+                    <span style="fontFamily:'Oswald',sans-serif; fontSize:19px; letterSpacing:0.1em; textTransform:uppercase; color:#FFFFFF;">{{ b.name }}</span>
+                    <span style="fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; color:#A3A3A3;">{{ b.role }}</span>
+                  </span>
+                </span>
+                <span style="display:flex; flexDirection:column; gap:12px; padding:14px 16px 16px;">
+                  <span style="display:flex; flexDirection:column; gap:5px;">
+                    <span style="fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#7A7A7A;">Agenda</span>
+                    <span style="fontSize:13px; lineHeight:1.5; color:#C9C9C9; whiteSpace:pre-line;">{{ b.week }}</span>
+                  </span>
+                  <span style="display:flex; alignItems:center; gap:8px; paddingTop:10px; borderTop:1px solid #2A2A2A;">
+                    <span style="fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#7A7A7A;">Instagram</span>
+                    <span style="fontSize:13px; color:#E0E0E0;">{{ b.insta }}</span>
+                  </span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+        <div style="minWidth:0;">
+          <h3 style="margin:0 0 6px; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Escolha o serviço</h3>
+          <p style="margin:0 0 18px; fontSize:14px; color:#9E9E9E;">Com {{ barberName }}. Dá pra trocar antes de confirmar.</p>
+          <div style="display:grid; gridTemplateColumns:{{ svcCols }}; gap:10px; maxHeight:420px; overflowY:auto; paddingRight:6px;">
+            <sc-for list="{{ serviceOpts }}" as="s" hint-placeholder-count="4">
+              <button onClick="{{ s.onClick }}" style="display:flex; alignItems:center; justifyContent:space-between; gap:12px; width:100%; flexShrink:0; height:auto; minHeight:52px; padding:12px 14px; textAlign:left; cursor:pointer; borderRadius:8px; background:{{ s.bg }}; border:1px solid {{ s.bc }}; transition:all 300ms ease;">
+                <span style="display:flex; flexDirection:column; gap:2px; minWidth:0;">
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:14px; letterSpacing:0.08em; textTransform:uppercase; color:#FFFFFF;">{{ s.name }}</span>
+                  <span style="fontSize:13px; color:#A3A3A3;">{{ s.meta }}</span>
+                </span>
+                <span style="flexShrink:0; width:18px; height:18px; borderRadius:50%; border:1px solid {{ s.dotBc }}; background:{{ s.dotBg }};"></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+        <div style="minWidth:0;">
+          <h3 style="margin:0 0 6px; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Escolha o dia e o horário</h3>
+          <p style="margin:0 0 18px; fontSize:14px; color:#9E9E9E;">Agenda de {{ barberName }}. Dias apagados não têm vaga.</p>
+          <div data-step3="1">
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:14px;">
+            <div style="display:flex; alignItems:center; justifyContent:space-between; gap:8px; marginBottom:12px;">
+              <button onClick="{{ prevMonth }}" disabled="{{ prevDisabled }}" aria-label="Mês anterior" style="flexShrink:0; width:30px; height:30px; display:flex; alignItems:center; justifyContent:center; borderRadius:6px; background:#0A0A0A; border:1px solid #2A2A2A; color:{{ prevColor }}; fontSize:14px; lineHeight:1; cursor:{{ prevCursor }}; transition:all 200ms ease;">‹</button>
+              <span style="display:flex; alignItems:baseline; gap:8px; minWidth:0;">
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.16em; textTransform:uppercase; color:#FFFFFF;">{{ monthLabel }}</span>
+                <span style="fontSize:12px; color:#9E9E9E;">{{ yearLabel }}</span>
+              </span>
+              <button onClick="{{ nextMonth }}" aria-label="Próximo mês" style="flexShrink:0; width:30px; height:30px; display:flex; alignItems:center; justifyContent:center; borderRadius:6px; background:#0A0A0A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:14px; lineHeight:1; cursor:pointer; transition:all 200ms ease;">›</button>
+            </div>
+            <div style="display:grid; gridTemplateColumns:repeat(7,1fr); gap:4px; marginBottom:8px;">
+              <sc-for list="{{ weekDays }}" as="w" hint-placeholder-count="7">
+                <span style="textAlign:center; fontSize:10px; letterSpacing:0.08em; color:#9E9E9E;">{{ w }}</span>
+              </sc-for>
+            </div>
+            <div style="display:grid; gridTemplateColumns:repeat(7,1fr); gap:4px;">
+              <sc-for list="{{ days }}" as="d" hint-placeholder-count="30">
+                <button onClick="{{ d.onClick }}" disabled="{{ d.disabled }}" style="aspectRatio:1; minHeight:30px; display:flex; alignItems:center; justifyContent:center; borderRadius:6px; fontSize:12px; fontFamily:'Archivo',sans-serif; cursor:{{ d.cursor }}; background:{{ d.bg }}; color:{{ d.fg }}; border:1px solid {{ d.bc }}; transition:all 200ms ease;">{{ d.label }}</button>
+              </sc-for>
+            </div>
+            <div style="marginTop:14px; paddingTop:12px; borderTop:1px solid #2A2A2A; display:flex; flexDirection:column; gap:4px;">
+              <span style="fontSize:13px; color:#E0E0E0;">{{ dateLong }}</span>
+              <span style="fontSize:12px; color:#7A7A7A;">{{ dateHint }}</span>
+            </div>
+          </div>
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:14px;">
+            <span style="fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; color:#9E9E9E;">Horários livres</span>
+            <div style="marginTop:12px; display:flex; flexWrap:wrap; gap:6px;">
+              <sc-for list="{{ times }}" as="t" hint-placeholder-count="6">
+                <button onClick="{{ t.onClick }}" style="minHeight:36px; padding:0 12px; borderRadius:999px; fontSize:12px; cursor:pointer; background:{{ t.bg }}; color:{{ t.fg }}; border:1px solid {{ t.bc }}; transition:all 200ms ease;">{{ t.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ noTimes }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:10px 0 0; fontSize:13px; color:#A3A3A3;">{{ noTimesMsg }}</p>
+            </sc-if>
+          </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ step4 }}" hint-placeholder-val="{{ false }}">
+        <div data-book-sum="1" style="minWidth:0; maxWidth:520px;">
+          <h3 style="margin:0 0 6px; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Confirme os dados</h3>
+          <p style="margin:0 0 18px; fontSize:14px; color:#9E9E9E;">Só falta confirmar por SMS.</p>
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:18px; display:flex; flexDirection:column; gap:12px;">
+            <sc-for list="{{ summary }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex; alignItems:baseline; justifyContent:space-between; gap:12px;">
+                <span style="fontSize:13px; color:#A3A3A3;">{{ r.k }}</span>
+                <span style="fontSize:14px; textAlign:right; color:{{ r.color }}; fontFamily:'Oswald',sans-serif; letterSpacing:0.06em;">{{ r.v }}</span>
+              </div>
+            </sc-for>
+            <div style="height:1px; background:#2A2A2A; margin:2px 0;"></div>
+            <div style="display:flex; alignItems:baseline; justifyContent:space-between;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.2em; textTransform:uppercase; color:#FFFFFF;">A partir de</span>
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; color:#FFFFFF;">{{ total }}</span>
+            </div>
+            <button onClick="{{ openBooking }}" style="display:flex; alignItems:center; justifyContent:center; width:100%; minHeight:52px; marginTop:6px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; padding:0 14px; cursor:pointer;" style-hover="filter:brightness(1.12)">Confirmar agendamento</button>
+            <span style="fontSize:12px; color:#9E9E9E; textAlign:center;">Confirmação por SMS no seu celular</span>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="marginTop:30px; paddingTop:22px; borderTop:1px solid #2A2A2A; display:flex; flexWrap:wrap; alignItems:center; justifyContent:space-between; gap:14px;">
+          <button onClick="{{ stepBack }}" disabled="{{ backDisabled }}" style="display:flex; alignItems:center; gap:10px; minHeight:50px; padding:0 26px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:{{ backColor }}; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:500; letterSpacing:0.2em; textTransform:uppercase; cursor:{{ backCursor }}; transition:all 250ms ease;" style-hover="borderColor:#E0E0E0">‹ Voltar</button>
+          <span style="fontSize:13px; color:#9E9E9E; textAlign:center; flex:1 1 auto;">{{ stepHint }}</span>
+          <sc-if value="{{ showNext }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ stepNext }}" disabled="{{ nextDisabled }}" style="display:flex; alignItems:center; gap:10px; minHeight:50px; padding:0 32px; borderRadius:8px; background:{{ nextBg }}; border:0; color:{{ nextFg }}; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:{{ nextCursor }}; transition:all 250ms ease;" style-hover="filter:brightness(1.12)">Continuar ›</button>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicos" data-screen-label="Serviços" style="position:relative; background:#141414; padding:112px 0; overflow:hidden;">
+    <img src="img/monogram.jpg" alt="" style="position:absolute; left:-10%; bottom:-12%; width:min(52vw,620px); opacity:0.05; filter:contrast(3.2); mixBlendMode:screen; pointerEvents:none;" />
+    <div style="position:relative; maxWidth:1240px; margin:0 auto; padding:0 24px;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; display:flex; flexWrap:wrap; alignItems:flex-end; justifyContent:space-between; gap:20px; marginBottom:48px;">
+        <div>
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Serviços</span>
+          <h2 style="margin:12px 0 0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Serviços e preços</h2>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ svcPrev }}" aria-label="Anterior" style="width:52px; height:52px; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer; display:flex; alignItems:center; justifyContent:center; transition:all 300ms ease;" style-hover="borderColor:#E0E0E0; background:rgba(255,255,255,0.06)">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+          </button>
+          <button onClick="{{ svcNext }}" aria-label="Próximo" style="width:52px; height:52px; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer; display:flex; alignItems:center; justifyContent:center; transition:all 300ms ease;" style-hover="borderColor:#E0E0E0; background:rgba(255,255,255,0.06)">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div style="position:relative;">
+    <div aria-hidden="true" style="position:absolute; left:0; top:0; bottom:0; width:clamp(48px,8vw,120px); zIndex:3; pointerEvents:none; background:linear-gradient(90deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%);"></div>
+    <div aria-hidden="true" style="position:absolute; right:0; top:0; bottom:0; width:clamp(48px,8vw,120px); zIndex:3; pointerEvents:none; background:linear-gradient(270deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%);"></div>
+    <div ref="{{ svcTrack }}" data-track="1" style="position:relative; display:flex; gap:16px; overflowX:auto; scrollSnapType:none; padding:4px 24px 24px; scrollbarWidth:none;">
+      <sc-for list="{{ services }}" as="s" hint-placeholder-count="6">
+        <div data-svc="1" style="position:relative; overflow:hidden; flex:0 0 280px; scrollSnapAlign:start; background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:24px; display:flex; flexDirection:column; gap:12px; minHeight:180px; WebkitFontSmoothing:antialiased; backfaceVisibility:hidden; transition:all 300ms ease;" style-hover="transform:translateY(-6px); borderColor:#E0E0E0; boxShadow:0 26px 60px rgba(0,0,0,0.6)">
+          <span aria-hidden="true" style="position:absolute; right:-14px; bottom:-26px; fontFamily:'Pirata One',serif; fontSize:110px; lineHeight:1; color:#FFFFFF; opacity:0.045; pointerEvents:none;">D</span>
+          <h3 style="position:relative; margin:0; fontFamily:'Oswald',sans-serif; fontSize:19px; fontWeight:500; letterSpacing:0.08em; textTransform:uppercase; color:#FFFFFF; textWrap:balance;">{{ s.name }}</h3>
+          <p data-svc-bio="1" style="position:relative; margin:0; fontFamily:'Newsreader',Georgia,serif; fontSize:15px; lineHeight:1.5; color:#C9C9C9;">{{ s.bio }}</p>
+          <div style="position:relative; marginTop:auto; paddingTop:18px; borderTop:1px solid #2A2A2A; display:flex; alignItems:flex-end; justifyContent:space-between; gap:10px;">
+            <span style="fontSize:13px; letterSpacing:0.08em; color:#A3A3A3;">{{ s.dur }}</span>
+            <span style="display:flex; flexDirection:column; alignItems:flex-end;">
+              <span style="fontSize:11px; letterSpacing:0.14em; textTransform:uppercase; color:#9E9E9E;">a partir de</span>
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:22px; fontWeight:600; color:#FFFFFF; lineHeight:1.2;">{{ s.price }}</span>
+            </span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    </div>
+  </section>
+
+  <section id="ambiente" data-screen-label="Ambiente" style="background:#0A0A0A; padding:112px 24px 0;">
+    <div style="maxWidth:1240px; margin:0 auto;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; display:flex; flexWrap:wrap; alignItems:flex-end; justifyContent:space-between; gap:24px; marginBottom:48px;">
+        <div style="flex:1 1 360px; minWidth:0;">
+          <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">O ambiente</h2>
+        </div>
+      </div>
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; display:flex; flexWrap:wrap; gap:20px; alignItems:stretch;">
+        <button onClick="{{ ambienteOpen }}" style="flex:1 1 420px; minHeight:480px; padding:0; border:1px solid #2A2A2A; borderRadius:8px; overflow:hidden; cursor:pointer; background:#141414; position:relative;" style-hover="borderColor:#E0E0E0">
+          <img src="img/hero.jpg" alt="Ambiente da D'Conde Barbearia" style="position:absolute; inset:0; width:100%; height:100%; objectFit:cover; objectPosition:center 58%; filter:contrast(1.04) brightness(0.94); transition:transform 700ms cubic-bezier(0.22,0.61,0.36,1);" style-hover="transform:scale(1.05)" />
+          <span aria-hidden="true" style="position:absolute; inset:0; background:linear-gradient(to top,rgba(10,10,10,0.85) 0%,rgba(10,10,10,0.12) 45%,rgba(10,10,10,0.3) 100%);"></span>
+          <span style="position:absolute; left:0; right:0; bottom:0; display:flex; flexWrap:wrap; alignItems:flex-end; justifyContent:space-between; gap:14px; padding:24px; textAlign:left;">
+            <span style="display:flex; flexDirection:column; gap:6px; minWidth:0;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:18px; letterSpacing:0.16em; textTransform:uppercase; color:#FFFFFF;">{{ ambienteLabel }}</span>
+              <span style="fontSize:13px; letterSpacing:0.16em; textTransform:uppercase; color:#A3A3A3;">Avenida Campo Sales 303 · Itatiba</span>
+            </span>
+          </span>
+        </button>
+        <div style="flex:1 1 320px; maxWidth:460px; background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:34px; display:flex; flexDirection:column; gap:18px;">
+          <h3 style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF; lineHeight:1.15;">Sala grande, luz certa</h3>
+          <p style="margin:0; fontFamily:'Newsreader',Georgia,serif; fontSize:18px; lineHeight:1.7; color:#C9C9C9;">Sala ampla de pé-direito alto, iluminação de estúdio e uma cadeira por vez. Você chega no horário marcado e é atendido sem fila.</p>
+          <div style="marginTop:auto; display:flex; flexDirection:column;">
+            <sc-for list="{{ ambienteFeatures }}" as="fe" hint-placeholder-count="4">
+              <div style="display:flex; alignItems:center; gap:12px; padding:13px 0; borderTop:1px solid #2A2A2A;">
+                <span style="width:6px; height:6px; borderRadius:50%; background:#E0E0E0; flexShrink:0;"></span>
+                <span style="fontSize:15px; color:#FFFFFF;">{{ fe }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="galeria" data-screen-label="Trabalho autoral" style="background:#0A0A0A; padding:112px 24px 0;">
+    <div style="maxWidth:1240px; margin:0 auto;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; marginBottom:48px;">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Galeria</span>
+        <div style="display:flex; flexWrap:wrap; alignItems:flex-end; justifyContent:space-between; gap:20px;">
+          <h2 style="margin:12px 0 0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF; textWrap:balance;">O que a gente faz de diferente</h2>
+          <div style="display:flex; gap:10px; flexShrink:0;">
+            <button onClick="{{ autoraisPrev }}" aria-label="Anterior" style="width:46px; height:46px; display:flex; alignItems:center; justifyContent:center; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:16px; cursor:pointer; transition:all 250ms ease;" style-hover="borderColor:#E0E0E0; background:rgba(255,255,255,0.07)">‹</button>
+            <button onClick="{{ autoraisNext }}" aria-label="Próximo" style="width:46px; height:46px; display:flex; alignItems:center; justifyContent:center; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:16px; cursor:pointer; transition:all 250ms ease;" style-hover="borderColor:#E0E0E0; background:rgba(255,255,255,0.07)">›</button>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;">
+      <div aria-hidden="true" style="position:absolute; left:0; top:0; bottom:0; width:clamp(48px,8vw,120px); zIndex:3; pointerEvents:none; background:linear-gradient(90deg,#0A0A0A 0%,rgba(10,10,10,0.85) 40%,rgba(10,10,10,0) 100%);"></div>
+      <div aria-hidden="true" style="position:absolute; right:0; top:0; bottom:0; width:clamp(48px,8vw,120px); zIndex:3; pointerEvents:none; background:linear-gradient(270deg,#0A0A0A 0%,rgba(10,10,10,0.85) 40%,rgba(10,10,10,0) 100%);"></div>
+      <div data-reveal="1" data-gal="1" ref="{{ autoraisRef }}" style="animation:dcUp 700ms ease both;">
+        <sc-for list="{{ autorais }}" as="g" hint-placeholder-count="3">
+          <button onClick="{{ g.onClick }}" data-cut="1" style="width:100%; height:100%; padding:0; border:1px solid #2A2A2A; borderRadius:8px; overflow:hidden; cursor:pointer; background:#141414; position:relative;" style-hover="borderColor:#E0E0E0">
+            <img src="{{ g.src }}" loading="lazy" alt="Corte feito na D'Conde Barbearia" style="width:100%; height:100%; objectFit:cover; objectPosition:{{ g.pos }};" />
+            <span data-cut-info="1" style="position:absolute; left:0; right:0; bottom:0; display:flex; flexDirection:column; alignItems:flex-start; gap:6px; padding:20px; textAlign:left; background:linear-gradient(to top,rgba(10,10,10,0.94) 20%,rgba(10,10,10,0));">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:15px; letterSpacing:0.12em; textTransform:uppercase; color:#FFFFFF;">{{ g.service }}</span>
+              <span style="fontSize:13px; color:#E0E0E0;">{{ g.client }}</span>
+              <span style="fontSize:12px; letterSpacing:0.14em; textTransform:uppercase; color:#A3A3A3;">{{ g.date }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      </div>
+      <a href="https://www.instagram.com/dcondebarbearia/" target="_blank" rel="noopener" style="display:flex; flexWrap:wrap; alignItems:center; justifyContent:space-between; gap:14px; marginTop:8px; padding:22px 24px; borderRadius:8px; border:1px solid #2A2A2A; background:#141414; transition:all 300ms ease;" style-hover="borderColor:#E0E0E0; background:#1A1A1A">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:20px; fontWeight:500; letterSpacing:0.1em; textTransform:uppercase; color:#FFFFFF;">Ver mais cortes</span>
+        <span style="fontSize:14px; color:#A3A3A3;">@dcondebarbearia</span>
+      </a>
+    </div>
+  </section>
+
+  <section data-screen-label="Luz certa" style="background:#0A0A0A; padding:56px 24px 0;">
+    <div style="marginTop:96px; height:clamp(260px,42vh,420px); position:relative; borderTop:1px solid #2A2A2A; borderBottom:1px solid #2A2A2A;">
+      <div aria-hidden="true" style="position:absolute; inset:0; backgroundImage:url('img/salao-05.jpg'); backgroundSize:cover; backgroundPosition:center center; backgroundAttachment:fixed; backgroundRepeat:no-repeat;"></div>
+      <div style="position:absolute; inset:0; background:rgba(10,10,10,0.62); display:flex; alignItems:center; justifyContent:center; padding:24px;">
+        <p style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:clamp(20px,3vw,38px); fontWeight:500; letterSpacing:0.2em; textTransform:uppercase; color:#FFFFFF; textAlign:center;">Luz certa. Corte certo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Diferenciais" style="position:relative; background:#0A0A0A; padding:104px 24px; overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute; inset:0; backgroundImage:url('img/salao-01.jpg'); backgroundSize:cover; backgroundPosition:center 45%; filter:brightness(0.3); opacity:0.55;"></div>
+    <div aria-hidden="true" style="position:absolute; inset:0; background:linear-gradient(180deg,#0A0A0A 0%,rgba(10,10,10,0.55) 45%,#0A0A0A 100%);"></div>
+    <div style="position:relative; maxWidth:1240px; margin:0 auto;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; textAlign:center; marginBottom:56px;">
+        <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(28px,3.6vw,46px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Como a gente trabalha</h2>
+      </div>
+      <div data-reveal="1" style="animation:dcUp 700ms 120ms ease both; display:grid; gridTemplateColumns:repeat(auto-fit,minmax(240px,1fr)); gap:20px;">
+        <sc-for list="{{ perks }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex; flexDirection:column; gap:14px; padding:36px 30px; borderRadius:8px; border:1px solid #2A2A2A; background:rgba(20,20,20,0.78); backdropFilter:blur(6px); transition:all 300ms ease;" style-hover="borderColor:#E0E0E0; transform:translateY(-6px); background:rgba(26,26,26,0.92)">
+            <h3 style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:20px; fontWeight:500; letterSpacing:0.1em; textTransform:uppercase; color:#FFFFFF; textWrap:balance;">{{ p.title }}</h3>
+            <p style="margin:0; fontFamily:'Newsreader',Georgia,serif; fontSize:17px; lineHeight:1.65; color:#C9C9C9;">{{ p.line }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="sobre" data-screen-label="Sobre" style="position:relative; background:#141414; padding:112px 24px; overflow:hidden;">
+    <div style="maxWidth:1240px; margin:0 auto; display:grid; gridTemplateColumns:repeat(auto-fit,minmax(300px,1fr)); gap:clamp(32px,6vw,80px); alignItems:center;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both;">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Sobre</span>
+        <h2 style="margin:12px 0 28px; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Desde 2024</h2>
+
+        <blockquote style="margin:0 0 28px; paddingLeft:22px; borderLeft:1px solid #E0E0E0;">
+          <p style="margin:0; fontFamily:'Newsreader',Georgia,serif; fontSize:22px; lineHeight:1.55; color:#FFFFFF; textWrap:pretty;">Cada traço carrega uma história, cada detalhe carrega um sonho. Barbearia não é só trabalho e evolução constante e esse é um símbolo da minha renovação, da minha caminhada e da força que me trouxe até aqui.</p>
+        </blockquote>
+
+        <p style="margin:0 0 18px; fontFamily:'Newsreader',Georgia,serif; fontSize:18px; lineHeight:1.7; color:#B8B8B8; maxWidth:56ch;">A D'Conde abriu em 2024 com uma ideia simples: um lugar amplo, silencioso e bem iluminado, onde cortar o cabelo é parte da semana e não uma tarefa.</p>
+        <p style="margin:0 0 18px; fontFamily:'Newsreader',Georgia,serif; fontSize:18px; lineHeight:1.7; color:#B8B8B8; maxWidth:56ch;">Pé-direito alto, espelho iluminado, cadeira clássica e horário respeitado. Atendimento por agendamento, um cliente por vez, com Daniel e João Lima na cadeira.</p>
+        <p style="margin:0 0 32px; fontFamily:'Newsreader',Georgia,serif; fontSize:18px; lineHeight:1.7; color:#B8B8B8; maxWidth:56ch;">O novo espaço na Avenida Campo Sales é a segunda fase dessa caminhada: mais área, mais luz e o mesmo cuidado no acabamento de sempre.</p>
+
+        <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(120px,1fr)); gap:20px; paddingTop:28px; borderTop:1px solid #2A2A2A;">
+          <div>
+            <div style="fontFamily:'Oswald',sans-serif; fontSize:36px; fontWeight:600; color:#FFFFFF; lineHeight:1;">2024</div>
+            <div style="fontSize:12px; letterSpacing:0.16em; textTransform:uppercase; color:#9E9E9E; marginTop:6px;">Fundação</div>
+          </div>
+          <div>
+            <div style="fontFamily:'Oswald',sans-serif; fontSize:36px; fontWeight:600; color:#FFFFFF; lineHeight:1;">100%</div>
+            <div style="fontSize:12px; letterSpacing:0.16em; textTransform:uppercase; color:#9E9E9E; marginTop:6px;">Por agendamento</div>
+          </div>
+        </div>
+
+        <div style="marginTop:32px; display:flex; flexWrap:wrap; gap:14px; alignItems:center;">
+          <a href="#agendar" style="display:flex; alignItems:center; height:52px; padding:0 28px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase;" style-hover="filter:brightness(1.12)">Agendar horário</a>
+          <a href="https://www.instagram.com/dcondebarbearia/" target="_blank" rel="noopener" style="display:flex; alignItems:center; height:52px; padding:0 28px; borderRadius:8px; border:1px solid #2A2A2A; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.2em; textTransform:uppercase;" style-hover="borderColor:#E0E0E0">Ver o Instagram</a>
+        </div>
+      </div>
+
+      <div data-reveal="1" style="animation:dcUp 700ms 120ms ease both; position:relative;">
+        <img src="img/daniel.png" alt="Daniel, fundador da D'Conde Barbearia" style="width:100%; aspectRatio:3/4; objectFit:cover; objectPosition:center 28%; filter:contrast(1.04); borderRadius:8px; border:1px solid #2A2A2A;" />
+        <div style="position:absolute; left:0; right:0; bottom:0; padding:22px; borderRadius:0 0 8px 8px; background:linear-gradient(to top,rgba(10,10,10,0.92),rgba(10,10,10,0));">
+          <span style="display:block; fontFamily:'Oswald',sans-serif; fontSize:18px; letterSpacing:0.12em; textTransform:uppercase; color:#FFFFFF;">Daniel</span>
+          <span style="display:block; marginTop:4px; fontSize:13px; letterSpacing:0.18em; textTransform:uppercase; color:#A3A3A3;">Fundador · desde 2024</span>
+        </div>
+        <span aria-hidden="true" style="position:absolute; right:-6%; bottom:-5%; width:150px; height:150px; display:flex; alignItems:center; justifyContent:center; borderRadius:12px; overflow:hidden; background:#0A0A0A; border:1px solid #3A3A3A; boxShadow:0 22px 50px rgba(0,0,0,0.7); animation:dcFloat 7s ease-in-out infinite; pointerEvents:none;">
+          <img src="img/monogram.jpg" alt="" style="width:100%; height:100%; objectFit:cover; objectPosition:center 46%;" />
+        </span>
+      </div>
+    </div>
+
+    <div data-reveal="1" style="animation:dcUp 700ms 200ms ease both; maxWidth:1240px; margin:80px auto 0; display:grid; gridTemplateColumns:repeat(auto-fit,minmax(220px,1fr)); gap:1px; background:#2A2A2A; border:1px solid #2A2A2A; borderRadius:8px; overflow:hidden;">
+      <sc-for list="{{ about }}" as="a" hint-placeholder-count="3">
+        <div style="background:#0A0A0A; padding:28px 24px; display:flex; flexDirection:column; gap:8px;">
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.24em; textTransform:uppercase; color:#9E9E9E;">{{ a.k }}</span>
+          <span style="fontSize:15px; lineHeight:1.6; color:#FFFFFF;">{{ a.v }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="contato" data-screen-label="Localização e contato" style="background:#0A0A0A; padding:112px 24px;">
+    <div style="maxWidth:1240px; margin:0 auto;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; marginBottom:56px;">
+        <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Onde estamos</h2>
+      </div>
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; display:grid; gridTemplateColumns:repeat(auto-fit,minmax(300px,1fr)); gap:20px;">
+        <div style="border:1px solid #2A2A2A; borderRadius:8px; overflow:hidden; background:#141414; minHeight:420px; position:relative;">
+          <iframe title="Mapa D'Conde Barbearia" src="https://www.openstreetmap.org/export/embed.html?bbox=-46.8520%2C-23.0180%2C-46.8250%2C-22.9950&amp;layer=mapnik&amp;marker=-23.0065%2C-46.8385" style="width:100%; height:100%; minHeight:420px; border:0; filter:invert(1) grayscale(1) contrast(0.9) brightness(0.92);" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+          <div style="position:absolute; left:16px; right:16px; bottom:16px; display:flex; flexWrap:wrap; alignItems:center; justifyContent:space-between; gap:12px; padding:16px 18px; borderRadius:8px; background:rgba(10,10,10,0.9); border:1px solid #2A2A2A; backdropFilter:blur(8px);">
+            <span style="display:flex; flexDirection:column; gap:3px; minWidth:0;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">D'Conde Barbearia</span>
+              <span style="fontSize:14px; color:#FFFFFF;">Av. Campo Sales, 303 — Sala 04 · Itatiba/SP</span>
+            </span>
+            <a href="https://www.google.com/maps/dir/?api=1&amp;destination=Avenida+Campo+Sales+303+Itatiba+SP+13250-360" target="_blank" rel="noopener" style="display:flex; alignItems:center; height:44px; padding:0 20px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; whiteSpace:nowrap;" style-hover="filter:brightness(1.12)">Como chegar</a>
+          </div>
+        </div>
+        <div style="display:flex; flexDirection:column; gap:12px;">
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:26px; display:flex; flexDirection:column; gap:18px;">
+            <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex; flexDirection:column; gap:4px;">
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">{{ c.k }}</span>
+                <a href="{{ c.href }}" target="_blank" rel="noopener" style="fontSize:16px; color:#FFFFFF; lineHeight:1.5;" style-hover="color:#E0E0E0">{{ c.v }}</a>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:26px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Horário</span>
+            <div style="marginTop:14px; display:flex; flexDirection:column;">
+              <sc-for list="{{ hours }}" as="h" hint-placeholder-count="3">
+                <div style="display:flex; alignItems:center; justifyContent:space-between; gap:12px; padding:11px 0; borderTop:1px solid #2A2A2A;">
+                  <span style="fontSize:15px; color:#FFFFFF;">{{ h.d }}</span>
+                  <span style="fontSize:15px; color:#A3A3A3;">{{ h.t }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shop" data-screen-label="Shop" style="background:#141414; padding:112px 24px; borderTop:1px solid #2A2A2A;">
+    <div style="maxWidth:1240px; margin:0 auto;">
+      <div data-reveal="1" style="animation:dcUp 700ms ease both; marginBottom:48px;">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Shop</span>
+        <h2 style="margin:12px 0 0; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(30px,4vw,52px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Produtos da casa</h2>
+      </div>
+
+      <div data-reveal="1" style="animation:dcUp 700ms 120ms ease both; display:flex; flexWrap:wrap; gap:20px; alignItems:flex-start;">
+        <div style="flex:1 1 460px; minWidth:0;">
+          <div style="display:flex; flexWrap:wrap; alignItems:center; justifyContent:space-between; gap:12px; padding:14px 18px; marginBottom:18px; border:1px solid #2A2A2A; borderRadius:8px; background:#1A1A1A;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.2em; textTransform:uppercase; color:#A3A3A3;">{{ shopCount }} produtos</span>
+            <div style="display:flex; gap:8px;">
+              <sc-for list="{{ shopCats }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.onClick }}" style="minHeight:38px; padding:0 14px; borderRadius:999px; cursor:pointer; background:{{ c.bg }}; border:1px solid {{ c.bc }}; color:{{ c.fg }}; fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.16em; textTransform:uppercase; transition:all 300ms ease;">{{ c.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(230px,1fr)); gap:16px;">
+            <sc-for list="{{ shopProducts }}" as="p" hint-placeholder-count="5">
+              <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:18px; display:flex; flexDirection:column; gap:14px; transition:all 300ms ease;" style-hover="borderColor:#E0E0E0; transform:translateY(-4px)">
+                <div style="position:relative; height:170px; borderRadius:8px; overflow:hidden; background:#0A0A0A; border:1px solid #2A2A2A; display:flex; alignItems:center; justifyContent:center;">
+                  <span aria-hidden="true" style="fontFamily:'Pirata One',serif; fontSize:76px; lineHeight:1; color:#FFFFFF; opacity:0.16;">D</span>
+                </div>
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:16px; fontWeight:500; letterSpacing:0.08em; textTransform:uppercase; color:#FFFFFF; textWrap:balance;">{{ p.name }}</span>
+                <span style="fontSize:13px; color:#A3A3A3;">{{ p.cat }}</span>
+                <div style="marginTop:auto; paddingTop:14px; borderTop:1px solid #2A2A2A; display:flex; alignItems:center; justifyContent:space-between; gap:10px;">
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:20px; fontWeight:600; color:#FFFFFF;">{{ p.price }}</span>
+                  <button onClick="{{ p.add }}" disabled="{{ p.out }}" style="minHeight:42px; padding:0 16px; borderRadius:8px; cursor:{{ p.cursor }}; background:{{ p.btnBg }}; border:1px solid {{ p.btnBc }}; color:{{ p.btnFg }}; fontFamily:'Oswald',sans-serif; fontSize:11px; fontWeight:600; letterSpacing:0.16em; textTransform:uppercase;" style-hover="filter:brightness(1.12)">{{ p.btn }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1 1 280px; maxWidth:340px; display:flex; flexDirection:column; gap:16px; minWidth:0;">
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:24px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Carrinho</span>
+            <div style="marginTop:16px; display:flex; flexDirection:column;">
+              <sc-for list="{{ cart }}" as="c" hint-placeholder-count="2">
+                <div style="display:flex; alignItems:center; gap:10px; padding:12px 0; borderTop:1px solid #2A2A2A;">
+                  <span style="flex:1 1 auto; fontSize:14px; color:#FFFFFF; minWidth:0;">{{ c.name }}</span>
+                  <span style="fontSize:13px; color:#A3A3A3;">{{ c.qty }}×</span>
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:15px; color:#FFFFFF;">{{ c.sum }}</span>
+                  <button onClick="{{ c.remove }}" aria-label="Remover" style="width:32px; height:32px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; cursor:pointer;" style-hover="color:#FFFFFF; borderColor:#E0E0E0">×</button>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flexDirection:column; alignItems:center; gap:6px; padding:18px 0 4px;">
+                <span aria-hidden="true" style="fontFamily:'Pirata One',serif; fontSize:52px; lineHeight:1; color:#FFFFFF; opacity:0.18;">D</span>
+                <span style="fontSize:13px; color:#9E9E9E;">Carrinho vazio</span>
+              </div>
+            </sc-if>
+            <div style="marginTop:18px; paddingTop:16px; borderTop:1px solid #2A2A2A; display:flex; alignItems:baseline; justifyContent:space-between;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.2em; textTransform:uppercase; color:#A3A3A3;">Total</span>
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; color:#FFFFFF;">{{ cartTotal }}</span>
+            </div>
+            <a href="{{ cartWhats }}" target="_blank" rel="noopener" style="marginTop:16px; display:flex; alignItems:center; justifyContent:center; minHeight:50px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase;" style-hover="filter:brightness(1.12)">Fechar pelo WhatsApp</a>
+          </div>
+
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:24px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Buscar</span>
+            <input value="{{ shopQuery }}" onChange="{{ onShopQuery }}" placeholder="Nome do produto" style="marginTop:14px; width:100%; minHeight:46px; padding:0 14px; borderRadius:8px; background:#0A0A0A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:14px; fontFamily:'Archivo',sans-serif;" />
+          </div>
+
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:24px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Retirada</span>
+            <p style="margin:14px 0 0; fontSize:14px; lineHeight:1.6; color:#A3A3A3;">Compra reservada e retirada na barbearia, na Av. Campo Sales, 303 — Sala 04.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="position:relative; background:#0A0A0A; borderTop:1px solid #2A2A2A; padding:72px 24px 28px; overflow:hidden;">
+    <img src="img/monogram.jpg" alt="" style="position:absolute; right:2%; top:10%; width:min(34vw,320px); opacity:0.06; filter:contrast(3.2); mixBlendMode:screen; pointerEvents:none;" />
+    <div style="position:relative; maxWidth:1240px; margin:0 auto;">
+      <div style="display:grid; gridTemplateColumns:{{ footCols }}; gap:44px;">
+        <div style="display:flex; flexDirection:column; gap:22px; minWidth:0;">
+          <a href="#inicio" style="display:block; width:100%; maxWidth:300px;">
+            <img src="img/logo-full.jpg" alt="D'Conde Barbearia" style="display:block; width:100%; aspectRatio:100/38; objectFit:cover; objectPosition:center 47%; filter:brightness(1.25) contrast(3.4); mixBlendMode:screen;" />
+          </a>
+          <p style="margin:0; fontFamily:'Newsreader',serif; fontSize:17px; lineHeight:1.5; color:#A3A3A3; maxWidth:32ch;">Estilo, precisão e atitude desde 2024.</p>
+          <div style="display:flex; flexDirection:column; gap:8px; paddingTop:4px; borderTop:1px solid #2A2A2A;">
+            <span style="paddingTop:14px; fontSize:14px; lineHeight:1.5; color:#A3A3A3;">Avenida Campo Sales 303, Sala 04<br />Itatiba · SP · 13250-360</span>
+            <span style="fontSize:14px; color:#A3A3A3;">Seg a sex 09h—20h · Sáb 08h—18h</span>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 16px; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Navegação</h4>
+          <div style="display:flex; flexDirection:column; gap:10px;">
+            <a href="#inicio" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Início</a>
+            <a href="#agendar" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Agendamento</a>
+            <a href="#galeria" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Galeria</a>
+            <a href="#sobre" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Sobre</a>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 16px; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Serviços</h4>
+          <div style="display:flex; flexDirection:column; gap:10px;">
+            <a href="#servicos" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Corte</a>
+            <a href="#servicos" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Barba terapia</a>
+            <a href="#servicos" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Corte + barba terapia</a>
+            <a href="#servicos" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Platinado</a>
+          </div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 16px; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:500; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">Contato</h4>
+          <div style="display:flex; flexDirection:column; gap:10px;">
+            <a href="{{ whatsHref }}" target="_blank" rel="noopener" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">WhatsApp</a>
+            <a href="https://www.instagram.com/dcondebarbearia/" target="_blank" rel="noopener" style="fontSize:15px; color:#A3A3A3;" style-hover="color:#FFFFFF">Instagram</a>
+            <button onClick="{{ openAccount }}" style="textAlign:left; background:transparent; border:0; padding:0; cursor:pointer; fontSize:15px; color:#A3A3A3; fontFamily:'Archivo',sans-serif;" style-hover="color:#FFFFFF">Minha conta</button>
+            <button onClick="{{ goPainel }}" style="textAlign:left; background:transparent; border:0; padding:0; cursor:pointer; fontSize:15px; color:#A3A3A3; fontFamily:'Archivo',sans-serif;" style-hover="color:#FFFFFF">Painel da barbearia</button>
+          </div>
+        </div>
+      </div>
+      <div style="marginTop:56px; paddingTop:22px; borderTop:1px solid #2A2A2A; display:flex; flexWrap:wrap; gap:16px; alignItems:center; justifyContent:space-between;">
+        <span style="fontSize:13px; color:#7A7A7A;">© 2026 D'Conde Barbearia. Todos os direitos reservados.</span>
+        <span style="display:flex; alignItems:center; gap:14px;">
+          <span aria-hidden="true" style="width:46px; height:1px; background:linear-gradient(90deg,rgba(42,42,42,0),#3A3A3A);"></span>
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Est. 2024 · Itatiba SP</span>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <div data-nav="bottombar" style="position:fixed; left:0; right:0; bottom:0; zIndex:85; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:rgba(10,10,10,0.92); backdropFilter:blur(14px); borderTop:1px solid #2A2A2A;">
+      <a href="#agendar" style="display:flex; alignItems:center; justifyContent:center; minHeight:52px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:14px; fontWeight:600; letterSpacing:0.22em; textTransform:uppercase;">Agendar horário</a>
+  </div>
+
+  <a href="{{ whatsHref }}" target="_blank" rel="noopener" aria-label="Falar no WhatsApp" data-nav="wa" style="transition:transform 300ms ease; position:fixed; right:20px; bottom:20px; zIndex:90; width:56px; height:56px; borderRadius:50%; display:flex; alignItems:center; justifyContent:center; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); boxShadow:0 14px 34px rgba(0,0,0,0.7);" style-hover="filter:brightness(1.12); transform:translateY(-3px)">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="#0A0A0A" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z"/></svg>
+  </a>
+
+  <sc-if value="{{ lightbox }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLightbox }}" style="position:fixed; inset:0; zIndex:100; background:rgba(5,5,5,0.94); display:flex; flexDirection:column; alignItems:center; justifyContent:center; gap:18px; padding:32px; cursor:zoom-out;">
+      <img src="{{ lightbox }}" loading="lazy" alt="D'Conde Barbearia" style="maxWidth:min(1100px,92vw); maxHeight:76vh; objectFit:contain; borderRadius:8px; border:1px solid #2A2A2A;" />
+      <div style="display:flex; alignItems:center; gap:18px;">
+        <button onClick="{{ lightboxPrev }}" aria-label="Anterior" style="width:48px; height:48px; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer;" style-hover="borderColor:#E0E0E0">‹</button>
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.24em; textTransform:uppercase; color:#FFFFFF;">{{ lightboxLabel }}</span>
+        <button onClick="{{ lightboxNext }}" aria-label="Próxima" style="width:48px; height:48px; borderRadius:50%; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer;" style-hover="borderColor:#E0E0E0">›</button>
+      </div>
+    </div>
+  </sc-if>
+</sc-if>
+
+<sc-if value="{{ isCliente }}" hint-placeholder-val="{{ false }}">
+  <div style="minHeight:100vh; background:#0A0A0A; padding-bottom:64px;">
+    <div style="borderBottom:1px solid #2A2A2A; background:#141414;">
+      <div style="maxWidth:1080px; margin:0 auto; padding:16px 24px; display:flex; alignItems:center; justifyContent:space-between; gap:16px;">
+        <div style="display:flex; alignItems:center; gap:14px; minWidth:0;">
+          <img src="img/monogram.jpg" alt="" style="width:44px; height:40px; objectFit:contain; filter:brightness(1.25) contrast(3.4); mixBlendMode:screen;" />
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.22em; textTransform:uppercase; color:#FFFFFF;">Minha conta</span>
+        </div>
+        <div style="display:flex; alignItems:center; gap:10px;">
+          <button onClick="{{ goSite }}" style="minHeight:44px; padding:0 18px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; cursor:pointer;" style-hover="borderColor:#E0E0E0">Ver site</button>
+          <button onClick="{{ logout }}" style="minHeight:44px; padding:0 18px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; cursor:pointer;" style-hover="color:#FFFFFF">Sair</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="maxWidth:1080px; margin:0 auto; padding:48px 24px 0;">
+      <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.36em; textTransform:uppercase; color:#9E9E9E;">Olá, {{ userName }}</span>
+      <h1 style="margin:12px 0 40px; fontFamily:'Oswald',sans-serif; fontWeight:600; fontSize:clamp(28px,4vw,44px); letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">Seus agendamentos</h1>
+
+      <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; marginBottom:20px;">
+        <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+          <div style="display:flex; alignItems:center; justifyContent:space-between; gap:12px; marginBottom:20px;">
+            <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Próximo agendamento</span>
+            <span style="fontSize:11px; letterSpacing:0.14em; textTransform:uppercase; color:#0A0A0A; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); padding:5px 10px; borderRadius:999px;">{{ nextStatus }}</span>
+          </div>
+          <div style="fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:500; letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF; lineHeight:1.15;">{{ nextService }}</div>
+          <div style="marginTop:16px; display:flex; flexDirection:column; gap:8px;">
+            <sc-for list="{{ nextRows }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex; alignItems:baseline; justifyContent:space-between; gap:12px; borderTop:1px solid #2A2A2A; paddingTop:8px;">
+                <span style="fontSize:13px; color:#A3A3A3;">{{ r.k }}</span>
+                <span style="fontSize:14px; color:#FFFFFF; fontFamily:'Oswald',sans-serif; letterSpacing:0.06em;">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; gap:10px; marginTop:24px; flexWrap:wrap;">
+            <button onClick="{{ remarcar }}" style="flex:1 1 140px; minHeight:48px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Remarcar</button>
+            <button onClick="{{ cancelar }}" style="flex:1 1 140px; minHeight:48px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="color:#FFFFFF; borderColor:#E0E0E0">Cancelar</button>
+          </div>
+        </div>
+
+        <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px; display:flex; flexDirection:column;">
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Repetir último</span>
+          <p style="margin:14px 0 0; fontSize:15px; color:#A3A3A3;">Mesmo serviço, mesmo barbeiro, próximo horário livre.</p>
+          <div style="marginTop:18px; padding:16px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A;">
+            <div style="fontFamily:'Oswald',sans-serif; fontSize:16px; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">{{ lastService }}</div>
+            <div style="fontSize:13px; color:#A3A3A3; marginTop:4px;">{{ lastMeta }}</div>
+          </div>
+          <button onClick="{{ repetir }}" style="marginTop:auto; minHeight:52px; borderRadius:8px; background:transparent; border:1px solid #E0E0E0; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="background:rgba(255,255,255,0.08)">Repetir agendamento</button>
+        </div>
+      </div>
+
+      <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px; marginBottom:20px;">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Histórico de atendimentos</span>
+        <div style="marginTop:18px; display:flex; flexDirection:column;">
+          <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+            <div style="display:flex; flexWrap:wrap; alignItems:center; gap:12px; padding:14px 0; borderTop:1px solid #2A2A2A;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:14px; letterSpacing:0.08em; color:#FFFFFF; width:96px;">{{ h.date }}</span>
+              <span style="flex:1 1 200px; fontSize:15px; color:#FFFFFF; minWidth:0;">{{ h.service }}</span>
+              <span style="fontSize:14px; color:#A3A3A3; width:90px;">{{ h.barber }}</span>
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:15px; color:#FFFFFF; marginLeft:auto;">{{ h.price }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+        <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Meus dados</span>
+        <div style="marginTop:18px; display:grid; gridTemplateColumns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;">
+          <label style="display:flex; flexDirection:column; gap:8px;">
+            <span style="fontSize:13px; color:#A3A3A3;">Nome</span>
+            <input value="{{ userName }}" onChange="{{ onName }}" style="minHeight:48px; padding:0 14px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:15px; fontFamily:'Archivo',sans-serif;" />
+          </label>
+          <label style="display:flex; flexDirection:column; gap:8px;">
+            <span style="fontSize:13px; color:#A3A3A3;">Celular</span>
+            <input value="{{ userPhone }}" onChange="{{ onPhone }}" style="minHeight:48px; padding:0 14px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:15px; fontFamily:'Archivo',sans-serif;" />
+          </label>
+        </div>
+        <button onClick="{{ salvarDados }}" style="marginTop:20px; minHeight:48px; padding:0 26px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Salvar</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPainel }}" hint-placeholder-val="{{ false }}">
+  <div style="minHeight:100vh; background:#0A0A0A;">
+    <div style="borderBottom:1px solid #2A2A2A; background:#141414;">
+      <div style="maxWidth:1360px; margin:0 auto; padding:16px 24px; display:flex; alignItems:center; justifyContent:space-between; gap:16px;">
+        <div style="display:flex; alignItems:center; gap:14px; minWidth:0;">
+          <img src="img/monogram.jpg" alt="" style="width:44px; height:40px; objectFit:contain; filter:brightness(1.25) contrast(3.4); mixBlendMode:screen;" />
+          <span style="fontFamily:'Oswald',sans-serif; fontSize:13px; letterSpacing:0.22em; textTransform:uppercase; color:#FFFFFF;">Painel da barbearia</span>
+        </div>
+        <button onClick="{{ goSite }}" style="minHeight:44px; padding:0 18px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; cursor:pointer;" style-hover="borderColor:#E0E0E0">Ver site</button>
+      </div>
+    </div>
+
+    <div style="maxWidth:1360px; margin:0 auto; padding:32px 24px 80px; display:flex; flexWrap:wrap; gap:28px; alignItems:flex-start;">
+      <div style="display:flex; flexDirection:column; gap:6px; flex:1 1 190px; maxWidth:230px; overflowX:auto; paddingBottom:4px;">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="7">
+          <button onClick="{{ t.onClick }}" style="flexShrink:0; minHeight:46px; padding:0 18px; textAlign:left; borderRadius:8px; cursor:pointer; whiteSpace:nowrap; background:{{ t.bg }}; border:1px solid {{ t.bc }}; color:{{ t.fg }}; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.16em; textTransform:uppercase; transition:all 300ms ease;">{{ t.name }}</button>
+        </sc-for>
+      </div>
+
+      <div style="flex:1 1 460px; minWidth:0;">
+        <sc-if value="{{ tabAgenda }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+            <div style="display:flex; flexWrap:wrap; alignItems:baseline; justifyContent:space-between; gap:12px; marginBottom:22px;">
+              <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">Agenda do dia</h2>
+              <span style="fontSize:14px; color:#A3A3A3;">Quarta, 09 de setembro · {{ agendaCount }} atendimentos</span>
+            </div>
+            <sc-for list="{{ agenda }}" as="a" hint-placeholder-count="6">
+              <div style="display:flex; flexWrap:wrap; alignItems:center; gap:14px; padding:14px 0; borderTop:1px solid #2A2A2A;">
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:18px; letterSpacing:0.04em; color:#FFFFFF; width:64px;">{{ a.time }}</span>
+                <span style="flex:1 1 180px; minWidth:0;">
+                  <span style="display:block; fontSize:15px; color:#FFFFFF;">{{ a.client }}</span>
+                  <span style="display:block; fontSize:13px; color:#A3A3A3;">{{ a.service }}</span>
+                </span>
+                <span style="fontSize:14px; color:#A3A3A3; width:80px;">{{ a.barber }}</span>
+                <span style="fontSize:11px; letterSpacing:0.14em; textTransform:uppercase; color:{{ a.statusFg }}; border:1px solid {{ a.statusBc }}; padding:5px 10px; borderRadius:999px;">{{ a.status }}</span>
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:16px; color:#FFFFFF; marginLeft:auto;">{{ a.price }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabFin }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flexDirection:column; gap:20px;">
+            <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(200px,1fr)); gap:16px;">
+              <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:24px;">
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.2em; textTransform:uppercase; color:#9E9E9E;">{{ k.label }}</span>
+                  <div style="marginTop:10px; fontFamily:'Oswald',sans-serif; fontSize:30px; fontWeight:600; color:#FFFFFF; lineHeight:1.1;">{{ k.value }}</div>
+                  <div style="marginTop:6px; fontSize:13px; color:#A3A3A3;">{{ k.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Faturamento por dia · setembro</span>
+              <div style="marginTop:24px; display:flex; alignItems:flex-end; gap:8px; height:180px;">
+                <sc-for list="{{ chart }}" as="c" hint-placeholder-count="12">
+                  <div style="flex:1 1 0; height:100%; display:flex; flexDirection:column; justifyContent:flex-end; alignItems:center; gap:8px; minWidth:0;">
+                    <div style="width:100%; height:{{ c.h }}; borderRadius:4px 4px 0 0; background:linear-gradient(180deg,#FFFFFF 0%,#9E9E9E 100%); opacity:{{ c.op }};"></div>
+                    <span style="fontSize:10px; color:#9E9E9E;">{{ c.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+              <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.22em; textTransform:uppercase; color:#9E9E9E;">Últimos lançamentos</span>
+              <sc-for list="{{ lancamentos }}" as="l" hint-placeholder-count="5">
+                <div style="display:flex; flexWrap:wrap; alignItems:center; gap:12px; padding:14px 0; borderTop:1px solid #2A2A2A; marginTop:14px;">
+                  <span style="fontSize:14px; color:#A3A3A3; width:60px;">{{ l.date }}</span>
+                  <span style="flex:1 1 180px; fontSize:15px; color:#FFFFFF; minWidth:0;">{{ l.desc }}</span>
+                  <span style="fontSize:13px; color:#A3A3A3; width:90px;">{{ l.method }}</span>
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:16px; color:#FFFFFF; marginLeft:auto;">{{ l.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabClientes }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+            <div style="display:flex; flexWrap:wrap; alignItems:center; justifyContent:space-between; gap:12px; marginBottom:20px;">
+              <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">Clientes</h2>
+              <input value="{{ clientQuery }}" onChange="{{ onClientQuery }}" placeholder="Buscar por nome" style="minHeight:44px; minWidth:220px; padding:0 14px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:14px; fontFamily:'Archivo',sans-serif;" />
+            </div>
+            <sc-for list="{{ clients }}" as="c" hint-placeholder-count="6">
+              <div style="display:flex; flexWrap:wrap; alignItems:center; gap:14px; padding:14px 0; borderTop:1px solid #2A2A2A;">
+                <span style="width:38px; height:38px; flexShrink:0; borderRadius:50%; display:flex; alignItems:center; justifyContent:center; background:#1A1A1A; border:1px solid #2A2A2A; fontFamily:'Oswald',sans-serif; fontSize:14px; color:#E0E0E0;">{{ c.initial }}</span>
+                <span style="flex:1 1 160px; minWidth:0;">
+                  <span style="display:block; fontSize:15px; color:#FFFFFF;">{{ c.name }}</span>
+                  <span style="display:block; fontSize:13px; color:#A3A3A3;">{{ c.phone }}</span>
+                </span>
+                <span style="fontSize:13px; color:#A3A3A3; width:100px;">{{ c.visits }} visitas</span>
+                <span style="fontSize:13px; color:#A3A3A3; width:110px;">Última: {{ c.last }}</span>
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:16px; color:#FFFFFF; marginLeft:auto;">{{ c.total }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabProdutos }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+            <h2 style="margin:0 0 20px; fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">Produtos e estoque</h2>
+            <sc-for list="{{ products }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex; flexWrap:wrap; alignItems:center; gap:14px; padding:14px 0; borderTop:1px solid #2A2A2A;">
+                <span style="flex:1 1 200px; fontSize:15px; color:#FFFFFF; minWidth:0;">{{ p.name }}</span>
+                <span style="fontSize:11px; letterSpacing:0.14em; textTransform:uppercase; color:{{ p.fg }}; border:1px solid {{ p.bc }}; padding:5px 10px; borderRadius:999px;">{{ p.status }}</span>
+                <span style="display:flex; alignItems:center; gap:8px;">
+                  <button onClick="{{ p.dec }}" style="width:36px; height:36px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer; fontSize:16px;" style-hover="borderColor:#E0E0E0">−</button>
+                  <span style="fontFamily:'Oswald',sans-serif; fontSize:18px; color:#FFFFFF; width:38px; textAlign:center;">{{ p.stock }}</span>
+                  <button onClick="{{ p.inc }}" style="width:36px; height:36px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; cursor:pointer; fontSize:16px;" style-hover="borderColor:#E0E0E0">+</button>
+                </span>
+                <span style="fontFamily:'Oswald',sans-serif; fontSize:16px; color:#FFFFFF; width:96px; textAlign:right;">{{ p.price }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabServicos }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+            <div style="display:flex; flexWrap:wrap; alignItems:baseline; justifyContent:space-between; gap:12px; marginBottom:8px;">
+              <h2 style="margin:0; fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">Serviços e preços</h2>
+              <span style="fontSize:13px; color:#A3A3A3;">As alterações aparecem no site na hora.</span>
+            </div>
+            <sc-for list="{{ adminServices }}" as="s" hint-placeholder-count="8">
+              <div style="display:flex; flexWrap:wrap; alignItems:center; gap:10px; padding:12px 0; borderTop:1px solid #2A2A2A;">
+                <input value="{{ s.name }}" onChange="{{ s.onName }}" style="flex:1 1 240px; minHeight:44px; padding:0 12px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:15px; fontFamily:'Archivo',sans-serif; minWidth:0;" />
+                <input value="{{ s.dur }}" onChange="{{ s.onDur }}" style="width:110px; minHeight:44px; padding:0 12px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#A3A3A3; fontSize:14px; fontFamily:'Archivo',sans-serif;" />
+                <input value="{{ s.price }}" onChange="{{ s.onPrice }}" style="width:120px; minHeight:44px; padding:0 12px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:15px; fontFamily:'Oswald',sans-serif;" />
+                <button onClick="{{ s.onRemove }}" style="minHeight:44px; padding:0 14px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.16em; textTransform:uppercase; cursor:pointer;" style-hover="color:#FFFFFF; borderColor:#E0E0E0">Remover</button>
+              </div>
+            </sc-for>
+            <button onClick="{{ addService }}" style="marginTop:20px; minHeight:48px; padding:0 24px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:12px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Adicionar serviço</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabGaleria }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+            <h2 style="margin:0 0 20px; fontFamily:'Oswald',sans-serif; fontSize:24px; fontWeight:600; letterSpacing:0.06em; textTransform:uppercase; color:#FFFFFF;">Fotos da galeria</h2>
+            <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;">
+              <sc-for list="{{ adminPhotos }}" as="p" hint-placeholder-count="3">
+                <div style="position:relative; border:1px solid #2A2A2A; borderRadius:8px; overflow:hidden; height:150px;">
+                  <img src="{{ p.src }}" loading="lazy" alt="" style="width:100%; height:100%; objectFit:cover;" />
+                  <button onClick="{{ p.onRemove }}" style="position:absolute; right:8px; top:8px; minHeight:34px; padding:0 12px; borderRadius:8px; background:rgba(10,10,10,0.86); border:1px solid #2A2A2A; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:11px; letterSpacing:0.14em; textTransform:uppercase; cursor:pointer;" style-hover="borderColor:#E0E0E0">Remover</button>
+                </div>
+              </sc-for>
+              <button onClick="{{ addPhoto }}" style="height:150px; borderRadius:8px; border:1px dashed #3A3A3A; background:#1A1A1A; color:#A3A3A3; cursor:pointer; display:flex; flexDirection:column; alignItems:center; justifyContent:center; gap:8px; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.16em; textTransform:uppercase;" style-hover="borderColor:#E0E0E0; color:#FFFFFF">
+                <span style="fontSize:26px; lineHeight:1;">+</span>
+                Adicionar foto
+              </button>
+            </div>
+            <p style="margin:18px 0 0; fontSize:13px; color:#9E9E9E;">No site publicado este botão abre o seletor de arquivos do dispositivo.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tabBarbeiros }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; gridTemplateColumns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
+            <sc-for list="{{ adminBarbers }}" as="b" hint-placeholder-count="2">
+              <div style="background:#141414; border:1px solid #2A2A2A; borderRadius:8px; padding:28px;">
+                <div style="display:flex; alignItems:center; gap:14px;">
+                  <span style="width:48px; height:48px; borderRadius:50%; display:flex; alignItems:center; justifyContent:center; background:#1A1A1A; border:1px solid #2A2A2A; fontFamily:'Pirata One',serif; fontSize:24px; color:#E0E0E0;">{{ b.initial }}</span>
+                  <span>
+                    <span style="display:block; fontFamily:'Oswald',sans-serif; fontSize:20px; letterSpacing:0.08em; textTransform:uppercase; color:#FFFFFF;">{{ b.name }}</span>
+                    <span style="display:block; fontSize:13px; color:#A3A3A3;">{{ b.meta }}</span>
+                  </span>
+                </div>
+                <div style="marginTop:20px; display:flex; flexDirection:column;">
+                  <sc-for list="{{ b.hours }}" as="h" hint-placeholder-count="3">
+                    <div style="display:flex; alignItems:center; justifyContent:space-between; gap:12px; padding:12px 0; borderTop:1px solid #2A2A2A;">
+                      <span style="fontSize:15px; color:#FFFFFF;">{{ h.day }}</span>
+                      <button onClick="{{ h.onToggle }}" style="minHeight:38px; padding:0 14px; borderRadius:999px; cursor:pointer; background:{{ h.bg }}; border:1px solid {{ h.bc }}; color:{{ h.fg }}; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.12em;">{{ h.time }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ authPhase }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed; inset:0; zIndex:120; background:rgba(5,5,5,0.9); backdropFilter:blur(8px); display:flex; alignItems:center; justifyContent:center; padding:24px; overflowY:auto;">
+    <div style="width:100%; maxWidth:440px; background:#141414; border:1px solid #2A2A2A; borderRadius:8px; boxShadow:0 40px 90px rgba(0,0,0,0.8); padding:32px; position:relative; animation:dcUp 400ms ease both;">
+      <button onClick="{{ closeAuth }}" aria-label="Fechar" style="position:absolute; right:14px; top:14px; width:40px; height:40px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; cursor:pointer; fontSize:16px;" style-hover="color:#FFFFFF; borderColor:#E0E0E0">×</button>
+      <span style="fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.3em; textTransform:uppercase; color:#9E9E9E;">{{ authEyebrow }}</span>
+      <h3 style="margin:12px 0 8px; fontFamily:'Oswald',sans-serif; fontSize:26px; fontWeight:600; letterSpacing:0.04em; textTransform:uppercase; color:#FFFFFF;">{{ authTitle }}</h3>
+      <p style="margin:0 0 24px; fontSize:15px; color:#A3A3A3;">{{ authLead }}</p>
+
+      <sc-if value="{{ phaseDados }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flexDirection:column; gap:14px;">
+          <label style="display:flex; flexDirection:column; gap:8px;">
+            <span style="fontSize:13px; color:#A3A3A3;">Nome</span>
+            <input value="{{ formName }}" onChange="{{ onFormName }}" placeholder="Seu nome" style="minHeight:52px; padding:0 14px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:16px; fontFamily:'Archivo',sans-serif;" />
+          </label>
+          <label style="display:flex; flexDirection:column; gap:8px;">
+            <span style="fontSize:13px; color:#A3A3A3;">Celular com DDD</span>
+            <input value="{{ formPhone }}" onChange="{{ onFormPhone }}" placeholder="(18) 99730-7852" style="minHeight:52px; padding:0 14px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontSize:16px; fontFamily:'Archivo',sans-serif;" />
+          </label>
+          <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+            <span style="fontSize:13px; color:#FFFFFF; background:#1A1A1A; border:1px solid #3A3A3A; borderRadius:8px; padding:10px 12px;">{{ authError }}</span>
+          </sc-if>
+          <button onClick="{{ sendCode }}" style="minHeight:54px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Enviar código por SMS</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ phaseCodigo }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flexDirection:column; gap:14px;">
+          <label style="display:flex; flexDirection:column; gap:8px;">
+            <span style="fontSize:13px; color:#A3A3A3;">Código de 4 dígitos</span>
+            <input value="{{ formCode }}" onChange="{{ onFormCode }}" placeholder="0000" style="minHeight:56px; padding:0 16px; borderRadius:8px; background:#1A1A1A; border:1px solid #2A2A2A; color:#FFFFFF; fontFamily:'Oswald',sans-serif; fontSize:26px; letterSpacing:0.5em; textAlign:center;" />
+          </label>
+          <span style="fontSize:13px; color:#9E9E9E;">Demonstração: use o código 2024.</span>
+          <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+            <span style="fontSize:13px; color:#FFFFFF; background:#1A1A1A; border:1px solid #3A3A3A; borderRadius:8px; padding:10px 12px;">{{ authError }}</span>
+          </sc-if>
+          <button onClick="{{ verifyCode }}" style="minHeight:54px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Confirmar e agendar</button>
+          <button onClick="{{ backToDados }}" style="minHeight:44px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; cursor:pointer;" style-hover="color:#FFFFFF">Corrigir número</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ phaseOk }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flexDirection:column; gap:14px;">
+          <div style="background:#1A1A1A; border:1px solid #2A2A2A; borderRadius:8px; padding:18px; display:flex; flexDirection:column; gap:10px;">
+            <sc-for list="{{ summary }}" as="r" hint-placeholder-count="5">
+              <div style="display:flex; alignItems:baseline; justifyContent:space-between; gap:12px;">
+                <span style="fontSize:13px; color:#A3A3A3;">{{ r.k }}</span>
+                <span style="fontSize:14px; textAlign:right; color:#FFFFFF; fontFamily:'Oswald',sans-serif; letterSpacing:0.06em;">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ goCliente }}" style="minHeight:54px; borderRadius:8px; background:linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%); border:0; color:#0A0A0A; fontFamily:'Oswald',sans-serif; fontSize:13px; fontWeight:600; letterSpacing:0.2em; textTransform:uppercase; cursor:pointer;" style-hover="filter:brightness(1.12)">Ver minha conta</button>
+          <button onClick="{{ closeAuth }}" style="minHeight:44px; borderRadius:8px; background:transparent; border:1px solid #2A2A2A; color:#A3A3A3; fontFamily:'Oswald',sans-serif; fontSize:12px; letterSpacing:0.18em; textTransform:uppercase; cursor:pointer;" style-hover="color:#FFFFFF">Voltar ao site</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+const R = (id, path) => (typeof window !== 'undefined' && window.__resources && window.__resources[id]) || path;
+const IMG = {
+  corte1: R('corte1', 'img/corte-01.jpg'), corte2: R('corte2', 'img/corte-02.jpg'),
+  corte3: R('corte3', 'img/corte-03.jpg'), corte4: R('corte4', 'img/corte-04.jpg'),
+  hero: 'img/hero.jpg',
+  corte5: 'img/corte-05.png', corte6: 'img/corte-06.png', corte7: 'img/corte-07.png',
+  barba: R('barba', 'img/barba.jpg'),
+  salao1: R('salao1', 'img/salao-01.jpg'), salao2: R('salao2', 'img/salao-02.jpg'),
+  salao3: R('salao3', 'img/salao-03.jpg'), salao4: R('salao4', 'img/salao-04.jpg'),
+  salao5: R('salao5', 'img/salao-05.jpg'),
+};
+const SILVER = 'linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)';
+const SERVICES = [
+  { id: 'barba-terapia', name: 'Barba terapia', dur: '40min', price: 'R$ 50,00', bio: "Toalha quente, vapor, óleo e massagem antes da navalha. Termina com balm calmante." },
+  { id: 'barba-tradicional', name: 'Barba tradicional completa', dur: '30min', price: 'R$ 45,00', bio: "Desenho do contorno e navalha na toalha quente, sem a etapa de terapia." },
+  { id: 'bigode', name: 'Bigode', dur: '10min', price: 'R$ 10,00', bio: "Aparo e alinhamento só do bigode, na tesoura e navalha." },
+  { id: 'corte', name: 'Corte', dur: '50min', price: 'R$ 45,00', bio: "Máquina e tesoura, do fade ao social, com finalização e acabamento na navalha." },
+  { id: 'corte-barba-terapia', name: 'Corte + barba terapia', dur: '1h:20min', price: 'R$ 95,00', bio: "O combo da casa: corte completo mais a barba terapia com toalha quente." },
+  { id: 'corte-barba-terapia-sobrancelha', name: 'Corte + barba terapia + sobrancelha', dur: '1h:20min', price: 'R$ 100,00', bio: "Corte, barba terapia e limpeza da sobrancelha no mesmo atendimento." },
+  { id: 'corte-barba-tradicional', name: 'Corte + barba tradicional', dur: '1h:10min', price: 'R$ 80,00', bio: "Corte completo mais barba na navalha, sem a etapa de vapor." },
+  { id: 'corte-barba-tradicional-sobrancelha', name: 'Corte + barba tradicional + sobrancelha', dur: '1h:10min', price: 'R$ 85,00', bio: "Corte, barba tradicional e sobrancelha alinhada." },
+  { id: 'corte-bigode', name: 'Corte + bigode', dur: '1h:00min', price: 'R$ 55,00', bio: "Corte completo com o bigode aparado e desenhado." },
+  { id: 'corte-bigode-sobrancelha', name: 'Corte + bigode + sobrancelha', dur: '1h:00min', price: 'R$ 60,00', bio: "Corte, bigode e sobrancelha no mesmo horário." },
+  { id: 'corte-sobrancelha', name: 'Corte + sobrancelha', dur: '50min', price: 'R$ 50,00', bio: "Corte completo com a sobrancelha limpa na navalha." },
+  { id: 'corte-infantil', name: 'Corte infantil', dur: '50min', price: 'R$ 45,00', bio: "Corte para crianças, com paciência e no tempo delas." },
+  { id: 'luzes', name: 'Luzes', dur: '4h:00min', price: 'R$ 150,00', bio: "Descoloração em mechas para dar contraste, com matização no fim." },
+  { id: 'pezinho', name: 'Pezinho', dur: '05min', price: 'R$ 25,00', bio: "Retoque rápido da nuca e das costeletas entre um corte e outro." },
+  { id: 'platinado', name: 'Platinado', dur: '5h:00min', price: 'R$ 200,00', bio: "Descoloração global até o loiro platinado, com matização e cuidado no couro." },
+  { id: 'relaxamento', name: 'Relaxamento ( alisamento )', dur: '30min', price: 'R$ 50,00', bio: "Alisamento químico para reduzir volume e frizz." },
+  { id: 'sobrancelha', name: 'Sobrancelha', dur: '05min', price: 'R$ 15,00', bio: "Limpeza e desenho da sobrancelha na navalha." },
+];
+const BARBERS = [
+  { id: 'daniel', name: 'Daniel', meta: 'Fundador', initial: 'D', photo: 'img/daniel.png', insta: '@danielconde_barbeiro', gallery: ['img/daniel.png', 'img/daniel-02.png'] },
+  { id: 'joao', name: 'João Lima', meta: 'Barbeiro', initial: 'J', photo: 'img/joao.jpg', insta: '@joaocabelu', gallery: ['img/joao.jpg', 'img/joao-02.png', 'img/joao-03.png'] },
+];
+const PHOTOS = [
+  { src: IMG.corte4, pos: 'center 30%', kind: 'autoral', label: 'Corte', service: 'Corte + sobrancelha', client: 'Gabriel M.', date: '06/09/2026 · Daniel' },
+  { src: IMG.corte1, pos: 'center 40%', kind: 'dia', label: 'Acabamento', service: 'Corte', client: 'Rafael P.', date: '05/09/2026 · João Lima' },
+  { src: IMG.corte3, pos: 'center 35%', kind: 'autoral', label: 'Mullet', service: 'Corte + barba tradicional', client: 'Nina R.', date: '03/09/2026 · Daniel' },
+  { src: IMG.corte2, pos: 'center 35%', kind: 'autoral', label: 'Coloração', service: 'Platinado com coloração', client: 'Théo A.', date: '30/08/2026 · Daniel' },
+  { src: IMG.barba, pos: 'center 35%', kind: 'dia', label: 'Barba terapia', service: 'Barba terapia', client: 'André N.', date: '28/08/2026 · João Lima' },
+  { src: IMG.corte7, pos: 'center 40%', kind: 'autoral', label: 'Coloração', service: 'Platinado com coloração', client: 'Kauê S.', date: '08/09/2026 · Daniel' },
+  { src: IMG.corte5, pos: 'center 45%', kind: 'dia', label: 'Taper fade', service: 'Corte', client: 'Enzo B.', date: '08/09/2026 · Daniel' },
+  { src: IMG.corte6, pos: 'center 35%', kind: 'dia', label: 'Mullet', service: 'Corte + sobrancelha', client: 'Matheus L.', date: '07/09/2026 · João Lima' },
+];
+const AMBIENTE = [
+  { src: IMG.hero, pos: 'center 58%', label: 'Salão' },
+  { src: IMG.salao5, pos: 'center 55%', label: 'Salão' },
+  { src: IMG.salao1, pos: 'center 55%', label: 'Cadeira' },
+  { src: IMG.salao2, pos: 'center 60%', label: 'Vitrine' },
+];
+const EXTRA_PHOTOS = [
+  { src: IMG.salao3, pos: 'center 55%', label: 'Cadeira' },
+  { src: IMG.salao2, pos: 'center 60%', label: 'Vitrine' },
+  { src: IMG.salao4, pos: 'center 60%', label: 'Espelho' },
+];
+const AGENDA = [
+  { time: '09:00', client: 'Rafael Prado', service: 'Corte + barba terapia', barber: 'Daniel', price: 'R$ 95,00', status: 'Concluído' },
+  { time: '10:20', client: 'Vitor Salles', service: 'Corte', barber: 'João Lima', price: 'R$ 45,00', status: 'Concluído' },
+  { time: '11:30', client: 'André Nunes', service: 'Barba tradicional completa', barber: 'Daniel', price: 'R$ 45,00', status: 'Em atendimento' },
+  { time: '13:30', client: 'Caio Ferraz', service: 'Corte + sobrancelha', barber: 'João Lima', price: 'R$ 50,00', status: 'Confirmado' },
+  { time: '15:00', client: 'Bruno Tavares', service: 'Platinado', barber: 'Daniel', price: 'R$ 200,00', status: 'Confirmado' },
+  { time: '18:00', client: 'Léo Martins', service: 'Corte + bigode', barber: 'João Lima', price: 'R$ 55,00', status: 'Aguardando' },
+];
+const CLIENTS = [
+  { name: 'Rafael Prado', phone: '(11) 98812-4410', visits: 14, last: '09/09', total: 'R$ 1.180' },
+  { name: 'Vitor Salles', phone: '(11) 99640-2231', visits: 9, last: '09/09', total: 'R$ 620' },
+  { name: 'André Nunes', phone: '(19) 98107-7742', visits: 6, last: '02/09', total: 'R$ 410' },
+  { name: 'Caio Ferraz', phone: '(11) 99552-3380', visits: 21, last: '28/08', total: 'R$ 1.740' },
+  { name: 'Bruno Tavares', phone: '(18) 99730-1188', visits: 3, last: '21/08', total: 'R$ 340' },
+  { name: 'Léo Martins', phone: '(11) 98330-9021', visits: 11, last: '15/08', total: 'R$ 890' },
+];
+const LANC = [
+  { date: '09/09', desc: 'Corte + barba terapia · Rafael Prado', method: 'Pix', value: 'R$ 95,00' },
+  { date: '09/09', desc: 'Corte · Vitor Salles', method: 'Crédito', value: 'R$ 45,00' },
+  { date: '08/09', desc: 'Pomada modeladora', method: 'Débito', value: 'R$ 48,00' },
+  { date: '08/09', desc: 'Platinado · Bruno Tavares', method: 'Pix', value: 'R$ 200,00' },
+  { date: '07/09', desc: 'Corte infantil · Théo', method: 'Dinheiro', value: 'R$ 45,00' },
+];
+const HISTORY = [
+  { date: '21/08', service: 'Corte + barba terapia', barber: 'Daniel', price: 'R$ 95,00' },
+  { date: '31/07', service: 'Corte + sobrancelha', barber: 'Daniel', price: 'R$ 50,00' },
+  { date: '10/07', service: 'Corte', barber: 'João Lima', price: 'R$ 45,00' },
+  { date: '19/06', service: 'Corte + barba tradicional', barber: 'Daniel', price: 'R$ 80,00' },
+  { date: '28/05', service: 'Pezinho', barber: 'João Lima', price: 'R$ 25,00' },
+];
+const CHART = [320, 480, 260, 610, 540, 720, 900, 410, 480, 660, 780, 950];
+const TABS = [
+  { id: 'agenda', name: 'Agenda do dia' },
+  { id: 'fin', name: 'Financeiro' },
+  { id: 'clientes', name: 'Clientes' },
+  { id: 'produtos', name: 'Produtos' },
+  { id: 'servicos', name: 'Serviços' },
+  { id: 'galeria', name: 'Galeria' },
+  { id: 'barbeiros', name: 'Barbeiros' },
+];
+const DAYS_LABELS = ['Seg a sex', 'Sábado', 'Domingo'];
+const TIMES = ['09:00', '10:00', '11:00', '13:30', '14:30', '15:30', '16:30', '18:00', '19:00'];
+const BOOKING = 'https://agendeonline.salonsoft.com.br/dcondebarbearia';
+const WHATS = 'https://wa.me/5518997307852?text=Ol%C3%A1%2C%20quero%20agendar%20um%20hor%C3%A1rio%20na%20D%27Conde';
+
+class Component extends DCLogic {
+  track = React.createRef();
+  galA = React.createRef();
+  galB = React.createRef();
+  slide(ref, dir) {
+    const el = ref.current || document.querySelector('[data-gal]');
+    if (!el) return;
+    const first = el.firstElementChild;
+    const step = first ? first.getBoundingClientRect().width + 16 : el.clientWidth * 0.8;
+    const max = el.scrollWidth - el.clientWidth;
+    const next = Math.max(0, Math.min(max, el.scrollLeft + step * dir));
+    const a = this._as_gal;
+    if (a) a.pos = next;
+    el.scrollLeft = next;
+  }
+  state = {
+    service: 'corte-barba-terapia', barber: 'daniel', day: 12, month: 8, year: 2026, time: '14:30', bookStep: 1,
+    scrolled: false, menuOpen: false, lightbox: null,
+    narrow: typeof window !== 'undefined' && window.innerWidth < 900,
+    view: 'site', authPhase: null, authError: null, afterAuth: 'cliente',
+    form: { name: '', phone: '', code: '' },
+    user: null, booked: null,
+    adminTab: 'agenda', clientQuery: '',
+    services: SERVICES.map((s) => ({ ...s })),
+    photos: PHOTOS.map((p) => ({ ...p })),
+    extra: EXTRA_PHOTOS.map((p) => ({ ...p })),
+    products: [
+      { name: 'Pomada modeladora efeito matte', stock: 12, price: 'R$ 48,00', cat: 'Cabelo' },
+      { name: 'Óleo para barba 30ml', stock: 4, price: 'R$ 39,00', cat: 'Barba' },
+      { name: 'Shampoo antirresíduo', stock: 7, price: 'R$ 42,00', cat: 'Cabelo' },
+      { name: 'Balm pós-barba', stock: 0, price: 'R$ 35,00', cat: 'Pele' },
+      { name: 'Talco barbeiro', stock: 19, price: 'R$ 18,00', cat: 'Pele' },
+      { name: 'Cera capilar fixação forte', stock: 9, price: 'R$ 52,00', cat: 'Cabelo' },
+    ],
+    cart: {}, shopQuery: '', shopCat: 'Todos',
+    hours: {
+      daniel: [{ day: 'Seg a sex', time: '09:00 — 20:00', on: true }, { day: 'Sábado', time: '08:00 — 18:00', on: true }, { day: 'Domingo', time: 'Fechado', on: false }],
+      joao: [{ day: 'Seg a sex', time: '10:00 — 20:00', on: true }, { day: 'Sábado', time: '08:00 — 18:00', on: true }, { day: 'Domingo', time: 'Fechado', on: false }],
+    },
+  };
+
+  componentDidMount() {
+    this._bpTick = 0;
+    this._bpTimer = setInterval(() => {
+      this._bpTick += 1;
+      BARBERS.forEach((b) => {
+        const list = b.gallery || [b.photo];
+        if (list.length < 2) return;
+        const img = document.querySelector('[data-bphoto="' + b.id + '"]');
+        if (!img) return;
+        img.style.opacity = '0';
+        setTimeout(() => { img.src = list[this._bpTick % list.length]; img.style.opacity = '1'; }, 320);
+      });
+    }, 4200);
+    this._onResize = () => {
+      const n = window.innerWidth < 900;
+      if (n !== this.state.narrow) this.setState({ narrow: n, menuOpen: false });
+    };
+    window.addEventListener('resize', this._onResize, { passive: true });
+    this._onResize();
+    if (typeof ResizeObserver !== 'undefined') {
+      this._ro = new ResizeObserver(() => this._onResize());
+      this._ro.observe(document.documentElement);
+    }
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => this._onResize());
+    this._sizeTimers = [150, 500, 1500].map((ms) => setTimeout(() => this._onResize(), ms));
+    this._onScroll = () => {
+      const s = window.scrollY > 40;
+      if (s !== this.state.scrolled) this.setState({ scrolled: s });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+
+    this.autoScroll('track', () => this.track.current || document.querySelector('[data-track]'), 0.45);
+    this.autoScroll('gal', () => this.galA.current || document.querySelector('[data-gal]'), 0.4, true);
+  }
+
+  autoScroll(key, get, speed, loop) {
+    const state = this['_as_' + key] = { pos: 0, paused: false, bound: null, max: 0, last: 0 };
+    const p = () => { state.paused = true; };
+    const r = () => { state.paused = false; };
+    state.detach = null;
+    const measure = (el) => {
+      state.max = loop ? el.scrollWidth / 2 : Math.max(0, el.scrollWidth - el.clientWidth);
+    };
+    const step = (now) => {
+      state.raf = requestAnimationFrame(step);
+      const el = get();
+      if (!el) return;
+      if (state.bound !== el) {
+        if (state.detach) state.detach();
+        state.bound = el;
+        state.pos = el.scrollLeft;
+        el.addEventListener('pointerenter', p);
+        el.addEventListener('pointerleave', r);
+        el.addEventListener('pointerdown', p);
+        el.addEventListener('touchstart', p, { passive: true });
+        state.detach = () => {
+          el.removeEventListener('pointerenter', p);
+          el.removeEventListener('pointerleave', r);
+          el.removeEventListener('pointerdown', p);
+          el.removeEventListener('touchstart', p);
+        };
+        measure(el);
+      }
+      if (state.paused) return;
+      if (now - state.last > 1000) { measure(el); state.last = now; }
+      if (state.max <= 0) return;
+      state.pos = state.pos + speed;
+      if (state.pos >= state.max) state.pos = loop ? state.pos - state.max : 0;
+      el.scrollLeft = state.pos;
+    };
+    state.raf = requestAnimationFrame(step);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onResize);
+    ['track', 'gal'].forEach((k) => { const a = this['_as_' + k]; if (a) { if (a.raf) cancelAnimationFrame(a.raf); if (a.detach) a.detach(); } });
+    if (this._bpTimer) clearInterval(this._bpTimer);
+    if (this._ro) this._ro.disconnect();
+    (this._sizeTimers || []).forEach(clearTimeout);
+  }
+
+  sel(a, b) { return a ? { bg: 'rgba(255,255,255,0.07)', bc: '#E0E0E0' } : { bg: '#1A1A1A', bc: '#2A2A2A' }; }
+
+  appVals(st, svc, brb, dateStr) {
+    const up = (patch) => this.setState(patch);
+    const setForm = (k, v) => this.setState({ form: { ...st.form, [k]: v }, authError: null });
+    const user = st.user;
+    const booked = st.booked;
+    const maxChart = Math.max.apply(null, CHART);
+
+    const openAuth = (after) => this.setState({ authPhase: user ? null : 'dados', view: user && after === 'cliente' ? 'cliente' : st.view, afterAuth: after || 'cliente', authError: null });
+
+    return {
+      isSite: st.view === 'site',
+      isCliente: st.view === 'cliente',
+      isPainel: st.view === 'painel',
+      goSite: () => up({ view: 'site', menuOpen: false }),
+      goPainel: () => up({ view: 'painel', menuOpen: false }),
+      goCliente: () => up({ view: 'cliente', authPhase: null, menuOpen: false }),
+      accountLabel: user ? 'Minha conta' : 'Entrar',
+      openAccount: () => (user ? up({ view: 'cliente', menuOpen: false }) : openAuth('cliente')),
+      openBooking: () => (user ? up({ view: 'cliente', booked: { service: svc.name, barber: brb ? brb.name : '—', date: dateStr, time: st.time, price: svc.price }, menuOpen: false }) : openAuth('cliente')),
+      logout: () => up({ user: null, view: 'site', form: { name: '', phone: '', code: '' } }),
+
+      authPhase: st.authPhase,
+      phaseDados: st.authPhase === 'dados',
+      phaseCodigo: st.authPhase === 'codigo',
+      phaseOk: st.authPhase === 'ok',
+      authError: st.authError,
+      authEyebrow: st.authPhase === 'ok' ? 'Agendamento confirmado' : 'Acesso do cliente',
+      authTitle: st.authPhase === 'dados' ? 'Seus dados' : st.authPhase === 'codigo' ? 'Código enviado' : 'Tudo certo',
+      authLead: st.authPhase === 'dados'
+        ? 'Enviamos um código por SMS para confirmar seu número. Na primeira vez, isso cria seu cadastro.'
+        : st.authPhase === 'codigo'
+          ? 'Digite o código que enviamos para ' + (st.form.phone || 'seu celular') + '.'
+          : 'Guardamos seu agendamento e o histórico na sua conta.',
+      formName: st.form.name,
+      formPhone: st.form.phone,
+      formCode: st.form.code,
+      onFormName: (e) => setForm('name', e.target.value),
+      onFormPhone: (e) => setForm('phone', e.target.value),
+      onFormCode: (e) => setForm('code', e.target.value),
+      closeAuth: () => up({ authPhase: null, authError: null }),
+      backToDados: () => up({ authPhase: 'dados', authError: null }),
+      sendCode: () => {
+        const digits = (st.form.phone || '').replace(/\D/g, '');
+        if (!st.form.name.trim()) return up({ authError: 'Digite seu nome.' });
+        if (digits.length < 10) return up({ authError: 'Digite o celular com DDD.' });
+        up({ authPhase: 'codigo', authError: null });
+      },
+      verifyCode: () => {
+        if ((st.form.code || '').replace(/\D/g, '') !== '2024') return up({ authError: 'Código inválido. Use 2024 nesta demonstração.' });
+        up({
+          user: { name: st.form.name.trim(), phone: st.form.phone.trim() },
+          booked: { service: svc.name, barber: brb ? brb.name : '—', date: dateStr, time: st.time, price: svc.price },
+          authPhase: 'ok', authError: null,
+        });
+      },
+
+      userName: user ? user.name : '',
+      userPhone: user ? user.phone : '',
+      onName: (e) => up({ user: { ...user, name: e.target.value } }),
+      onPhone: (e) => up({ user: { ...user, phone: e.target.value } }),
+      salvarDados: () => up({ authError: null }),
+      nextStatus: booked ? 'Confirmado' : 'Sem horário',
+      nextService: booked ? booked.service : 'Nenhum agendamento ativo',
+      nextRows: booked
+        ? [{ k: 'Barbeiro', v: booked.barber }, { k: 'Data', v: booked.date }, { k: 'Horário', v: booked.time }, { k: 'Valor', v: booked.price }]
+        : [{ k: 'Barbeiro', v: '—' }, { k: 'Data', v: '—' }, { k: 'Horário', v: '—' }, { k: 'Valor', v: '—' }],
+      remarcar: () => up({ view: 'site' }),
+      cancelar: () => up({ booked: null }),
+      lastService: HISTORY[0].service,
+      lastMeta: HISTORY[0].barber + ' · ' + HISTORY[0].date + ' · ' + HISTORY[0].price,
+      repetir: () => up({ booked: { service: HISTORY[0].service, barber: HISTORY[0].barber, date: dateStr, time: st.time, price: HISTORY[0].price } }),
+      history: HISTORY,
+
+      panelDir: st.narrow ? 'column' : 'row',
+      tabsDir: st.narrow ? 'row' : 'column',
+      tabsWidth: st.narrow ? '100%' : '210px',
+      tabs: TABS.map((t) => {
+        const on = st.adminTab === t.id;
+        return { name: t.name, bg: on ? 'rgba(255,255,255,0.07)' : 'transparent', bc: on ? '#E0E0E0' : '#2A2A2A', fg: on ? '#FFFFFF' : '#A3A3A3', onClick: () => up({ adminTab: t.id }) };
+      }),
+      tabAgenda: st.adminTab === 'agenda',
+      tabFin: st.adminTab === 'fin',
+      tabClientes: st.adminTab === 'clientes',
+      tabProdutos: st.adminTab === 'produtos',
+      tabServicos: st.adminTab === 'servicos',
+      tabGaleria: st.adminTab === 'galeria',
+      tabBarbeiros: st.adminTab === 'barbeiros',
+
+      agenda: AGENDA.map((a) => ({
+        ...a,
+        statusFg: a.status === 'Em atendimento' ? '#FFFFFF' : '#A3A3A3',
+        statusBc: a.status === 'Em atendimento' ? '#E0E0E0' : '#2A2A2A',
+      })),
+      agendaCount: String(AGENDA.length),
+      kpis: [
+        { label: 'Faturamento do mês', value: 'R$ 7.110', note: '+18% vs. agosto' },
+        { label: 'Ticket médio', value: 'R$ 74', note: '96 atendimentos' },
+        { label: 'Hoje', value: 'R$ 490', note: '6 atendimentos' },
+        { label: 'Produtos vendidos', value: 'R$ 612', note: '13 itens no mês' },
+      ],
+      chart: CHART.map((v, i) => ({ h: Math.round((v / maxChart) * 100) + '%', op: i === CHART.length - 1 ? '1' : '0.6', label: String(i * 2 + 1) })),
+      lancamentos: LANC,
+      clientQuery: st.clientQuery,
+      onClientQuery: (e) => up({ clientQuery: e.target.value }),
+      clients: CLIENTS.filter((c) => c.name.toLowerCase().includes((st.clientQuery || '').toLowerCase())).map((c) => ({ ...c, initial: c.name.charAt(0) })),
+      products: st.products.map((p, i) => {
+        const low = p.stock === 0 ? 'Esgotado' : p.stock <= 5 ? 'Baixo' : 'Em estoque';
+        const setStock = (d) => {
+          const next = st.products.map((q, j) => (i === j ? { ...q, stock: Math.max(0, q.stock + d) } : q));
+          up({ products: next });
+        };
+        return { ...p, status: low, fg: p.stock <= 5 ? '#FFFFFF' : '#A3A3A3', bc: p.stock <= 5 ? '#E0E0E0' : '#2A2A2A', inc: () => setStock(1), dec: () => setStock(-1) };
+      }),
+      adminServices: st.services.map((s, i) => {
+        const edit = (k) => (e) => up({ services: st.services.map((q, j) => (i === j ? { ...q, [k]: e.target.value } : q)) });
+        return { ...s, onName: edit('name'), onDur: edit('dur'), onPrice: edit('price'), onRemove: () => up({ services: st.services.filter((q, j) => j !== i) }) };
+      }),
+      addService: () => up({ services: st.services.concat([{ id: 'novo-' + Date.now(), name: 'Novo serviço', dur: '30min', price: 'R$ 0,00' }]) }),
+      adminPhotos: st.photos.map((p, i) => ({ ...p, onRemove: () => up({ photos: st.photos.filter((q, j) => j !== i) }) })),
+      addPhoto: () => {
+        if (!st.extra.length) return;
+        up({ photos: st.photos.concat([st.extra[0]]), extra: st.extra.slice(1) });
+      },
+      svcTrack: this.track,
+      svcPrev: () => { const el = this.track.current; if (el) el.scrollBy({ left: -(296 * 2), behavior: 'smooth' }); },
+      svcNext: () => { const el = this.track.current; if (el) el.scrollBy({ left: 296 * 2, behavior: 'smooth' }); },
+
+      shopCols: st.narrow ? '1fr' : 'minmax(0,1fr) 300px',
+      shopQuery: st.shopQuery,
+      onShopQuery: (e) => up({ shopQuery: e.target.value }),
+      shopCats: ['Todos', 'Cabelo', 'Barba', 'Pele'].map((name) => {
+        const on = st.shopCat === name;
+        return { name, bg: on ? 'rgba(255,255,255,0.08)' : 'transparent', bc: on ? '#E0E0E0' : '#2A2A2A', fg: on ? '#FFFFFF' : '#A3A3A3', onClick: () => up({ shopCat: name }) };
+      }),
+      shopProducts: st.products
+        .filter((p) => (st.shopCat === 'Todos' || p.cat === st.shopCat) && p.name.toLowerCase().includes((st.shopQuery || '').toLowerCase()))
+        .map((p) => {
+          const out = p.stock === 0;
+          return {
+            name: p.name, cat: p.cat, price: p.price, out,
+            slot: 'prod-' + p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            btn: out ? 'Esgotado' : 'Adicionar',
+            btnBg: out ? 'transparent' : SILVER,
+            btnBc: out ? '#2A2A2A' : '#FFFFFF',
+            btnFg: out ? '#9E9E9E' : '#0A0A0A',
+            cursor: out ? 'not-allowed' : 'pointer',
+            add: out ? () => {} : () => up({ cart: { ...st.cart, [p.name]: (st.cart[p.name] || 0) + 1 } }),
+          };
+        }),
+      shopCount: String(st.products.length),
+      cart: Object.keys(st.cart).map((name) => {
+        const p = st.products.find((q) => q.name === name) || { price: 'R$ 0,00' };
+        const val = parseFloat(p.price.replace('R$ ', '').replace('.', '').replace(',', '.')) * st.cart[name];
+        return {
+          name, qty: String(st.cart[name]),
+          sum: 'R$ ' + val.toFixed(2).replace('.', ','),
+          remove: () => { const next = { ...st.cart }; delete next[name]; up({ cart: next }); },
+        };
+      }),
+      cartEmpty: Object.keys(st.cart).length === 0,
+      cartTotal: 'R$ ' + Object.keys(st.cart).reduce((sum, name) => {
+        const p = st.products.find((q) => q.name === name);
+        return sum + (p ? parseFloat(p.price.replace('R$ ', '').replace('.', '').replace(',', '.')) * st.cart[name] : 0);
+      }, 0).toFixed(2).replace('.', ','),
+      cartWhats: 'https://wa.me/5518997307852?text=' + encodeURIComponent('Olá! Quero reservar: ' + (Object.keys(st.cart).map((n) => st.cart[n] + 'x ' + n).join(', ') || 'produtos da D\'Conde')),
+
+      adminBarbers: BARBERS.map((b) => ({
+        ...b,
+        hours: (st.hours[b.id] || []).map((h, i) => ({
+          day: h.day, time: h.time,
+          bg: h.on ? 'rgba(255,255,255,0.07)' : 'transparent',
+          bc: h.on ? '#E0E0E0' : '#2A2A2A',
+          fg: h.on ? '#FFFFFF' : '#9E9E9E',
+          onToggle: () => up({ hours: { ...st.hours, [b.id]: st.hours[b.id].map((q, j) => (i === j ? { ...q, on: !q.on, time: q.on ? 'Fechado' : (DAYS_LABELS[j] === 'Sábado' ? '08:00 — 18:00' : '09:00 — 20:00') } : q)) } }),
+        })),
+      })),
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const svc = st.services.find((s) => s.id === st.service) || st.services[0];
+    const brb = BARBERS.find((b) => b.id === st.barber);
+    const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const today = new Date(2026, 8, 9);
+    const dowOf = (d, m, y) => new Date(y, m, d).getDay();
+    const dow = dowOf(st.day, st.month, st.year);
+    const slotFor = (dw) => (dw === 6 ? 1 : dw === 0 ? 2 : 0);
+    const slotIdx = slotFor(dow);
+    const avail = (bid, d, m, y) => {
+      if (d == null) return null;
+      const si = slotFor(dowOf(d, m, y));
+      const row = (st.hours[bid] || [])[si];
+      if (!row || !row.on) return null;
+      const seed = bid.length + d + m;
+      const base = si === 1 ? ['08:00', '09:00', '10:00', '11:00', '13:30', '14:30', '15:30', '16:30'] : TIMES;
+      const list = base.filter((t, i) => (i + seed) % 3 !== 0);
+      return list.length ? list : null;
+    };
+    const brbFree = avail(st.barber, st.day, st.month, st.year);
+    const timeOk = !!(brbFree && st.time && brbFree.indexOf(st.time) >= 0);
+    const stepDone = [!!brb, !!svc, !!(st.day && timeOk), !!(svc && brb && timeOk)];
+    const pad = (n) => String(n).padStart(2, '0');
+    const dateStr = st.day ? pad(st.day) + '/' + pad(st.month + 1) + '/' + st.year : '—';
+
+    const daysInMonth = new Date(st.year, st.month + 1, 0).getDate();
+    const firstDow = dowOf(1, st.month, st.year);
+    const dayFree = (d) => {
+      if (st.barber) return !!avail(st.barber, d, st.month, st.year);
+      return BARBERS.some((b) => !!avail(b.id, d, st.month, st.year));
+    };
+    const days = [];
+    for (let i = 0; i < firstDow; i++) days.push({ label: '', disabled: true, cursor: 'default', bg: 'transparent', bc: 'transparent', fg: 'transparent', onClick: () => {} });
+    for (let d = 1; d <= daysInMonth; d++) {
+      const past = new Date(st.year, st.month, d) < today;
+      const off = past || !dayFree(d);
+      const on = st.day === d;
+      days.push({
+        label: String(d),
+        disabled: off,
+        cursor: off ? 'not-allowed' : 'pointer',
+        bg: on ? '#E0E0E0' : off ? 'transparent' : '#0A0A0A',
+        fg: on ? '#0A0A0A' : off ? '#3A3A3A' : '#FFFFFF',
+        bc: on ? '#FFFFFF' : off ? '#1F1F1F' : '#2A2A2A',
+        onClick: off ? () => {} : () => this.setState({ day: d }),
+      });
+    }
+    const jumpMonth = (delta) => {
+      let m = st.month + delta, y = st.year;
+      if (m < 0) { m = 11; y -= 1; }
+      if (m > 11) { m = 0; y += 1; }
+      const dim = new Date(y, m + 1, 0).getDate();
+      let pick = null;
+      for (let d = 1; d <= dim; d++) {
+        if (new Date(y, m, d) < today) continue;
+        const ok = st.barber ? !!avail(st.barber, d, m, y) : BARBERS.some((b) => !!avail(b.id, d, m, y));
+        if (ok) { pick = d; break; }
+      }
+      this.setState({ month: m, year: y, day: pick || 1 });
+    };
+    const minMonth = st.year === today.getFullYear() && st.month <= today.getMonth();
+    const cur = st.bookStep || 1;
+    const total = svc ? svc.price : '—';
+    const canNext = cur === 1 ? !!brb : cur === 2 ? !!svc : cur === 3 ? !!(brbFree && st.time && brbFree.indexOf(st.time) >= 0) : false;
+
+    return {
+      headerBg: st.scrolled ? 'rgba(10,10,10,0.82)' : 'transparent',
+      headerBlur: st.scrolled ? 'blur(14px)' : 'none',
+      headerBorder: st.scrolled ? '#2A2A2A' : 'transparent',
+      burgerDisplay: st.narrow ? 'flex' : 'none',
+      navDisplay: st.narrow ? 'none' : 'flex',
+      narrow: st.narrow,
+      waBottom: st.narrow ? '96px' : '20px',
+      perksCols: st.narrow ? 'repeat(2,minmax(0,1fr))' : 'repeat(4,minmax(0,1fr))',
+      heroPhotoW: st.narrow ? '100%' : '58%',
+      heroTextW: st.narrow ? '100%' : '46%',
+      heroFade: st.narrow
+        ? 'linear-gradient(180deg,rgba(10,10,10,0.72) 0%,rgba(10,10,10,0.86) 60%,#0A0A0A 100%)'
+        : 'linear-gradient(90deg,#0A0A0A 0%,rgba(10,10,10,0.92) 22%,rgba(10,10,10,0.35) 58%,rgba(10,10,10,0.25) 100%)',
+      footCols: st.narrow ? '1fr' : '1.5fr repeat(3,minmax(0,1fr))',
+      galleryCols: st.narrow ? 'repeat(2,minmax(0,1fr))' : 'repeat(3,minmax(0,1fr))',
+      menuOpen: st.menuOpen,
+      toggleMenu: () => this.setState({ menuOpen: !st.menuOpen }),
+      closeMenu: () => this.setState({ menuOpen: false }),
+      step1: cur === 1, step2: cur === 2, step3: cur === 3, step4: cur === 4,
+      svcCols: st.narrow ? '1fr' : 'repeat(2,minmax(0,1fr))',
+      stepBack: () => this.setState({ bookStep: Math.max(1, cur - 1) }),
+      stepNext: () => { if (canNext) this.setState({ bookStep: Math.min(4, cur + 1) }); },
+      backDisabled: cur === 1,
+      backColor: cur === 1 ? '#3A3A3A' : '#FFFFFF',
+      backCursor: cur === 1 ? 'not-allowed' : 'pointer',
+      showNext: cur < 4,
+      nextDisabled: !canNext,
+      nextBg: canNext ? SILVER : '#1F1F1F',
+      nextFg: canNext ? '#0A0A0A' : '#7A7A7A',
+      nextCursor: canNext ? 'pointer' : 'not-allowed',
+      stepHint: ['Passo 1 de 4', 'Passo 2 de 4', 'Passo 3 de 4', 'Passo 4 de 4'][cur - 1],
+      steps: ['Profissional', 'Serviço', 'Dia e horário', 'Confirmar'].map((name, i) => {
+        const n = i + 1;
+        const active = cur === n;
+        const done = stepDone[i] && !active;
+        const reachable = n <= cur || stepDone[i];
+        return {
+          n: String(n), name,
+          value: [brb ? brb.name : '—', svc ? svc.name : '—', dateStr + (st.time ? ' · ' + st.time : ''), total][i] || '',
+          bg: active || done ? SILVER : '#1A1A1A',
+          fg: active || done ? '#0A0A0A' : '#9E9E9E',
+          bc: active ? '#FFFFFF' : done ? '#E0E0E0' : '#2A2A2A',
+          label: active || done ? '#FFFFFF' : '#9E9E9E',
+          rowBg: active ? 'rgba(255,255,255,0.06)' : 'transparent',
+          cursor: reachable ? 'pointer' : 'not-allowed',
+          onClick: reachable ? () => this.setState({ bookStep: n }) : () => {},
+        };
+      }),
+      serviceOpts: st.services.map((s) => {
+        const on = st.service === s.id;
+        const c = this.sel(on);
+        return { name: s.name, meta: s.dur + ' · a partir de ' + s.price, bg: c.bg, bc: c.bc, dotBg: on ? '#E0E0E0' : 'transparent', dotBc: on ? '#FFFFFF' : '#3A3A3A', onClick: () => this.setState({ service: s.id }) };
+      }),
+      barberName: brb ? brb.name : '—',
+      barberCols: 'repeat(2,minmax(0,1fr))',
+      barberOpts: BARBERS.map((b) => {
+        const on = st.barber === b.id;
+        const c = this.sel(on);
+        const rows = (st.hours[b.id] || []).filter((h) => h.on);
+        return {
+          name: b.name,
+          role: b.meta,
+          week: rows.map((h) => h.day + ' · ' + h.time).join('\n') || 'Sem agenda cadastrada',
+          initial: b.initial,
+          id: b.id,
+          photo: b.photo,
+          insta: b.insta || '—',
+          shadow: on ? '0 20px 44px rgba(0,0,0,0.6)' : 'none',
+          check: on ? '✓' : '',
+          bg: on ? 'rgba(255,255,255,0.06)' : '#141414',
+          bc: on ? '#E0E0E0' : '#2A2A2A',
+          dotBg: on ? '#FFFFFF' : 'rgba(10,10,10,0.55)',
+          dotBc: on ? '#FFFFFF' : '#5A5A5A',
+          onClick: () => this.setState({ barber: b.id, time: null }),
+        };
+      }),
+      monthLabel: MONTHS[st.month],
+      yearLabel: String(st.year),
+      prevMonth: () => { if (!minMonth) jumpMonth(-1); },
+      nextMonth: () => jumpMonth(1),
+      prevColor: minMonth ? '#3A3A3A' : '#FFFFFF',
+      prevCursor: minMonth ? 'not-allowed' : 'pointer',
+      prevDisabled: minMonth,
+      weekDays: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+      days,
+      times: (brbFree || []).map((t) => {
+        const on = st.time === t;
+        return { label: t, bg: on ? '#E0E0E0' : '#0A0A0A', fg: on ? '#0A0A0A' : '#FFFFFF', bc: on ? '#FFFFFF' : '#2A2A2A', onClick: () => this.setState({ time: t }) };
+      }),
+      noTimes: !brbFree,
+      noTimesMsg: brb ? brb.name + ' não atende na data escolhida. Selecione outro dia ou outro barbeiro.' : 'Escolha um barbeiro.',
+      dateLong: pad(st.day) + ' de ' + MONTHS[st.month].toLowerCase() + ' · ' + ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'][dow],
+      dateHint: st.barber ? 'Dias em destaque têm horário livre com ' + (brb ? brb.name : '') + '.' : 'Dias em destaque têm horário livre.',
+      summary: [
+        { k: 'Serviço', v: svc ? svc.name : 'Selecione', color: svc ? '#FFFFFF' : '#9E9E9E' },
+        { k: 'Barbeiro', v: brb ? brb.name : 'Selecione', color: brb ? '#FFFFFF' : '#9E9E9E' },
+        { k: 'Data', v: dateStr, color: '#FFFFFF' },
+        { k: 'Horário', v: st.time || '—', color: st.time ? '#FFFFFF' : '#9E9E9E' },
+        { k: 'Duração', v: svc ? svc.dur : '—', color: '#A3A3A3' },
+      ],
+      total,
+      confirmHref: BOOKING,
+      bookingUrl: BOOKING,
+      whatsHref: WHATS,
+      services: st.services,
+      autoraisRef: this.galA,
+      autoraisPrev: () => this.slide(this.galA, -1),
+      autoraisNext: () => this.slide(this.galA, 1),
+      autorais: (() => {
+        const list = st.photos.filter((g) => g.kind !== 'dia').map((g) => ({ ...g, onClick: () => this.setState({ lightbox: g.src }) }));
+        return list.concat(list.map((g, i) => ({ ...g, dup: 'd' + i })));
+      })(),
+      diaadia: st.photos.filter((g) => g.kind === 'dia').map((g) => ({ ...g, onClick: () => this.setState({ lightbox: g.src }) })),
+      gallery: st.photos.map((g, i) => ({
+        ...g,
+        label: g.label || 'D\'Conde',
+        onClick: () => this.setState({ lightbox: g.src }),
+      })),
+      ambienteLabel: 'Salão',
+      ambienteOpen: () => this.setState({ lightbox: IMG.hero }),
+      ambienteFeatures: ['Climatizado o ano todo', 'TV, som e bebida na espera', 'Poltronas para acompanhante', 'Produtos da casa à venda'],
+      lightboxLabel: (() => {
+        const all = st.photos.concat(AMBIENTE);
+        const i = all.findIndex((p) => p.src === st.lightbox);
+        return i < 0 ? '' : (all[i].label || 'D\'Conde');
+      })(),
+      lightboxPrev: (e) => {
+        e.stopPropagation();
+        const all = st.photos.concat(AMBIENTE);
+        const i = all.findIndex((p) => p.src === st.lightbox);
+        this.setState({ lightbox: all[(i - 1 + all.length) % all.length].src });
+      },
+      lightboxNext: (e) => {
+        e.stopPropagation();
+        const all = st.photos.concat(AMBIENTE);
+        const i = all.findIndex((p) => p.src === st.lightbox);
+        this.setState({ lightbox: all[(i + 1) % all.length].src });
+      },
+      perks: [
+        { title: 'Uma cadeira por vez', line: 'Você marca a hora e é atendido nela. Não tem fila, não tem senha, não tem esperar o cliente de antes terminar. Se atrasarmos, avisamos antes de você sair de casa.' },
+        { title: 'Cor a gente leva a sério', line: 'Descoloração, pigmento e desenho não saem em quarenta minutos. Luzes é um serviço de quatro horas e a gente bloqueia a agenda inteira para ele. É por isso que sai bom.' },
+        { title: 'Daniel e João', line: 'Daniel fundou a casa em 2024 e João Lima entrou há pouco na equipe. Você escolhe o barbeiro na hora de agendar e é ele quem te atende — não quem estiver livre.' },
+      ],
+      about: [
+        { k: 'Endereço', v: 'Av. Campo Sales, 303 — Sala 04, Itatiba/SP' },
+        { k: 'Equipe', v: 'Daniel (fundador) e João Lima' },
+        { k: 'Atendimento', v: 'Somente com horário marcado' },
+      ],
+      contacts: [
+        { k: 'Endereço', v: 'Avenida Campo Sales, 303 — Sala 04, Itatiba/SP, 13250-360', href: 'https://maps.google.com/?q=Avenida+Campo+Sales+303+Itatiba+SP+13250-360' },
+        { k: 'WhatsApp', v: '(18) 99730-7852', href: WHATS },
+        { k: 'Instagram', v: '@dcondebarbearia', href: 'https://www.instagram.com/dcondebarbearia/' },
+        { k: 'Pagamento', v: 'Pix, débito, crédito e dinheiro', href: '#agendar' },
+        
+      ],
+      hours: [
+        { d: 'Segunda a sexta', t: '09:00 — 20:00' },
+        { d: 'Sábado', t: '08:00 — 18:00' },
+        { d: 'Domingo', t: 'Fechado' },
+      ],
+      lightbox: st.lightbox,
+      closeLightbox: () => this.setState({ lightbox: null }),
+      ...this.appVals(st, svc, brb, dateStr),
+    };
+  }
+}
+</script>
+</body>
+</html>

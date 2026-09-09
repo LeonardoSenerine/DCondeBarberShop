@@ -11,10 +11,14 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   full_name text not null default '',
+  email text,
   phone text,
   role text not null default 'customer' check (role in ('customer', 'admin')),
   created_at timestamptz not null default now()
 );
+
+-- migration safety net for projects that ran an earlier version of this file
+alter table public.profiles add column if not exists email text;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -22,11 +26,12 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, full_name, phone)
+  insert into public.profiles (id, full_name, email, phone)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    new.phone
+    new.email,
+    coalesce(new.raw_user_meta_data ->> 'phone', new.phone)
   )
   on conflict (id) do nothing;
   return new;

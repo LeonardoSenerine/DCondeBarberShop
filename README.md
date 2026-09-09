@@ -2,7 +2,7 @@
 
 Site da D'Conde Barbearia (Itatiba/SP): landing page, agendamento online, área
 do cliente e painel administrativo. Construído com **Vite + React + TypeScript**,
-**Tailwind CSS v4** e **Supabase** (Postgres + Auth por SMS + Storage) como
+**Tailwind CSS v4** e **Supabase** (Postgres + Auth por e-mail + Storage) como
 banco de dados.
 
 ## Stack
@@ -14,7 +14,8 @@ banco de dados.
   clamp de texto) fica em arquivos próprios: `src/styles/scroll-rails.css` e
   `src/styles/gallery-card.css`.
 - **Supabase** como banco de dados: Postgres com RLS, autenticação de clientes
-  por celular/SMS (OTP) e Storage para as fotos da galeria/produtos.
+  por e-mail (código OTP, sem custo — usa o e-mail embutido do Supabase) e
+  Storage para as fotos da galeria/produtos.
 - **react-router-dom** para as rotas `/` (site), `/conta` (área do cliente) e
   `/admin` (painel da barbearia).
 
@@ -42,16 +43,24 @@ supabase/
 2. No **SQL Editor** do projeto, rode primeiro `supabase/schema.sql` e depois
    `supabase/seed.sql` (nessa ordem). Os dois são seguros de rodar de novo caso
    precise reaplicar.
-3. Em **Authentication → Providers → Phone**, ative o login por telefone e
-   configure um provedor de SMS (Twilio, MessageBird, etc.) — sem isso o app
-   funciona, mas o código por SMS não é realmente enviado.
+3. O login por e-mail já vem ativado por padrão em todo projeto Supabase — não
+   precisa configurar nada para o código funcionar. Só confira em
+   **Authentication → Email Templates → Magic Link** se o template inclui
+   `{{ .Token }}` (é o código de 6 dígitos); se não tiver, adicione algo como
+   "Seu código: {{ .Token }}" no corpo do e-mail.
+   - O Supabase usa um servidor de e-mail compartilhado com limite baixo
+     (poucos e-mails por hora), bom para testar. Para uso real, configure um
+     SMTP próprio em **Project Settings → Authentication → SMTP Settings**
+     (Resend, Brevo e outros têm planos gratuitos suficientes para uma
+     barbearia).
 4. Em **Project Settings → API**, copie a **Project URL** e a **anon public
-   key**.
+   key** (ou, no formato novo, a **publishable key**, que começa com
+   `sb_publishable_...`).
 5. Copie `.env.example` para `.env.local` e preencha:
 
    ```
    VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+   VITE_SUPABASE_ANON_KEY=eyJhbGciOi...   # ou sb_publishable_...
    ```
 
 ### Criando o usuário administrador

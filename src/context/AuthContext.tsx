@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
-import { toE164BR } from "@/lib/format";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -11,9 +10,9 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
-  sendPhoneCode: (phone: string, fullName: string) => Promise<{ error: string | null }>;
-  verifyPhoneCode: (phone: string, code: string) => Promise<{ error: string | null }>;
-  updateFullName: (fullName: string) => Promise<{ error: string | null }>;
+  sendEmailCode: (email: string, fullName: string, phone: string) => Promise<{ error: string | null }>;
+  verifyEmailCode: (email: string, code: string) => Promise<{ error: string | null }>;
+  updateProfile: (patch: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -68,28 +67,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       isAdmin: profile?.role === "admin",
-      async sendPhoneCode(phone, fullName) {
+      async sendEmailCode(email, fullName, phone) {
         const { error } = await supabase.auth.signInWithOtp({
-          phone: toE164BR(phone),
-          options: { data: { full_name: fullName } },
+          email,
+          options: { data: { full_name: fullName, phone } },
         });
         return { error: error ? traduzErroAuth(error.message) : null };
       },
-      async verifyPhoneCode(phone, code) {
+      async verifyEmailCode(email, code) {
         const { error } = await supabase.auth.verifyOtp({
-          phone: toE164BR(phone),
+          email,
           token: code,
-          type: "sms",
+          type: "email",
         });
         return { error: error ? traduzErroAuth(error.message) : null };
       },
-      async updateFullName(fullName) {
+      async updateProfile(patch) {
         if (!session?.user) return { error: "Você precisa estar logado." };
-        const { error } = await supabase
-          .from("profiles")
-          .update({ full_name: fullName })
-          .eq("id", session.user.id);
-        if (!error) setProfile((prev) => (prev ? { ...prev, full_name: fullName } : prev));
+        const { error } = await supabase.from("profiles").update(patch).eq("id", session.user.id);
+        if (!error) setProfile((prev) => (prev ? { ...prev, ...patch } : prev));
         return { error: error ? error.message : null };
       },
       async signOut() {
@@ -111,6 +107,6 @@ export function useAuth() {
 function traduzErroAuth(message: string): string {
   if (/rate limit/i.test(message)) return "Muitas tentativas. Aguarde um instante e tente de novo.";
   if (/invalid/i.test(message) && /otp|token/i.test(message)) return "Código inválido ou expirado.";
-  if (/phone/i.test(message)) return "Confira o número de celular com DDD.";
+  if (/email/i.test(message)) return "Confira o e-mail digitado.";
   return message;
 }

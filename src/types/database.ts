@@ -14,6 +14,7 @@ export type GalleryKind = "autoral" | "dia";
 type ProfilesRow = {
   id: string;
   full_name: string;
+  email: string | null;
   phone: string | null;
   role: UserRole;
   created_at: string;

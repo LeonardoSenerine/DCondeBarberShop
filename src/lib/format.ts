@@ -61,13 +61,6 @@ export function normalizeDigits(value: string): string {
   return value.replace(/\D/g, "");
 }
 
-/** Converts a Brazilian phone number to E.164 (+55...) for Supabase phone auth. */
-export function toE164BR(phone: string): string {
-  const digits = normalizeDigits(phone);
-  if (digits.startsWith("55")) return `+${digits}`;
-  return `+55${digits}`;
-}
-
 export function whatsAppLink(phoneE164NoPlus: string, message: string): string {
   return `https://wa.me/${phoneE164NoPlus}?text=${encodeURIComponent(message)}`;
 }

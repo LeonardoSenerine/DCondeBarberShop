@@ -5,11 +5,12 @@ import { useMyBookings, cancelBooking } from "@/hooks/useBooking";
 import { formatCents, formatDateBR, formatTimeShort } from "@/lib/format";
 
 export function AccountPage() {
-  const { session, profile, loading, signOut, updateFullName } = useAuth();
+  const { session, profile, loading, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
   const [name, setName] = useState(profile?.full_name ?? "");
-  const [savingName, setSavingName] = useState(false);
+  const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   if (loading) return null;
   if (!session) return <Navigate to="/" replace />;
@@ -26,10 +27,10 @@ export function AccountPage() {
     reload();
   }
 
-  async function handleSaveName() {
-    setSavingName(true);
-    await updateFullName(name.trim());
-    setSavingName(false);
+  async function handleSaveProfile() {
+    setSavingProfile(true);
+    await updateProfile({ full_name: name.trim(), phone: phone.trim() });
+    setSavingProfile(false);
   }
 
   return (
@@ -155,18 +156,27 @@ export function AccountPage() {
             <label className="flex flex-col gap-2">
               <span className="text-[13px] text-muted">Celular</span>
               <input
-                value={profile?.phone ?? ""}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(18) 99730-7852"
+                className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+              />
+            </label>
+            <label className="flex flex-col gap-2 sm:col-span-2">
+              <span className="text-[13px] text-muted">E-mail (login)</span>
+              <input
+                value={profile?.email ?? ""}
                 disabled
                 className="min-h-12 cursor-not-allowed rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-muted"
               />
             </label>
           </div>
           <button
-            onClick={handleSaveName}
-            disabled={savingName}
+            onClick={handleSaveProfile}
+            disabled={savingProfile}
             className="bg-silver-gradient mt-5 flex min-h-12 items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase disabled:opacity-60"
           >
-            {savingName ? "Salvando…" : "Salvar"}
+            {savingProfile ? "Salvando…" : "Salvar"}
           </button>
         </div>
       </div>

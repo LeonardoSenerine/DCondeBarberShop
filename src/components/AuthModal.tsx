@@ -14,21 +14,22 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
-  const { session, sendPhoneCode, verifyPhoneCode } = useAuth();
+  const { session, sendEmailCode, verifyEmailCode } = useAuth();
   const { createBooking, submitting } = useCreateBooking();
   const [phase, setPhase] = useState<Phase>("dados");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function handleSendCode() {
-    const digits = phone.replace(/\D/g, "");
     if (!name.trim()) return setError("Digite seu nome.");
-    if (digits.length < 10) return setError("Digite o celular com DDD.");
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Digite um e-mail válido.");
+    if (phone.replace(/\D/g, "").length < 10) return setError("Digite o celular com DDD.");
     setBusy(true);
-    const { error: err } = await sendPhoneCode(phone, name.trim());
+    const { error: err } = await sendEmailCode(email.trim(), name.trim(), phone.trim());
     setBusy(false);
     if (err) return setError(err);
     setError(null);
@@ -37,7 +38,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
 
   async function handleVerify() {
     setBusy(true);
-    const { error: err } = await verifyPhoneCode(phone, code);
+    const { error: err } = await verifyEmailCode(email.trim(), code);
     if (err) {
       setBusy(false);
       return setError(err);
@@ -70,9 +71,9 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
   const title = phase === "dados" ? "Seus dados" : phase === "codigo" ? "Código enviado" : "Tudo certo";
   const lead =
     phase === "dados"
-      ? "Enviamos um código por SMS para confirmar seu número. Na primeira vez, isso cria seu cadastro."
+      ? "Enviamos um código por e-mail para confirmar seu cadastro. Na primeira vez, isso cria sua conta."
       : phase === "codigo"
-        ? `Digite o código que enviamos para ${phone || "seu celular"}.`
+        ? `Digite o código que enviamos para ${email || "seu e-mail"}.`
         : "Guardamos seu agendamento e o histórico na sua conta.";
 
   return (
@@ -116,6 +117,16 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
               />
             </label>
             <label className="flex flex-col gap-2">
+              <span className="text-[13px] text-muted">E-mail</span>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                type="email"
+                className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
               <span className="text-[13px] text-muted">Celular com DDD</span>
               <input
                 value={phone}
@@ -123,6 +134,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
                 placeholder="(18) 99730-7852"
                 className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
               />
+              <span className="text-xs text-muted-2">É pra gente confirmar seu horário, não é usado no login.</span>
             </label>
             {error && (
               <span className="rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
@@ -134,7 +146,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
               disabled={busy}
               className="bg-silver-gradient flex min-h-[54px] items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
             >
-              {busy ? "Enviando…" : "Enviar código por SMS"}
+              {busy ? "Enviando…" : "Enviar código por e-mail"}
             </button>
           </div>
         )}
@@ -170,7 +182,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
               }}
               className="flex min-h-11 items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
             >
-              Corrigir número
+              Corrigir dados
             </button>
           </div>
         )}

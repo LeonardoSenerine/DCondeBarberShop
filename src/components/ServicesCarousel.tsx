@@ -32,7 +32,7 @@ export function ServicesCarousel() {
               Serviços e preços
             </h2>
           </div>
-          <div className="flex gap-2.5">
+          <div className="hidden gap-2.5 sm:flex">
             <button
               onClick={() => scrollByCards(-1)}
               aria-label="Anterior"

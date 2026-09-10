@@ -45,7 +45,7 @@ export function Gallery({ onOpenLightbox }: GalleryProps) {
             <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase text-balance-safe">
               O que fazemos no dia a dia
             </h2>
-            <div className="flex flex-shrink-0 gap-2.5">
+            <div className="hidden flex-shrink-0 gap-2.5 sm:flex">
               <button
                 onClick={() => scrollByCard(-1)}
                 aria-label="Anterior"

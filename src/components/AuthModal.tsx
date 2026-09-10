@@ -5,6 +5,7 @@ import { formatCents } from "@/lib/format";
 import { savePendingBooking } from "@/lib/pendingBooking";
 
 type Phase = "dados" | "enviado";
+type Mode = "cadastro" | "login";
 
 interface AuthModalProps {
   pendingBooking: BookingDraft | null;
@@ -13,6 +14,7 @@ interface AuthModalProps {
 
 export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
   const { session, sendMagicLink } = useAuth();
+  const [mode, setMode] = useState<Mode>("cadastro");
   const [phase, setPhase] = useState<Phase>("dados");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,12 +22,22 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+  }
+
   async function handleSendLink() {
-    if (!name.trim()) return setError("Digite seu nome.");
+    if (mode === "cadastro" && !name.trim()) return setError("Digite seu nome.");
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Digite um e-mail válido.");
-    if (phone.replace(/\D/g, "").length < 10) return setError("Digite o celular com DDD.");
+    if (mode === "cadastro" && phone.replace(/\D/g, "").length < 10) return setError("Digite o celular com DDD.");
+
     setBusy(true);
-    const { error: err } = await sendMagicLink(email.trim(), name.trim(), phone.trim());
+    const { error: err } = await sendMagicLink(email.trim(), {
+      fullName: mode === "cadastro" ? name.trim() : undefined,
+      phone: mode === "cadastro" ? phone.trim() : undefined,
+      shouldCreateUser: mode === "cadastro",
+    });
     setBusy(false);
     if (err) return setError(err);
 
@@ -38,10 +50,12 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
   }
 
   const eyebrow = "Acesso do cliente";
-  const title = phase === "dados" ? "Seus dados" : "Confira seu e-mail";
+  const title = phase === "dados" ? (mode === "cadastro" ? "Criar cadastro" : "Entrar") : "Confira seu e-mail";
   const lead =
     phase === "dados"
-      ? "Enviamos um link de confirmação por e-mail. Na primeira vez, isso cria sua conta."
+      ? mode === "cadastro"
+        ? "Enviamos um link de confirmação por e-mail. Isso cria sua conta."
+        : "Já tem conta? Digite seu e-mail e mandamos o link de acesso."
       : `Mandamos um link para ${email || "seu e-mail"}. Abra o e-mail e clique no link — você volta aqui já logado${pendingBooking ? " e com seu horário confirmado" : ""}.`;
 
   return (
@@ -58,6 +72,34 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
           ×
         </button>
         <span className="font-heading text-xs tracking-[0.3em] text-muted-2 uppercase">{eyebrow}</span>
+
+        {phase === "dados" && (
+          <div className="mt-4 mb-5 flex gap-2">
+            <button
+              onClick={() => switchMode("cadastro")}
+              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              style={{
+                borderColor: mode === "cadastro" ? "#E0E0E0" : "#2A2A2A",
+                color: mode === "cadastro" ? "#FFFFFF" : "#9E9E9E",
+                background: mode === "cadastro" ? "rgba(255,255,255,0.06)" : "transparent",
+              }}
+            >
+              Cadastro
+            </button>
+            <button
+              onClick={() => switchMode("login")}
+              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              style={{
+                borderColor: mode === "login" ? "#E0E0E0" : "#2A2A2A",
+                color: mode === "login" ? "#FFFFFF" : "#9E9E9E",
+                background: mode === "login" ? "rgba(255,255,255,0.06)" : "transparent",
+              }}
+            >
+              Entrar
+            </button>
+          </div>
+        )}
+
         <h3 className="m-0 mt-3 mb-2 font-heading text-2xl font-semibold tracking-[0.04em] text-white uppercase">
           {title}
         </h3>
@@ -75,15 +117,17 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
 
         {phase === "dados" && (
           <div className="flex flex-col gap-3.5">
-            <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">Nome</span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome"
-                className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
-              />
-            </label>
+            {mode === "cadastro" && (
+              <label className="flex flex-col gap-2">
+                <span className="text-[13px] text-muted">Nome</span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Seu nome"
+                  className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+                />
+              </label>
+            )}
             <label className="flex flex-col gap-2">
               <span className="text-[13px] text-muted">E-mail</span>
               <input
@@ -94,16 +138,18 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
               />
             </label>
-            <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">Celular com DDD</span>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(18) 99730-7852"
-                className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
-              />
-              <span className="text-xs text-muted-2">É pra gente confirmar seu horário, não é usado no login.</span>
-            </label>
+            {mode === "cadastro" && (
+              <label className="flex flex-col gap-2">
+                <span className="text-[13px] text-muted">Celular com DDD</span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="(18) 99730-7852"
+                  className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+                />
+                <span className="text-xs text-muted-2">É pra gente confirmar seu horário, não é usado no login.</span>
+              </label>
+            )}
             {error && (
               <span className="rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
                 {error}
@@ -114,7 +160,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
               disabled={busy}
               className="bg-silver-gradient flex min-h-[54px] cursor-pointer items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy ? "Enviando…" : "Enviar link por e-mail"}
+              {busy ? "Enviando…" : mode === "cadastro" ? "Enviar link por e-mail" : "Enviar link de acesso"}
             </button>
           </div>
         )}

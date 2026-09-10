@@ -13,14 +13,18 @@ export function savePendingBooking(data: StoredPendingBooking) {
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
-/** Reads and clears the stored draft in one step, so a race between tabs can't double-book. */
-export function takePendingBooking(): StoredPendingBooking | null {
+/** Reads the stored draft without clearing it. */
+export function peekPendingBooking(): StoredPendingBooking | null {
   const raw = localStorage.getItem(KEY);
   if (!raw) return null;
-  localStorage.removeItem(KEY);
   try {
     return JSON.parse(raw) as StoredPendingBooking;
   } catch {
     return null;
   }
+}
+
+/** Clears the stored draft — call once the booking has actually been created. */
+export function clearPendingBooking() {
+  localStorage.removeItem(KEY);
 }

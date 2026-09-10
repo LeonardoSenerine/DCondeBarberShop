@@ -10,7 +10,10 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
-  sendMagicLink: (email: string, fullName: string, phone: string) => Promise<{ error: string | null }>;
+  sendMagicLink: (
+    email: string,
+    opts?: { fullName?: string; phone?: string; shouldCreateUser?: boolean },
+  ) => Promise<{ error: string | null }>;
   updateProfile: (patch: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -66,12 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       isAdmin: profile?.role === "admin",
-      async sendMagicLink(email, fullName, phone) {
+      async sendMagicLink(email, opts) {
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            data: { full_name: fullName, phone },
+            data: opts?.fullName ? { full_name: opts.fullName, phone: opts.phone } : undefined,
             emailRedirectTo: window.location.origin,
+            shouldCreateUser: opts?.shouldCreateUser ?? true,
           },
         });
         return { error: error ? traduzErroAuth(error.message) : null };
@@ -100,6 +104,8 @@ export function useAuth() {
 
 function traduzErroAuth(message: string): string {
   if (/rate limit/i.test(message)) return "Muitas tentativas. Aguarde um instante e tente de novo.";
+  if (/user not found|not.*found/i.test(message))
+    return 'Não encontramos uma conta com esse e-mail. Use "Cadastro" para criar a sua.';
   if (/email/i.test(message)) return "Confira o e-mail digitado.";
   return message;
 }

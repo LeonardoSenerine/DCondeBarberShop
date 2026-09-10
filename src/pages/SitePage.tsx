@@ -18,7 +18,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateBooking } from "@/hooks/useBooking";
 import { useGallery } from "@/hooks/useCatalog";
-import { takePendingBooking } from "@/lib/pendingBooking";
+import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
 
 export function SitePage() {
   const navigate = useNavigate();
@@ -33,11 +33,20 @@ export function SitePage() {
   // Completes a booking left pending across the magic-link email round
   // trip: once the session shows up (same tab after the redirect, or
   // another tab picking up the synced session), finish the booking the
-  // user was making before they had to confirm their e-mail.
+  // user was making before they had to confirm their e-mail. The "Entrar"
+  // mode doesn't collect name/phone, so for those drafts we wait for the
+  // existing profile to load and use its contact info instead — reading
+  // (not clearing) the draft until we actually have what we need avoids
+  // losing it to a premature read.
   useEffect(() => {
     if (!session?.user) return;
-    const stored = takePendingBooking();
+    const stored = peekPendingBooking();
     if (!stored) return;
+    if (!stored.name && !profile) return;
+
+    const customerName = stored.name || profile?.full_name || "";
+    const customerPhone = stored.phone || profile?.phone || "";
+    clearPendingBooking();
     createBooking({
       customer_id: session.user.id,
       barber_id: stored.draft.barberId,
@@ -46,14 +55,14 @@ export function SitePage() {
       scheduled_time: stored.draft.time,
       status: "confirmed",
       price_cents: stored.draft.priceCents,
-      customer_name: stored.name,
-      customer_phone: stored.phone,
+      customer_name: customerName,
+      customer_phone: customerPhone,
     }).then(() => {
       setAuthOpen(false);
       setPendingBooking(null);
       navigate("/conta");
     });
-  }, [session?.user, createBooking, navigate]);
+  }, [session?.user, profile, createBooking, navigate]);
 
   async function handleConfirmBooking(draft: BookingDraft) {
     if (session?.user) {

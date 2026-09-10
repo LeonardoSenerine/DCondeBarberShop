@@ -1,4 +1,5 @@
 import { PERKS } from "@/data/content";
+import { Reveal } from "@/components/Reveal";
 
 export function Perks() {
   return (
@@ -20,12 +21,12 @@ export function Perks() {
         style={{ background: "linear-gradient(180deg,#0A0A0A 0%,rgba(10,10,10,0.55) 45%,#0A0A0A 100%)" }}
       />
       <div className="relative mx-auto max-w-[1240px]">
-        <div className="mb-14 text-center [animation:dc-up_700ms_ease_both]">
+        <Reveal className="mb-14 text-center">
           <h2 className="m-0 font-heading text-[clamp(28px,3.6vw,46px)] font-semibold tracking-[0.04em] text-white uppercase">
             Como a gente trabalha
           </h2>
-        </div>
-        <div className="grid gap-5 [animation:dc-up_700ms_120ms_ease_both] sm:grid-cols-2 lg:grid-cols-3">
+        </Reveal>
+        <Reveal className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" delayMs={120}>
           {PERKS.map((p) => (
             <div
               key={p.title}
@@ -37,7 +38,7 @@ export function Perks() {
               <p className="m-0 font-serif text-[17px] leading-relaxed text-silver-dim">{p.line}</p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

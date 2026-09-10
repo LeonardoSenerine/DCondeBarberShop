@@ -1,80 +1,48 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useCreateBooking } from "@/hooks/useBooking";
 import type { BookingDraft } from "@/components/BookingWizard";
 import { formatCents } from "@/lib/format";
-import { supabase } from "@/lib/supabaseClient";
+import { savePendingBooking } from "@/lib/pendingBooking";
 
-type Phase = "dados" | "codigo" | "ok";
+type Phase = "dados" | "enviado";
 
 interface AuthModalProps {
   pendingBooking: BookingDraft | null;
   onClose: () => void;
-  onDone: () => void;
 }
 
-export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
-  const { session, sendEmailCode, verifyEmailCode } = useAuth();
-  const { createBooking, submitting } = useCreateBooking();
+export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
+  const { session, sendMagicLink } = useAuth();
   const [phase, setPhase] = useState<Phase>("dados");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function handleSendCode() {
+  async function handleSendLink() {
     if (!name.trim()) return setError("Digite seu nome.");
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Digite um e-mail válido.");
     if (phone.replace(/\D/g, "").length < 10) return setError("Digite o celular com DDD.");
     setBusy(true);
-    const { error: err } = await sendEmailCode(email.trim(), name.trim(), phone.trim());
+    const { error: err } = await sendMagicLink(email.trim(), name.trim(), phone.trim());
     setBusy(false);
     if (err) return setError(err);
-    setError(null);
-    setPhase("codigo");
-  }
-
-  async function handleVerify() {
-    setBusy(true);
-    const { error: err } = await verifyEmailCode(email.trim(), code);
-    if (err) {
-      setBusy(false);
-      return setError(err);
-    }
 
     if (pendingBooking) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id;
-      if (userId) {
-        await createBooking({
-          customer_id: userId,
-          barber_id: pendingBooking.barberId,
-          service_id: pendingBooking.serviceId,
-          scheduled_date: pendingBooking.dateIso,
-          scheduled_time: pendingBooking.time,
-          status: "confirmed",
-          price_cents: pendingBooking.priceCents,
-          customer_name: name.trim(),
-          customer_phone: phone.trim(),
-        });
-      }
+      savePendingBooking({ draft: pendingBooking, name: name.trim(), phone: phone.trim() });
     }
 
-    setBusy(false);
     setError(null);
-    setPhase("ok");
+    setPhase("enviado");
   }
 
-  const eyebrow = phase === "ok" ? "Agendamento confirmado" : "Acesso do cliente";
-  const title = phase === "dados" ? "Seus dados" : phase === "codigo" ? "Código enviado" : "Tudo certo";
+  const eyebrow = "Acesso do cliente";
+  const title = phase === "dados" ? "Seus dados" : "Confira seu e-mail";
   const lead =
     phase === "dados"
-      ? "Enviamos um código por e-mail para confirmar seu cadastro. Na primeira vez, isso cria sua conta."
-      : phase === "codigo"
-        ? `Digite o código que enviamos para ${email || "seu e-mail"}.`
-        : "Guardamos seu agendamento e o histórico na sua conta.";
+      ? "Enviamos um link de confirmação por e-mail. Na primeira vez, isso cria sua conta."
+      : `Mandamos um link para ${email || "seu e-mail"}. Abra o e-mail e clique no link — você volta aqui já logado${pendingBooking ? " e com seu horário confirmado" : ""}.`;
 
   return (
     <div
@@ -85,7 +53,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
         <button
           onClick={onClose}
           aria-label="Fechar"
-          className="absolute top-3.5 right-3.5 flex h-10 w-10 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+          className="absolute top-3.5 right-3.5 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
         >
           ×
         </button>
@@ -95,7 +63,7 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
         </h3>
         <p className="m-0 mb-6 text-[15px] text-muted">{lead}</p>
 
-        {pendingBooking && phase !== "ok" && (
+        {pendingBooking && (
           <div className="mb-5 flex flex-col gap-1 rounded-lg border border-border bg-surface-alt p-3.5 text-[13px] text-muted">
             <span className="text-white">{pendingBooking.serviceName}</span>
             <span>
@@ -142,71 +110,42 @@ export function AuthModal({ pendingBooking, onClose, onDone }: AuthModalProps) {
               </span>
             )}
             <button
-              onClick={handleSendCode}
+              onClick={handleSendLink}
               disabled={busy}
-              className="bg-silver-gradient flex min-h-[54px] items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
+              className="bg-silver-gradient flex min-h-[54px] cursor-pointer items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy ? "Enviando…" : "Enviar código por e-mail"}
+              {busy ? "Enviando…" : "Enviar link por e-mail"}
             </button>
           </div>
         )}
 
-        {phase === "codigo" && (
+        {phase === "enviado" && (
           <div className="flex flex-col gap-3.5">
-            <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">Código de 6 dígitos</span>
-              <input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="000000"
-                inputMode="numeric"
-                className="min-h-14 rounded-lg border border-border bg-surface-alt px-4 text-center font-heading text-2xl tracking-[0.5em] text-white outline-none focus:border-silver"
-              />
-            </label>
             {error && (
               <span className="rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
                 {error}
               </span>
             )}
             <button
-              onClick={handleVerify}
-              disabled={busy || submitting}
-              className="bg-silver-gradient flex min-h-[54px] items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
+              onClick={handleSendLink}
+              disabled={busy}
+              className="flex min-h-[52px] cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs font-semibold tracking-[0.2em] text-white uppercase transition-colors hover:border-silver disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy || submitting ? "Confirmando…" : "Confirmar e agendar"}
+              {busy ? "Reenviando…" : "Reenviar link"}
             </button>
             <button
               onClick={() => {
                 setPhase("dados");
                 setError(null);
               }}
-              className="flex min-h-11 items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+              className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
             >
               Corrigir dados
             </button>
           </div>
         )}
 
-        {phase === "ok" && (
-          <div className="flex flex-col gap-3.5">
-            <button
-              onClick={onDone}
-              className="bg-silver-gradient flex min-h-[54px] items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
-            >
-              Ver minha conta
-            </button>
-            <button
-              onClick={onClose}
-              className="flex min-h-11 items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
-            >
-              Voltar ao site
-            </button>
-          </div>
-        )}
-
-        {phase !== "ok" && session && (
-          <p className="mt-4 text-center text-xs text-muted-2">Você já está logado — feche esta janela.</p>
-        )}
+        {session && <p className="mt-4 text-center text-xs text-muted-2">Você já está logado. Feche esta janela.</p>}
       </div>
     </div>
   );

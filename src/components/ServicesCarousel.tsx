@@ -2,18 +2,17 @@ import { useRef } from "react";
 import { useServices } from "@/hooks/useCatalog";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { formatCents, formatDuration } from "@/lib/format";
+import { Reveal } from "@/components/Reveal";
 import "@/styles/scroll-rails.css";
 import "@/styles/gallery-card.css";
 
 export function ServicesCarousel() {
   const { data: services, loading } = useServices();
   const trackRef = useRef<HTMLDivElement>(null);
-  useAutoScroll(trackRef, 0.45);
+  const scrollByAmount = useAutoScroll(trackRef, 0.45);
 
   function scrollByCards(dir: 1 | -1) {
-    const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: 296 * 2 * dir, behavior: "smooth" });
+    scrollByAmount(296 * 2 * dir);
   }
 
   return (
@@ -26,7 +25,7 @@ export function ServicesCarousel() {
         style={{ filter: "contrast(3.2)", mixBlendMode: "screen" }}
       />
       <div className="relative mx-auto max-w-[1240px] px-6">
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-5 [animation:dc-up_700ms_ease_both]">
+        <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-5">
           <div>
             <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Serviços</span>
             <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
@@ -49,7 +48,7 @@ export function ServicesCarousel() {
               ›
             </button>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="relative">

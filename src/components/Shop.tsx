@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { BRAND } from "@/data/content";
 import { formatCents, whatsAppLink } from "@/lib/format";
+import { Reveal } from "@/components/Reveal";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
@@ -67,14 +68,14 @@ export function Shop() {
   return (
     <section id="shop" className="border-t border-border bg-surface px-6 py-28">
       <div className="mx-auto max-w-[1240px]">
-        <div className="mb-12 [animation:dc-up_700ms_ease_both]">
+        <Reveal className="mb-12">
           <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Shop</span>
           <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             Produtos da casa
           </h2>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-wrap items-start gap-5 [animation:dc-up_700ms_120ms_ease_both]">
+        <Reveal className="flex flex-wrap items-start gap-5" delayMs={120}>
           <div className="min-w-0 flex-1 basis-[460px]">
             <div className="mb-4.5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface-alt px-4.5 py-3.5">
               <span className="font-heading text-xs tracking-[0.2em] text-muted uppercase">
@@ -200,7 +201,7 @@ export function Shop() {
               </p>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

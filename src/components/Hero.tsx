@@ -39,14 +39,7 @@ export function Hero() {
 
       <div className="relative z-[2] mx-auto w-full max-w-[1240px] px-6 pt-[150px] pb-[120px]">
         <div className="max-w-full md:max-w-[46%]">
-          <div className="mb-6 flex items-center gap-3.5 [animation:dc-up_700ms_ease_both]">
-            <span
-              className="h-px w-14 origin-left"
-              style={{
-                background: "linear-gradient(90deg,transparent,#E0E0E0)",
-                animation: "dc-line 900ms 240ms ease both",
-              }}
-            />
+          <div className="mb-6 flex items-center [animation:dc-up_700ms_ease_both]">
             <span className="font-heading text-xs tracking-[0.42em] text-silver uppercase">
               {HERO.eyebrow}
             </span>

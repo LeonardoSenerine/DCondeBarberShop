@@ -79,10 +79,16 @@ on conflict do nothing;
 insert into public.gallery_photos (image_path, kind, service_label, client_label, barber_id, taken_on, sort_order) values
   ('/img/corte-04.jpg', 'autoral', 'Corte + sobrancelha', 'Gabriel M.', 'daniel', '2026-09-06', 1),
   ('/img/corte-01.jpg', 'dia', 'Corte', 'Rafael P.', 'joao', '2026-09-05', 2),
-  ('/img/corte-03.jpg', 'autoral', 'Corte + barba tradicional', 'Nina R.', 'daniel', '2026-09-03', 3),
+  ('/img/corte-03.jpg', 'autoral', 'Corte', 'Nina R.', 'daniel', '2026-09-03', 3),
   ('/img/corte-02.jpg', 'autoral', 'Platinado com coloração', 'Théo A.', 'daniel', '2026-08-30', 4),
   ('/img/barba.jpg', 'dia', 'Barba terapia', 'André N.', 'joao', '2026-08-28', 5),
   ('/img/corte-07.png', 'autoral', 'Platinado com coloração', 'Kauê S.', 'daniel', '2026-09-08', 6),
   ('/img/corte-05.png', 'dia', 'Corte', 'Enzo B.', 'daniel', '2026-09-08', 7),
-  ('/img/corte-06.png', 'dia', 'Corte + sobrancelha', 'Matheus L.', 'joao', '2026-09-07', 8)
+  ('/img/corte-06.png', 'dia', 'Corte + sobrancelha', 'Matheus L.', 'joao', '2026-09-07', 8),
+  ('/img/corte-08.png', 'autoral', 'Corte', 'Guilherme S.', 'joao', '2026-09-09', 9),
+  ('/img/corte-09.png', 'dia', 'Corte infantil', 'Bernardo O.', 'daniel', '2026-09-09', 10),
+  ('/img/corte-10.png', 'autoral', 'Corte', 'Lucas F.', 'joao', '2026-09-10', 11),
+  ('/img/corte-11.png', 'autoral', 'Platinado com coloração', 'Vinícius T.', 'daniel', '2026-09-10', 12),
+  ('/img/corte-12.png', 'autoral', 'Corte', 'Miguel A.', 'joao', '2026-09-10', 13),
+  ('/img/corte-13.png', 'dia', 'Corte infantil', 'Davi R.', 'daniel', '2026-09-10', 14)
 on conflict do nothing;

@@ -1,5 +1,6 @@
 import { BRAND, CONTACT_HOURS } from "@/data/content";
 import { whatsAppLink } from "@/lib/format";
+import { Reveal } from "@/components/Reveal";
 
 const CONTACTS = [
   {
@@ -12,7 +13,7 @@ const CONTACTS = [
     v: "(18) 99730-7852",
     href: whatsAppLink(BRAND.whatsapp, `Olá, quero agendar um horário na ${BRAND.name}`),
   },
-  { k: "Instagram", v: "@dcondebarbearia", href: BRAND.instagram },
+  { k: "Instagram", v: BRAND.instagramHandle, href: BRAND.instagram },
   { k: "Pagamento", v: "Pix, débito, crédito e dinheiro", href: "#agendar" },
 ];
 
@@ -20,12 +21,12 @@ export function Contact() {
   return (
     <section id="contato" className="bg-ink px-6 py-28">
       <div className="mx-auto max-w-[1240px]">
-        <div className="mb-14 [animation:dc-up_700ms_ease_both]">
+        <Reveal className="mb-14">
           <h2 className="m-0 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             Onde estamos
           </h2>
-        </div>
-        <div className="grid gap-5 [animation:dc-up_700ms_ease_both] md:grid-cols-2">
+        </Reveal>
+        <Reveal className="grid gap-5 md:grid-cols-2">
           <div className="relative min-h-[420px] overflow-hidden rounded-lg border border-border bg-surface">
             <iframe
               title="Mapa D'Conde Barbearia"
@@ -84,7 +85,7 @@ export function Contact() {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

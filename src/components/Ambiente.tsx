@@ -1,4 +1,5 @@
 import { AMBIENTE } from "@/data/content";
+import { Reveal } from "@/components/Reveal";
 
 interface AmbienteProps {
   onOpenLightbox: (src: string) => void;
@@ -8,12 +9,12 @@ export function Ambiente({ onOpenLightbox }: AmbienteProps) {
   return (
     <section id="ambiente" className="bg-ink px-6 pt-28">
       <div className="mx-auto max-w-[1240px]">
-        <div className="mb-12 [animation:dc-up_700ms_ease_both]">
+        <Reveal className="mb-12">
           <h2 className="m-0 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             {AMBIENTE.title}
           </h2>
-        </div>
-        <div className="flex flex-wrap items-stretch gap-5 [animation:dc-up_700ms_ease_both]">
+        </Reveal>
+        <Reveal className="flex flex-wrap items-stretch gap-5">
           <button
             onClick={() => onOpenLightbox(AMBIENTE.cover)}
             className="group relative min-h-[480px] flex-1 basis-[420px] overflow-hidden rounded-lg border border-border bg-surface p-0 text-left transition-colors hover:border-silver"
@@ -55,7 +56,7 @@ export function Ambiente({ onOpenLightbox }: AmbienteProps) {
               ))}
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

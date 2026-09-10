@@ -39,7 +39,7 @@ export function Footer({ onOpenAuth }: FooterProps) {
                 <br />
                 {BRAND.addressCity}
               </span>
-              <span className="text-sm text-muted">Seg a sex 09h—20h · Sáb 08h—18h</span>
+              <span className="text-sm text-muted">Seg a sex 09h às 20h · Sáb 08h às 18h</span>
             </div>
           </div>
 

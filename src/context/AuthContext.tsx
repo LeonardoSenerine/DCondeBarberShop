@@ -10,8 +10,7 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
-  sendEmailCode: (email: string, fullName: string, phone: string) => Promise<{ error: string | null }>;
-  verifyEmailCode: (email: string, code: string) => Promise<{ error: string | null }>;
+  sendMagicLink: (email: string, fullName: string, phone: string) => Promise<{ error: string | null }>;
   updateProfile: (patch: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
@@ -67,18 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       isAdmin: profile?.role === "admin",
-      async sendEmailCode(email, fullName, phone) {
+      async sendMagicLink(email, fullName, phone) {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { data: { full_name: fullName, phone } },
-        });
-        return { error: error ? traduzErroAuth(error.message) : null };
-      },
-      async verifyEmailCode(email, code) {
-        const { error } = await supabase.auth.verifyOtp({
-          email,
-          token: code,
-          type: "email",
+          options: {
+            data: { full_name: fullName, phone },
+            emailRedirectTo: window.location.origin,
+          },
         });
         return { error: error ? traduzErroAuth(error.message) : null };
       },
@@ -106,7 +100,6 @@ export function useAuth() {
 
 function traduzErroAuth(message: string): string {
   if (/rate limit/i.test(message)) return "Muitas tentativas. Aguarde um instante e tente de novo.";
-  if (/invalid/i.test(message) && /otp|token/i.test(message)) return "Código inválido ou expirado.";
   if (/email/i.test(message)) return "Confira o e-mail digitado.";
   return message;
 }

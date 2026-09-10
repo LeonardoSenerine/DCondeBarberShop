@@ -232,7 +232,7 @@ export async function toggleBarberHour(hours: BarberHours, defaultSlots: string[
     .from("barber_hours")
     .update({
       is_open: !hours.is_open,
-      label: hours.is_open ? "Fechado" : "09:00 — 20:00",
+      label: hours.is_open ? "Fechado" : "09:00 às 20:00",
       slots: hours.is_open ? [] : defaultSlots,
     })
     .eq("id", hours.id);

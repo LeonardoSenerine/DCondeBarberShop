@@ -3,6 +3,7 @@ import { useBarbers, useBarberHours, useServices } from "@/hooks/useCatalog";
 import { slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
 import { MONTH_LABELS, WEEKDAY_LABELS, WEEKDAY_SHORT, formatCents, formatDuration } from "@/lib/format";
 import { BarberPhoto } from "@/components/BarberPhoto";
+import { Reveal } from "@/components/Reveal";
 
 export interface BookingDraft {
   barberId: string;
@@ -124,7 +125,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
       className="relative bg-ink px-6 pt-[72px] pb-28"
       style={{ zIndex: 5 }}
     >
-      <div className="mx-auto max-w-[1240px] rounded-lg border border-border bg-surface p-6 shadow-[0_40px_90px_rgba(0,0,0,0.8)] md:p-12">
+      <Reveal className="mx-auto max-w-[1240px] rounded-lg border border-border bg-surface p-6 shadow-[0_40px_90px_rgba(0,0,0,0.8)] md:p-12">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <h2 className="m-0 font-heading text-[clamp(28px,3.4vw,42px)] font-semibold tracking-[0.04em] text-white uppercase">
             Reserve seu horário
@@ -146,7 +147,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 key={name}
                 disabled={!reachable}
                 onClick={() => reachable && setStep(n)}
-                className="flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition-colors disabled:cursor-not-allowed sm:flex-1 sm:basis-[180px] sm:flex-row sm:items-center sm:gap-3 sm:px-2.5 sm:text-left"
+                className="flex min-w-0 cursor-pointer flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition hover:brightness-125 disabled:cursor-not-allowed disabled:hover:brightness-100 sm:flex-1 sm:basis-[180px] sm:flex-row sm:items-center sm:gap-3 sm:px-2.5 sm:text-left"
                 style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent" }}
               >
                 <span
@@ -192,7 +193,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                       setDay(null);
                       setTime(null);
                     }}
-                    className="flex w-full flex-col overflow-hidden rounded-[10px] border text-left transition-colors"
+                    className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-[10px] border text-left transition duration-300 hover:z-10 hover:scale-[1.04] hover:border-silver"
                     style={{
                       background: on ? "rgba(255,255,255,0.06)" : "#141414",
                       borderColor: on ? "#E0E0E0" : "#2A2A2A",
@@ -212,11 +213,16 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                             "linear-gradient(to top,rgba(10,10,10,0.9) 0%,rgba(10,10,10,0.1) 55%,rgba(10,10,10,0) 100%)",
                         }}
                       />
-                      {on && (
-                        <span className="absolute top-3 right-3 flex h-[22px] w-[22px] items-center justify-center rounded-full border border-white bg-silver text-xs text-ink">
-                          ✓
-                        </span>
-                      )}
+                      <span
+                        className="absolute top-3 right-3 flex h-[22px] w-[22px] items-center justify-center rounded-full border text-xs transition-colors"
+                        style={
+                          on
+                            ? { borderColor: "#fff", background: "var(--color-silver)", color: "#0A0A0A" }
+                            : { borderColor: "rgba(255,255,255,0.55)", background: "rgba(10,10,10,0.35)", color: "transparent" }
+                        }
+                      >
+                        ✓
+                      </span>
                       <span className="absolute right-4 bottom-3.5 left-4 flex flex-col gap-0.5">
                         <span className="font-heading text-lg tracking-[0.1em] text-white uppercase">
                           {b.name}
@@ -225,8 +231,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                       </span>
                     </span>
                     <span className="flex flex-col gap-2 px-4 pt-3.5 pb-4">
-                      <span className="flex items-center gap-2 border-t border-border pt-2.5 text-[13px] text-silver">
-                        <span className="text-[11px] tracking-[0.2em] text-faint uppercase">Instagram</span>
+                      <span className="block truncate border-t border-border pt-2.5 text-[13px] text-silver transition-colors group-hover:text-white">
                         {b.instagram ?? "—"}
                       </span>
                     </span>
@@ -251,8 +256,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 return (
                   <button
                     key={s.id}
-                    onClick={() => setServiceId(s.id)}
-                    className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition-colors"
+                    onClick={() => setServiceId((prev) => (prev === s.id ? null : s.id))}
+                    className="flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition hover:brightness-125"
                     style={{
                       background: on ? "rgba(255,255,255,0.07)" : "#1A1A1A",
                       borderColor: on ? "#E0E0E0" : "#2A2A2A",
@@ -290,7 +295,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                     onClick={() => !isMinMonth && jumpMonth(-1)}
                     disabled={isMinMonth}
                     aria-label="Mês anterior"
-                    className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-md border border-border bg-ink text-sm disabled:cursor-not-allowed"
+                    className="flex h-[30px] w-[30px] flex-shrink-0 cursor-pointer items-center justify-center rounded-md border border-border bg-ink text-sm transition hover:brightness-125 disabled:cursor-not-allowed disabled:hover:brightness-100"
                     style={{ color: isMinMonth ? "#3A3A3A" : "#FFFFFF" }}
                   >
                     ‹
@@ -304,7 +309,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                   <button
                     onClick={() => jumpMonth(1)}
                     aria-label="Próximo mês"
-                    className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-md border border-border bg-ink text-sm text-white"
+                    className="flex h-[30px] w-[30px] flex-shrink-0 cursor-pointer items-center justify-center rounded-md border border-border bg-ink text-sm text-white transition hover:brightness-125"
                   >
                     ›
                   </button>
@@ -335,7 +340,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                           setDay(d);
                           setTime(null);
                         }}
-                        className="flex aspect-square min-h-[30px] items-center justify-center rounded-md text-xs transition-colors disabled:cursor-not-allowed"
+                        className="flex aspect-square min-h-[30px] cursor-pointer items-center justify-center rounded-md text-xs transition hover:brightness-125 disabled:cursor-not-allowed disabled:hover:brightness-100"
                         style={{
                           background: on ? "#E0E0E0" : off ? "transparent" : "#0A0A0A",
                           color: on ? "#0A0A0A" : off ? "#3A3A3A" : "#FFFFFF",
@@ -358,14 +363,14 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
 
               <div className="rounded-lg border border-border bg-surface-alt p-3.5">
                 <span className="text-xs tracking-[0.18em] text-muted-2 uppercase">Horários livres</span>
-                <div className="mt-3 flex flex-wrap gap-1.5">
+                <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
                   {freeTimes.map((t) => {
                     const on = time === t;
                     return (
                       <button
                         key={t}
                         onClick={() => setTime(t)}
-                        className="min-h-9 rounded-full border px-3 text-xs transition-colors"
+                        className="flex min-h-14 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium tracking-[0.04em] transition hover:brightness-125"
                         style={{
                           background: on ? "#E0E0E0" : "#0A0A0A",
                           color: on ? "#0A0A0A" : "#FFFFFF",
@@ -388,12 +393,12 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
         )}
 
         {step === 4 && (
-          <div className="max-w-full md:max-w-[520px]">
-            <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
+          <div className="max-w-full md:max-w-[840px]">
+            <h3 className="mb-2 font-heading text-sm font-medium tracking-[0.24em] text-white uppercase">
               Confirme os dados
             </h3>
-            <p className="mb-4.5 text-sm text-muted-2">Só falta confirmar por SMS.</p>
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-alt p-4.5">
+            <p className="mb-6 text-base text-muted-2">Só falta confirmar por SMS.</p>
+            <div className="flex flex-col gap-6 rounded-lg border border-border bg-surface-alt p-8 md:p-12">
               {[
                 { k: "Serviço", v: service?.name ?? "Selecione" },
                 { k: "Barbeiro", v: barber?.name ?? "Selecione" },
@@ -402,24 +407,24 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 { k: "Duração", v: service ? formatDuration(service.duration_minutes) : "—" },
               ].map((row) => (
                 <div key={row.k} className="flex items-baseline justify-between gap-3">
-                  <span className="text-[13px] text-muted">{row.k}</span>
-                  <span className="font-heading text-sm tracking-[0.06em] text-white">{row.v}</span>
+                  <span className="text-base text-muted">{row.k}</span>
+                  <span className="font-heading text-xl tracking-[0.06em] text-white">{row.v}</span>
                 </div>
               ))}
-              <div className="my-0.5 h-px bg-border" />
+              <div className="my-1.5 h-px bg-border" />
               <div className="flex items-baseline justify-between">
-                <span className="font-heading text-[13px] tracking-[0.2em] text-white uppercase">A partir de</span>
-                <span className="font-heading text-2xl font-semibold text-white">
+                <span className="font-heading text-base tracking-[0.2em] text-white uppercase">A partir de</span>
+                <span className="font-heading text-5xl font-semibold text-white">
                   {service ? formatCents(service.price_cents) : "—"}
                 </span>
               </div>
               <button
                 onClick={handleConfirm}
-                className="bg-silver-gradient mt-1.5 flex min-h-[52px] w-full items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
+                className="bg-silver-gradient mt-2 flex min-h-[72px] w-full cursor-pointer items-center justify-center rounded-lg font-heading text-base font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
               >
                 Confirmar agendamento
               </button>
-              <span className="text-center text-xs text-muted-2">Confirmação por SMS no seu celular</span>
+              <span className="text-center text-sm text-muted-2">Confirmação por SMS no seu celular</span>
             </div>
           </div>
         )}
@@ -428,7 +433,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
           <button
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="flex min-h-[50px] items-center gap-2.5 rounded-lg border border-border px-6.5 font-heading text-xs font-medium tracking-[0.2em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed"
+            className="flex min-h-[50px] cursor-pointer items-center gap-2.5 rounded-lg border border-border px-6.5 font-heading text-xs font-medium tracking-[0.2em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed"
             style={{ color: step === 1 ? "#3A3A3A" : "#FFFFFF" }}
           >
             ‹ Voltar
@@ -438,7 +443,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             <button
               onClick={() => canNext && setStep((s) => Math.min(4, s + 1))}
               disabled={!canNext}
-              className="flex min-h-[50px] items-center gap-2.5 rounded-lg px-8 font-heading text-xs font-semibold tracking-[0.2em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed"
+              className="flex min-h-[50px] cursor-pointer items-center gap-2.5 rounded-lg px-8 font-heading text-xs font-semibold tracking-[0.2em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed"
               style={{
                 background: canNext ? SILVER_GRADIENT : "#1F1F1F",
                 color: canNext ? "#0A0A0A" : "#7A7A7A",
@@ -448,7 +453,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             </button>
           )}
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

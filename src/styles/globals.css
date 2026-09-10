@@ -38,21 +38,35 @@
   }
 }
 
+/* Scroll-triggered reveal — see src/components/Reveal.tsx. Starts hidden
+   and transitions in once the element's IntersectionObserver fires. */
+.dc-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+
+.dc-reveal-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 @keyframes dc-zoom {
   from {
     transform: scale(1.12);
   }
   to {
     transform: scale(1);
-  }
-}
-
-@keyframes dc-line {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
   }
 }
 

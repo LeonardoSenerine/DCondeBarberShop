@@ -1,16 +1,17 @@
-import { ABOUT } from "@/data/content";
+import { ABOUT, BRAND } from "@/data/content";
+import { Reveal } from "@/components/Reveal";
 
 export function About() {
   return (
     <section id="sobre" className="relative overflow-hidden bg-surface px-6 py-28">
       <div className="mx-auto grid max-w-[1240px] items-center gap-10 md:grid-cols-2 md:gap-20">
-        <div className="animate-[dc-up_700ms_ease_both]">
+        <Reveal>
           <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Sobre</span>
           <h2 className="m-0 mt-3 mb-7 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             Desde {ABOUT.stats[0].value}
           </h2>
 
-          <blockquote className="m-0 mb-7 border-l border-silver pl-5.5">
+          <blockquote className="m-0 mb-7">
             <p className="m-0 font-serif text-lg leading-relaxed text-white sm:text-[22px] text-balance-safe">{ABOUT.quote}</p>
           </blockquote>
 
@@ -37,7 +38,7 @@ export function About() {
               Agendar horário
             </a>
             <a
-              href="https://www.instagram.com/dcondebarbearia/"
+              href={BRAND.instagram}
               target="_blank"
               rel="noopener"
               className="flex h-13 items-center rounded-lg border border-border px-7 font-heading text-xs tracking-[0.2em] text-white uppercase transition-colors hover:border-silver"
@@ -45,9 +46,9 @@ export function About() {
               Ver o Instagram
             </a>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="relative animate-[dc-up_700ms_120ms_ease_both]">
+        <Reveal className="relative" delayMs={120}>
           <img
             src={ABOUT.founder.photo}
             alt={`${ABOUT.founder.name}, fundador da D'Conde Barbearia`}
@@ -71,17 +72,20 @@ export function About() {
           >
             <img src="/img/monogram.jpg" alt="" className="h-full w-full object-cover" style={{ objectPosition: "center 46%" }} />
           </span>
-        </div>
+        </Reveal>
       </div>
 
-      <div className="mx-auto mt-20 grid max-w-[1240px] gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3 [animation:dc-up_700ms_200ms_ease_both]">
+      <Reveal
+        className="mx-auto mt-20 grid max-w-[1240px] gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3"
+        delayMs={200}
+      >
         {ABOUT.facts.map((f) => (
           <div key={f.k} className="flex flex-col gap-2 bg-ink px-6 py-7">
             <span className="font-heading text-[11px] tracking-[0.24em] text-muted-2 uppercase">{f.k}</span>
             <span className="text-[15px] leading-relaxed text-white">{f.v}</span>
           </div>
         ))}
-      </div>
+      </Reveal>
     </section>
   );
 }

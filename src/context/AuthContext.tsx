@@ -38,9 +38,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
     });
 
+    // When the tab regains focus (e.g. the user confirmed the magic link
+    // in another tab and came back here), re-read the session so this tab
+    // reflects the login instead of staying stuck on the "check your
+    // e-mail" screen.
+    const recheck = () => {
+      supabase.auth.getSession().then(({ data }) => {
+        if (active) setSession(data.session);
+      });
+    };
+    document.addEventListener("visibilitychange", recheck);
+    window.addEventListener("focus", recheck);
+
     return () => {
       active = false;
       sub.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", recheck);
+      window.removeEventListener("focus", recheck);
     };
   }, []);
 

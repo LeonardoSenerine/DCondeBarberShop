@@ -64,6 +64,13 @@ export function SitePage() {
     });
   }, [session?.user, profile, createBooking, navigate]);
 
+  // Once the user is authenticated, drop the auth modal — covers the
+  // login-only flow where they confirmed the magic link elsewhere and
+  // came back to a tab still showing "check your e-mail".
+  useEffect(() => {
+    if (session?.user && authOpen) setAuthOpen(false);
+  }, [session?.user, authOpen]);
+
   async function handleConfirmBooking(draft: BookingDraft) {
     if (session?.user) {
       await createBooking({

@@ -10,7 +10,7 @@ interface HeaderProps {
 export function Header({ onOpenAuth }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { session } = useAuth();
+  const { session, profile } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -21,6 +21,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
 
   const accountLabel = session ? "Minha conta" : "Entrar";
   const accountHref = session ? "/conta" : null;
+  const firstName = profile?.full_name?.trim().split(/\s+/)[0];
 
   return (
     <header
@@ -71,10 +72,26 @@ export function Header({ onOpenAuth }: HeaderProps) {
 
           <a
             href="#agendar"
-            className="bg-silver-gradient flex h-11 items-center rounded-lg px-7 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
+            className="bg-silver-gradient hidden h-11 items-center rounded-lg px-7 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:flex"
           >
             Agendar
           </a>
+
+          {session ? (
+            <Link
+              to="/conta"
+              className="flex h-11 max-w-[40vw] items-center truncate rounded-lg border border-border px-4 font-heading text-[13px] tracking-[0.16em] text-white uppercase md:hidden"
+            >
+              {firstName ?? "Conta"}
+            </Link>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="bg-silver-gradient flex h-11 items-center rounded-lg px-6 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:hidden"
+            >
+              Entrar
+            </button>
+          )}
 
           <button
             onClick={() => setMenuOpen((v) => !v)}

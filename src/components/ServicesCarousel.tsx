@@ -3,6 +3,7 @@ import { useServices } from "@/hooks/useCatalog";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { formatCents, formatDuration } from "@/lib/format";
 import { Reveal } from "@/components/Reveal";
+import { Skeleton } from "@/components/Skeleton";
 import "@/styles/scroll-rails.css";
 import "@/styles/gallery-card.css";
 
@@ -55,7 +56,21 @@ export function ServicesCarousel() {
         <div aria-hidden className="scroll-rail-fade-left" style={{ background: "linear-gradient(90deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%)" }} />
         <div aria-hidden className="scroll-rail-fade-right" style={{ background: "linear-gradient(270deg,#141414 0%,rgba(20,20,20,0.85) 45%,rgba(20,20,20,0) 100%)" }} />
         <div ref={trackRef} className="scroll-rail relative flex gap-4 overflow-x-auto px-6 pt-4 pb-6 sm:pt-10 sm:pb-10">
-          {loading && <p className="py-10 text-muted">Carregando serviços…</p>}
+          {loading &&
+            Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="relative flex min-h-[180px] flex-none basis-[280px] flex-col gap-3 rounded-lg border border-border bg-surface-alt p-6"
+              >
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <div className="mt-auto flex items-end justify-between border-t border-border pt-4.5">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </div>
+            ))}
           {services.map((s) => (
             <div
               key={s.id}

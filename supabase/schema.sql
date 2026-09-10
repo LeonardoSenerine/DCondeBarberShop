@@ -51,6 +51,8 @@ create table if not exists public.barbers (
   name text not null,
   role_title text not null default 'Barbeiro',
   instagram text,
+  email text,
+  phone text,
   photo_path text not null,
   gallery_paths text[] not null default '{}',
   sort_order int not null default 0
@@ -90,8 +92,8 @@ create table if not exists public.bookings (
   service_id text not null references public.services (id),
   scheduled_date date not null,
   scheduled_time time not null,
-  status text not null default 'confirmed'
-    check (status in ('confirmed', 'completed', 'cancelled', 'no_show')),
+  status text not null default 'pending'
+    check (status in ('pending', 'confirmed', 'completed', 'cancelled', 'no_show')),
   price_cents int not null,
   customer_name text not null,
   customer_phone text not null,
@@ -108,10 +110,13 @@ create index if not exists bookings_barber_date_idx on public.bookings (barber_i
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  description text,
   category text not null check (category in ('Cabelo', 'Barba', 'Pele')),
   price_cents int not null,
   stock int not null default 0,
   image_path text,
+  sale_percent int not null default 0 check (sale_percent between 0 and 100),
+  sale_until date,
   active boolean not null default true
 );
 

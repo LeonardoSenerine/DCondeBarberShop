@@ -5,7 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 import { BRAND } from "@/data/content";
 import { formatCents, whatsAppLink } from "@/lib/format";
+import { effectivePriceCents, isOnSale } from "@/lib/product";
 import { Reveal } from "@/components/Reveal";
+import { Skeleton } from "@/components/Skeleton";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
@@ -27,7 +29,7 @@ export function Shop() {
     .map(([id, qty]) => ({ product: byId.get(id), qty }))
     .filter((row): row is { product: Product; qty: number } => !!row.product);
 
-  const totalCents = cartRows.reduce((sum, row) => sum + row.product.price_cents * row.qty, 0);
+  const totalCents = cartRows.reduce((sum, row) => sum + effectivePriceCents(row.product) * row.qty, 0);
 
   async function handleCheckout() {
     const items = cartRows
@@ -54,7 +56,7 @@ export function Shop() {
             order_id: order.id,
             product_id: row.product.id,
             quantity: row.qty,
-            unit_price_cents: row.product.price_cents,
+            unit_price_cents: effectivePriceCents(row.product),
           })),
         );
       }
@@ -102,27 +104,53 @@ export function Shop() {
               </div>
             </div>
 
-            {loading && <p className="text-muted">Carregando produtos…</p>}
-
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+              {loading &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-3.5 rounded-lg border border-border bg-surface-alt p-4.5">
+                    <Skeleton className="h-[170px] rounded-lg" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-16" />
+                    <div className="mt-auto flex items-center justify-between border-t border-border pt-3.5">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-9 w-24 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
               {filtered.map((p) => {
                 const out = p.stock === 0;
+                const sale = isOnSale(p);
+                const current = effectivePriceCents(p);
                 return (
                   <div
                     key={p.id}
                     className="flex flex-col gap-3.5 rounded-lg border border-border bg-surface-alt p-4.5 transition-transform duration-300 hover:-translate-y-1 hover:border-silver"
                   >
-                    <div className="flex h-[170px] items-center justify-center rounded-lg border border-border bg-ink">
-                      <span aria-hidden className="font-display text-[76px] leading-none text-white opacity-16">
-                        D
-                      </span>
+                    <div className="relative flex h-[170px] items-center justify-center overflow-hidden rounded-lg border border-border bg-ink">
+                      {p.image_path ? (
+                        <img src={p.image_path} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span aria-hidden className="font-display text-[76px] leading-none text-white opacity-16">
+                          D
+                        </span>
+                      )}
+                      {sale && (
+                        <span className="bg-silver-gradient absolute top-2.5 left-2.5 rounded-full px-2.5 py-1 font-heading text-[10px] font-semibold tracking-[0.14em] text-ink uppercase">
+                          -{p.sale_percent}%
+                        </span>
+                      )}
                     </div>
                     <span className="font-heading text-base font-medium tracking-[0.08em] text-white uppercase text-balance-safe">
                       {p.name}
                     </span>
                     <span className="text-[13px] text-muted">{p.category}</span>
                     <div className="mt-auto flex items-center justify-between gap-2.5 border-t border-border pt-3.5">
-                      <span className="font-heading text-xl font-semibold text-white">{formatCents(p.price_cents)}</span>
+                      <span className="flex items-baseline gap-2">
+                        <span className="font-heading text-xl font-semibold text-white">{formatCents(current)}</span>
+                        {sale && (
+                          <span className="text-[13px] text-faint line-through">{formatCents(p.price_cents)}</span>
+                        )}
+                      </span>
                       <button
                         disabled={out}
                         onClick={() => add(p.id)}
@@ -151,7 +179,7 @@ export function Shop() {
                     <span className="min-w-0 flex-1 text-sm text-white">{row.product.name}</span>
                     <span className="text-[13px] text-muted">{row.qty}×</span>
                     <span className="font-heading text-[15px] text-white">
-                      {formatCents(row.product.price_cents * row.qty)}
+                      {formatCents(effectivePriceCents(row.product) * row.qty)}
                     </span>
                     <button
                       onClick={() => remove(row.product.id)}

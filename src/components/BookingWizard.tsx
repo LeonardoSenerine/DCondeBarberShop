@@ -4,6 +4,7 @@ import { slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
 import { MONTH_LABELS, WEEKDAY_LABELS, WEEKDAY_SHORT, formatCents, formatDuration } from "@/lib/format";
 import { BarberPhoto } from "@/components/BarberPhoto";
 import { Reveal } from "@/components/Reveal";
+import { Skeleton } from "@/components/Skeleton";
 
 export interface BookingDraft {
   barberId: string;
@@ -25,8 +26,8 @@ const STEP_NAMES = ["Profissional", "Serviço", "Dia e horário", "Confirmar"];
 const SILVER_GRADIENT = "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)";
 
 export function BookingWizard({ onConfirm }: BookingWizardProps) {
-  const { data: barbers } = useBarbers();
-  const { data: services } = useServices();
+  const { data: barbers, loading: barbersLoading } = useBarbers();
+  const { data: services, loading: servicesLoading } = useServices();
   const { data: hours } = useBarberHours();
 
   const [step, setStep] = useState(1);
@@ -183,6 +184,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             </h3>
             <p className="mb-4.5 text-sm text-muted-2">A agenda mostrada depois é a dele.</p>
             <div className="grid grid-cols-2 gap-4">
+              {barbersLoading && <Skeleton count={2} className="aspect-[4/5] w-full rounded-[10px]" />}
               {barbers.map((b) => {
                 const on = barberId === b.id;
                 return (
@@ -251,6 +253,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               Com {barber?.name ?? "—"}. Dá pra trocar antes de confirmar.
             </p>
             <div className="grid max-h-[420px] grid-cols-1 gap-2.5 overflow-y-auto pr-1.5 md:grid-cols-2">
+              {servicesLoading && <Skeleton count={6} className="h-[68px] w-full rounded-lg" />}
               {services.map((s) => {
                 const on = serviceId === s.id;
                 return (

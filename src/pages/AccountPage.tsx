@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useMyBookings, cancelBooking } from "@/hooks/useBooking";
 import { formatCents, formatDateBR, formatTimeShort } from "@/lib/format";
+import { Skeleton } from "@/components/Skeleton";
 
 export function AccountPage() {
   const { session, profile, loading, signOut, updateProfile } = useAuth();
@@ -17,9 +18,10 @@ export function AccountPage() {
 
   const todayKey = new Date().toISOString().slice(0, 10);
   const upcoming = bookings
-    .filter((b) => b.status === "confirmed" && b.scheduled_date >= todayKey)
+    .filter((b) => (b.status === "confirmed" || b.status === "pending") && b.scheduled_date >= todayKey)
     .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))[0];
   const history = bookings.filter((b) => b !== upcoming && b.status !== "cancelled");
+  const upcomingPending = upcoming?.status === "pending";
 
   async function handleCancel() {
     if (!upcoming) return;
@@ -39,7 +41,7 @@ export function AccountPage() {
         <div className="mx-auto flex max-w-[1080px] items-center justify-between gap-4 px-6 py-4">
           <div className="flex min-w-0 items-center gap-3.5">
             <img src="/img/monogram.jpg" alt="" className="h-10 w-11 object-contain" style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }} />
-            <span className="font-heading text-[13px] tracking-[0.22em] text-white uppercase">Minha conta</span>
+            <span className="font-heading text-[13px] tracking-[0.22em] text-white uppercase">Meus agendamentos</span>
           </div>
           <div className="flex items-center gap-2.5">
             <Link to="/" className="flex min-h-11 items-center rounded-lg border border-border px-4.5 font-heading text-xs tracking-[0.18em] text-white uppercase transition-colors hover:border-silver">
@@ -67,19 +69,36 @@ export function AccountPage() {
           <div className="rounded-lg border border-border bg-surface p-7">
             <div className="mb-5 flex items-center justify-between gap-3">
               <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Próximo agendamento</span>
-              {upcoming && (
-                <span className="bg-silver-gradient rounded-full px-2.5 py-1 text-[11px] tracking-[0.14em] text-ink uppercase">
-                  Confirmado
-                </span>
-              )}
+              {upcoming &&
+                (upcomingPending ? (
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[11px] tracking-[0.14em] uppercase"
+                    style={{ color: "#E0B341", borderColor: "#E0B341" }}
+                  >
+                    Em análise
+                  </span>
+                ) : (
+                  <span className="bg-silver-gradient rounded-full px-2.5 py-1 text-[11px] tracking-[0.14em] text-ink uppercase">
+                    Confirmado
+                  </span>
+                ))}
             </div>
             {bookingsLoading ? (
-              <p className="text-muted">Carregando…</p>
+              <div className="flex flex-col gap-3">
+                <Skeleton className="h-7 w-2/3" />
+                <Skeleton className="h-4 w-full" count={4} />
+                <Skeleton className="mt-3 h-12 w-full" />
+              </div>
             ) : upcoming ? (
               <>
                 <div className="font-heading text-2xl leading-tight font-medium tracking-[0.04em] text-white uppercase">
                   {upcoming.services?.name}
                 </div>
+                {upcomingPending && (
+                  <p className="mt-2 text-[13px]" style={{ color: "#E0B341" }}>
+                    Aguardando o barbeiro aceitar a solicitação.
+                  </p>
+                )}
                 <div className="mt-4 flex flex-col gap-2">
                   {[
                     { k: "Barbeiro", v: upcoming.barbers?.name ?? "—" },
@@ -104,7 +123,7 @@ export function AccountPage() {
                     onClick={handleCancel}
                     className="flex min-h-12 flex-1 basis-[140px] items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                   >
-                    Cancelar
+                    {upcomingPending ? "Cancelar solicitação" : "Cancelar"}
                   </button>
                 </div>
               </>
@@ -130,7 +149,10 @@ export function AccountPage() {
         <div className="mb-5 rounded-lg border border-border bg-surface p-7">
           <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Histórico de atendimentos</span>
           <div className="mt-4.5 flex flex-col">
-            {history.length === 0 && <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>}
+            {bookingsLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
+            {!bookingsLoading && history.length === 0 && (
+              <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
+            )}
             {history.map((h) => (
               <div key={h.id} className="flex flex-wrap items-center gap-3 border-t border-border py-3.5">
                 <span className="w-24 font-heading text-sm text-white">{formatDateBR(h.scheduled_date)}</span>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useClients } from "@/hooks/useAdmin";
 import { formatCents, formatDateBR } from "@/lib/format";
+import { Skeleton } from "@/components/Skeleton";
 
 export function ClientsTab() {
   const [query, setQuery] = useState("");
@@ -17,7 +18,18 @@ export function ClientsTab() {
           className="min-h-11 min-w-[220px] rounded-lg border border-border bg-surface-alt px-3.5 text-sm text-white outline-none focus:border-silver"
         />
       </div>
-      {loading && <p className="text-muted">Carregando…</p>}
+      {loading &&
+        Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3.5 border-t border-border py-3.5">
+            <Skeleton className="h-9.5 w-9.5 rounded-full" />
+            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-3 w-28" />
+            </span>
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="ml-auto h-5 w-16" />
+          </div>
+        ))}
       {!loading && clients.length === 0 && <p className="text-muted">Nenhum cliente encontrado.</p>}
       {clients.map((c) => (
         <div key={c.customerId} className="flex flex-wrap items-center gap-3.5 border-t border-border py-3.5">

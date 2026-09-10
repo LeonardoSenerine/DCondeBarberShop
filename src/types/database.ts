@@ -4,7 +4,7 @@
  * linked to a real Supabase instance, then this file can be replaced.
  */
 
-export type BookingStatus = "confirmed" | "completed" | "cancelled" | "no_show";
+export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
 export type OrderStatus = "pending" | "ready" | "completed" | "cancelled";
 export type ProductCategory = "Cabelo" | "Barba" | "Pele";
 export type PaymentMethod = "Pix" | "Crédito" | "Débito" | "Dinheiro";
@@ -25,6 +25,8 @@ type BarbersRow = {
   name: string;
   role_title: string;
   instagram: string | null;
+  email: string | null;
+  phone: string | null;
   photo_path: string;
   gallery_paths: string[];
   sort_order: number;
@@ -66,10 +68,13 @@ type BookingsRow = {
 type ProductsRow = {
   id: string;
   name: string;
+  description: string | null;
   category: ProductCategory;
   price_cents: number;
   stock: number;
   image_path: string | null;
+  sale_percent: number;
+  sale_until: string | null;
   active: boolean;
 };
 
@@ -124,7 +129,8 @@ export interface Database {
       };
       barbers: {
         Row: BarbersRow;
-        Insert: BarbersRow;
+        Insert: Omit<BarbersRow, "email" | "phone" | "gallery_paths" | "sort_order" | "instagram"> &
+          Partial<Pick<BarbersRow, "email" | "phone" | "gallery_paths" | "sort_order" | "instagram">>;
         Update: Partial<BarbersRow>;
         Relationships: [];
       };
@@ -148,7 +154,14 @@ export interface Database {
       };
       products: {
         Row: ProductsRow;
-        Insert: Omit<ProductsRow, "id"> & { id?: string };
+        Insert: Omit<ProductsRow, "id" | "description" | "image_path" | "sale_percent" | "sale_until" | "active"> & {
+          id?: string;
+          description?: string | null;
+          image_path?: string | null;
+          sale_percent?: number;
+          sale_until?: string | null;
+          active?: boolean;
+        };
         Update: Partial<ProductsRow>;
         Relationships: [];
       };

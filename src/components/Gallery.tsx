@@ -3,6 +3,7 @@ import { useGallery } from "@/hooks/useCatalog";
 import { useAutoScroll } from "@/hooks/useAutoScroll";
 import { BRAND } from "@/data/content";
 import { Reveal } from "@/components/Reveal";
+import { Skeleton } from "@/components/Skeleton";
 import "@/styles/scroll-rails.css";
 import "@/styles/gallery-card.css";
 
@@ -86,7 +87,13 @@ export function Gallery({ onOpenLightbox }: GalleryProps) {
           ref={railRef}
           className="scroll-rail flex gap-4 overflow-x-auto px-6 py-4 sm:py-10 [animation:dc-up_700ms_ease_both]"
         >
-          {loading && <p className="py-10 text-muted">Carregando galeria…</p>}
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className="h-[360px] w-[84%] flex-none rounded-lg md:h-[440px] md:w-[calc((100%-32px)/3)]"
+              />
+            ))}
           {loopedPhotos.map((g) => (
             <button
               key={g.id}

@@ -60,9 +60,10 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center overflow-y-auto p-6"
+      className="fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
     >
+      <div className="flex min-h-full items-center justify-center p-6">
       <div className="relative w-full max-w-[440px] animate-[dc-up_400ms_ease_both] rounded-lg border border-border bg-surface p-8 shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
         <button
           onClick={onClose}
@@ -192,6 +193,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
         )}
 
         {session && <p className="mt-4 text-center text-xs text-muted-2">Você já está logado. Feche esta janela.</p>}
+      </div>
       </div>
     </div>
   );

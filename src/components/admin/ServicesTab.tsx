@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAdminServices, updateService, removeService, addService } from "@/hooks/useAdmin";
 import { formatCents } from "@/lib/format";
+import { Skeleton } from "@/components/Skeleton";
 
 export function ServicesTab() {
   const { services, loading, reload } = useAdminServices();
@@ -40,7 +41,15 @@ export function ServicesTab() {
         </h2>
         <span className="text-[13px] text-muted">As alterações aparecem no site na hora.</span>
       </div>
-      {loading && <p className="text-muted">Carregando…</p>}
+      {loading &&
+        Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-2.5 border-t border-border py-3">
+            <Skeleton className="h-11 flex-1 rounded-lg" />
+            <Skeleton className="h-11 w-24 rounded-lg" />
+            <Skeleton className="h-11 w-28 rounded-lg" />
+            <Skeleton className="h-9 w-20 rounded-lg" />
+          </div>
+        ))}
       {services.map((s) => (
         <div key={s.id} className="flex flex-wrap items-center gap-2.5 border-t border-border py-3">
           <input

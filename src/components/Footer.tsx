@@ -81,11 +81,11 @@ export function Footer({ onOpenAuth }: FooterProps) {
               </a>
               {session ? (
                 <Link to="/conta" className="text-left text-[15px] text-muted transition-colors hover:text-white">
-                  Minha conta
+                  Meus agendamentos
                 </Link>
               ) : (
                 <button onClick={onOpenAuth} className="text-left text-[15px] text-muted transition-colors hover:text-white">
-                  Minha conta
+                  Meus agendamentos
                 </button>
               )}
               {isAdmin && (

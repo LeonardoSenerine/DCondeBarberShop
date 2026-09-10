@@ -19,7 +19,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const accountLabel = session ? "Minha conta" : "Entrar";
+  const accountLabel = session ? "Meus agendamentos" : "Entrar";
   const accountHref = session ? "/conta" : null;
   const firstName = profile?.full_name?.trim().split(/\s+/)[0];
 
@@ -82,7 +82,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
               to="/conta"
               className="flex h-11 max-w-[40vw] items-center truncate rounded-lg border border-border px-4 font-heading text-[13px] tracking-[0.16em] text-white uppercase md:hidden"
             >
-              {firstName ?? "Conta"}
+              {firstName ?? "Agendamentos"}
             </Link>
           ) : (
             <button

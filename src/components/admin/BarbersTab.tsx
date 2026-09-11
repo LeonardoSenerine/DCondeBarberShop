@@ -49,7 +49,7 @@ export function BarbersTab() {
         </button>
       </div>
 
-      {busy && (
+      {busy && barbers.length === 0 && (
         <div className="grid gap-5 sm:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={i} className="rounded-lg border border-border bg-surface p-7">
@@ -71,7 +71,7 @@ export function BarbersTab() {
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        {!busy &&
+        {barbers.length > 0 &&
           barbers.map((b) => {
           const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
           return (

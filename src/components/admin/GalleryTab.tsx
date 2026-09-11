@@ -57,7 +57,7 @@ export function GalleryTab() {
         Fotos da galeria
       </h2>
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
-        {loading && <Skeleton count={8} className="h-[150px] rounded-lg" />}
+        {loading && photos.length === 0 && <Skeleton count={8} className="h-[150px] rounded-lg" />}
         {photos.map((p) => (
           <div key={p.id} className="relative h-[150px] overflow-hidden rounded-lg border border-border">
             <img src={p.image_path} loading="lazy" alt="" className="h-full w-full object-cover" />

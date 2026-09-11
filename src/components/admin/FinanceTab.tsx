@@ -3,6 +3,7 @@ import { useFinance, type FinancePeriod } from "@/hooks/useAdmin";
 import { useBarbers } from "@/hooks/useCatalog";
 import { formatCents, MONTH_LABELS, dateKey } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
+import { DateRangePicker } from "@/components/admin/DateRangePicker";
 
 const PERIODS: { id: FinancePeriod; label: string }[] = [
   { id: "today", label: "Hoje" },
@@ -134,24 +135,14 @@ export function FinanceTab() {
       {period === "custom" && (
         <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] tracking-widest text-muted-2 uppercase">De</span>
-            <input
-              type="date"
-              value={customFrom}
-              max={customTo}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="min-h-11 rounded-lg border border-border bg-surface-alt px-3 text-[15px] text-white outline-none focus:border-silver"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] tracking-widest text-muted-2 uppercase">Até</span>
-            <input
-              type="date"
-              value={customTo}
-              min={customFrom}
-              max={today}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="min-h-11 rounded-lg border border-border bg-surface-alt px-3 text-[15px] text-white outline-none focus:border-silver"
+            <span className="text-[13px] tracking-widest text-muted-2 uppercase">Período</span>
+            <DateRangePicker
+              from={customFrom}
+              to={customTo}
+              onChange={(r) => {
+                setCustomFrom(r.from);
+                setCustomTo(r.to);
+              }}
             />
           </label>
         </div>

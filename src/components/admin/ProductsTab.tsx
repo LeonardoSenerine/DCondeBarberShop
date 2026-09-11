@@ -4,20 +4,26 @@ import type { Product } from "@/hooks/useCatalog";
 import { formatCents, formatDateBR } from "@/lib/format";
 import { effectivePriceCents, isOnSale } from "@/lib/product";
 import { ProductFormModal } from "@/components/admin/ProductFormModal";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Skeleton } from "@/components/Skeleton";
 
 export function ProductsTab() {
   const { products, loading, reload } = useAdminProducts();
   const [editing, setEditing] = useState<{ product: Product | null } | null>(null);
+  const [removing, setRemoving] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleAdjust(id: string, delta: number) {
     await adjustProductStock(id, delta);
     reload();
   }
 
-  async function handleDelete(p: Product) {
-    if (!confirm(`Remover ${p.name}?`)) return;
-    await deleteProduct(p.id);
+  async function handleConfirmDelete() {
+    if (!removing) return;
+    setDeleting(true);
+    await deleteProduct(removing.id);
+    setDeleting(false);
+    setRemoving(null);
     reload();
   }
 
@@ -36,6 +42,7 @@ export function ProductsTab() {
       </div>
 
       {loading &&
+        products.length === 0 &&
         Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3.5 border-t border-border py-4 first:border-t-0">
             <Skeleton className="h-11 w-11 rounded-lg" />
@@ -118,7 +125,7 @@ export function ProductsTab() {
                 Editar
               </button>
               <button
-                onClick={() => handleDelete(p)}
+                onClick={() => setRemoving(p)}
                 className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
               >
                 Remover
@@ -133,6 +140,16 @@ export function ProductsTab() {
           product={editing.product}
           onClose={() => setEditing(null)}
           onSaved={reload}
+        />
+      )}
+
+      {removing && (
+        <ConfirmModal
+          title="Remover produto?"
+          message={`Tem certeza que deseja remover "${removing.name}"? Essa ação não pode ser desfeita.`}
+          busy={deleting}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setRemoving(null)}
         />
       )}
     </div>

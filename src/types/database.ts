@@ -74,6 +74,7 @@ type ProductsRow = {
   stock: number;
   image_path: string | null;
   sale_percent: number;
+  sale_from: string | null;
   sale_until: string | null;
   active: boolean;
 };
@@ -154,11 +155,12 @@ export interface Database {
       };
       products: {
         Row: ProductsRow;
-        Insert: Omit<ProductsRow, "id" | "description" | "image_path" | "sale_percent" | "sale_until" | "active"> & {
+        Insert: Omit<ProductsRow, "id" | "description" | "image_path" | "sale_percent" | "sale_from" | "sale_until" | "active"> & {
           id?: string;
           description?: string | null;
           image_path?: string | null;
           sale_percent?: number;
+          sale_from?: string | null;
           sale_until?: string | null;
           active?: boolean;
         };

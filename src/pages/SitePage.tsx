@@ -109,10 +109,10 @@ export function SitePage() {
       <Ambiente onOpenLightbox={setLightbox} />
       <Gallery onOpenLightbox={setLightbox} />
       <LightBanner />
+      <Shop />
       <Perks />
       <About />
       <Contact />
-      <Shop />
       <Footer onOpenAuth={() => setAuthOpen(true)} />
       <MobileBottomBar />
       <WhatsAppButton />

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { formatTimeShort } from "@/lib/format";
+import { dateKey, formatTimeShort } from "@/lib/format";
 import type { BarberHours } from "@/hooks/useCatalog";
 import type { Database } from "@/types/database";
 
@@ -80,13 +80,71 @@ export function useCreateBooking() {
   return { createBooking, submitting };
 }
 
+/** DEV-only mocked bookings for the "Meus agendamentos" page, so it can be previewed without a real login/data. */
+function sampleMyBookings(): BookingWithDetails[] {
+  const today = new Date();
+  const inDays = (n: number) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + n);
+    return dateKey(d);
+  };
+
+  return [
+    {
+      id: "sample-my-booking-upcoming",
+      customer_id: null,
+      barber_id: "daniel",
+      service_id: "sample-service-upcoming",
+      scheduled_date: inDays(3),
+      scheduled_time: "10:00:00",
+      status: "confirmed",
+      price_cents: 9500,
+      customer_name: "Rafael Prado",
+      customer_phone: "(18) 99863-4127",
+      created_at: new Date().toISOString(),
+      barbers: { name: "Daniel" },
+      services: { name: "Corte + barba terapia", duration_minutes: 80 },
+    },
+    {
+      id: "sample-my-booking-1",
+      customer_id: null,
+      barber_id: "joao",
+      service_id: "sample-service-1",
+      scheduled_date: inDays(-14),
+      scheduled_time: "15:30:00",
+      status: "completed",
+      price_cents: 4500,
+      customer_name: "Rafael Prado",
+      customer_phone: "(18) 99863-4127",
+      created_at: new Date().toISOString(),
+      barbers: { name: "João Lima" },
+      services: { name: "Corte", duration_minutes: 50 },
+    },
+    {
+      id: "sample-my-booking-2",
+      customer_id: null,
+      barber_id: "daniel",
+      service_id: "sample-service-2",
+      scheduled_date: inDays(-40),
+      scheduled_time: "09:00:00",
+      status: "completed",
+      price_cents: 5000,
+      customer_name: "Rafael Prado",
+      customer_phone: "(18) 99863-4127",
+      created_at: new Date().toISOString(),
+      barbers: { name: "Daniel" },
+      services: { name: "Barba terapia", duration_minutes: 40 },
+    },
+  ];
+}
+
 export function useMyBookings(customerId: string | null) {
   const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!customerId) {
-      setBookings([]);
+      setBookings(import.meta.env.DEV ? sampleMyBookings() : []);
       setLoading(false);
       return;
     }
@@ -98,7 +156,8 @@ export function useMyBookings(customerId: string | null) {
       .order("scheduled_date", { ascending: false })
       .order("scheduled_time", { ascending: false })
       .then(({ data }) => {
-        setBookings((data ?? []) as unknown as BookingWithDetails[]);
+        const rows = (data ?? []) as unknown as BookingWithDetails[];
+        setBookings(rows.length === 0 && import.meta.env.DEV ? sampleMyBookings() : rows);
         setLoading(false);
       });
   }, [customerId]);

@@ -1,0 +1,30 @@
+/* Field-level validation feedback: a red outline plus a brief shake,
+   shared by every form that surfaces per-field errors on submit. */
+
+@keyframes field-shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+.field-invalid {
+  border-color: #e5484d !important;
+}
+
+.field-shake {
+  animation: field-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}

@@ -1,17 +1,34 @@
 import { useState } from "react";
 import { useAgendaForDate, setBookingStatus } from "@/hooks/useAdmin";
+import type { BookingWithDetails } from "@/hooks/useBooking";
 import { formatCents, formatTimeShort, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
+import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { Toast } from "@/components/admin/Toast";
 
 export function AgendaTab() {
   const [date] = useState(() => new Date());
   const { agenda, loading, reload } = useAgendaForDate(date);
   const [acting, setActing] = useState<string | null>(null);
+  const [completing, setCompleting] = useState<BookingWithDetails | null>(null);
+  const [cancelling, setCancelling] = useState<BookingWithDetails | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   async function decide(id: string, status: "confirmed" | "cancelled") {
     setActing(id);
     await setBookingStatus(id, status);
     setActing(null);
+    reload();
+  }
+
+  async function handleConfirmCancel() {
+    if (!cancelling) return;
+    setActing(cancelling.id);
+    await setBookingStatus(cancelling.id, "cancelled");
+    setActing(null);
+    setCancelling(null);
+    setToast("Agendamento cancelado.");
     reload();
   }
 
@@ -28,8 +45,9 @@ export function AgendaTab() {
         </span>
       </div>
       {loading &&
+        agenda.length === 0 &&
         Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3.5 border-t border-border py-3.5">
+          <div key={i} className="flex items-center gap-3.5 border-t border-border px-3 py-3.5">
             <Skeleton className="h-6 w-14" />
             <span className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Skeleton className="h-4 w-40" />
@@ -41,7 +59,7 @@ export function AgendaTab() {
         ))}
       {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
       {agenda.map((a) => (
-        <div key={a.id} className="flex flex-wrap items-center gap-3.5 border-t border-border py-3.5">
+        <div key={a.id} className="flex flex-wrap items-center gap-3.5 border-t border-border px-3 py-3.5">
           <span className="w-16 font-heading text-lg text-white">{formatTimeShort(a.scheduled_time)}</span>
           <span className="min-w-0 flex-1 basis-[180px]">
             <span className="block text-[15px] text-white">{a.customer_name}</span>
@@ -75,9 +93,51 @@ export function AgendaTab() {
               </button>
             </span>
           )}
+          {a.status === "confirmed" && (
+            <span className="flex gap-3.5">
+              <button
+                onClick={() => setCompleting(a)}
+                className="bg-silver-gradient flex min-h-9 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[11px] font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110"
+              >
+                Concluir
+              </button>
+              <button
+                onClick={() => setCancelling(a)}
+                className="flex min-h-9 cursor-pointer items-center rounded-lg border border-border px-3.5 font-heading text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+              >
+                Cancelar
+              </button>
+            </span>
+          )}
           <span className="ml-auto font-heading text-base text-white">{formatCents(a.price_cents)}</span>
         </div>
       ))}
+
+      {completing && (
+        <CompleteBookingModal
+          booking={completing}
+          onClose={() => setCompleting(null)}
+          onCompleted={() => {
+            setCompleting(null);
+            setToast("Agendamento concluído com sucesso.");
+            reload();
+          }}
+        />
+      )}
+
+      {cancelling && (
+        <ConfirmModal
+          title="Cancelar agendamento?"
+          message={`Tem certeza que deseja cancelar o horário de ${cancelling.customer_name}${cancelling.services?.name ? ` (${cancelling.services.name})` : ""} às ${formatTimeShort(cancelling.scheduled_time)}?`}
+          confirmLabel="Cancelar agendamento"
+          cancelLabel="Voltar"
+          busy={acting === cancelling.id}
+          onConfirm={handleConfirmCancel}
+          onClose={() => setCancelling(null)}
+        />
+      )}
+
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </div>
   );
 }

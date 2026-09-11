@@ -3,6 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import type { BookingDraft } from "@/components/BookingWizard";
 import { formatCents } from "@/lib/format";
 import { savePendingBooking } from "@/lib/pendingBooking";
+import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import "@/styles/shake.css";
 
 type Phase = "dados" | "enviado";
 type Mode = "cadastro" | "login";
@@ -19,18 +21,18 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
   const [busy, setBusy] = useState(false);
 
   function switchMode(next: Mode) {
     setMode(next);
-    setError(null);
+    clear();
   }
 
   async function handleSendLink() {
-    if (mode === "cadastro" && !name.trim()) return setError("Digite seu nome.");
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Digite um e-mail válido.");
-    if (mode === "cadastro" && phone.replace(/\D/g, "").length < 10) return setError("Digite o celular com DDD.");
+    if (mode === "cadastro" && !name.trim()) return fail("Digite seu nome.", ["name"]);
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return fail("Digite um e-mail válido.", ["email"]);
+    if (mode === "cadastro" && phone.replace(/\D/g, "").length < 10) return fail("Digite o celular com DDD.", ["phone"]);
 
     setBusy(true);
     const { error: err } = await sendMagicLink(email.trim(), {
@@ -39,13 +41,13 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
       shouldCreateUser: mode === "cadastro",
     });
     setBusy(false);
-    if (err) return setError(err);
+    if (err) return fail(err, ["email"]);
 
     if (pendingBooking) {
       savePendingBooking({ draft: pendingBooking, name: name.trim(), phone: phone.trim() });
     }
 
-    setError(null);
+    clear();
     setPhase("enviado");
   }
 
@@ -123,9 +125,12 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 <span className="text-[13px] text-muted">Nome</span>
                 <input
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    clearField("name");
+                  }}
                   placeholder="Seu nome"
-                  className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+                  className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("name"))}`}
                 />
               </label>
             )}
@@ -133,10 +138,13 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
               <span className="text-[13px] text-muted">E-mail</span>
               <input
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearField("email");
+                }}
                 placeholder="voce@email.com"
                 type="email"
-                className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+                className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("email"))}`}
               />
             </label>
             {mode === "cadastro" && (
@@ -144,9 +152,12 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 <span className="text-[13px] text-muted">Celular com DDD</span>
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    clearField("phone");
+                  }}
                   placeholder="(18) 99730-7852"
-                  className="min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver"
+                  className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("phone"))}`}
                 />
                 <span className="text-xs text-muted-2">É pra gente confirmar seu horário, não é usado no login.</span>
               </label>
@@ -183,7 +194,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
             <button
               onClick={() => {
                 setPhase("dados");
-                setError(null);
+                clear();
               }}
               className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
             >

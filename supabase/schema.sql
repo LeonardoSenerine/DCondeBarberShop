@@ -116,9 +116,12 @@ create table if not exists public.products (
   stock int not null default 0,
   image_path text,
   sale_percent int not null default 0 check (sale_percent between 0 and 100),
+  sale_from date,
   sale_until date,
   active boolean not null default true
 );
+
+alter table public.products add column if not exists sale_from date;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),

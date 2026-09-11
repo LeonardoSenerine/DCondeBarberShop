@@ -28,7 +28,7 @@ export const HERO = {
     { value: "17", label: "Serviços" },
     { value: "2024", label: "Desde" },
     { value: "Seg a Sáb", label: "Atendimento" },
-    { value: "2", label: "Equipe" },
+
   ],
 };
 
@@ -52,7 +52,7 @@ export const PERKS = [
   },
   {
     title: "Cor a gente leva a sério",
-    line: "Descoloração, pigmento e desenho não saem em quarenta minutos. Luzes é um serviço de quatro horas e a gente bloqueia a agenda inteira para ele. É por isso que sai bom.",
+    line: "Descoloração e pigmento não saem em quarenta minutos. Luzes é um serviço de quatro horas e a gente bloqueia a agenda inteira para ele. É por isso que sai bom.",
   },
   {
     title: "Equipe fixa",

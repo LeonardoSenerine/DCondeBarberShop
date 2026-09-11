@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { saveBarber, uploadBarberPhoto, type WeekdayHours } from "@/hooks/useAdmin";
 import type { Barber, BarberHours } from "@/hooks/useCatalog";
 import { WEEKDAY_LABELS, formatTimeShort } from "@/lib/format";
+import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import "@/styles/shake.css";
 
 interface BarberFormModalProps {
   barber: Barber | null;
@@ -35,7 +37,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
   const initialWeek = useMemo<WeekdayHours[]>(() => {
     return Array.from({ length: 7 }).map((_, weekday) => {
@@ -68,20 +70,23 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
 
   async function handlePhoto(file: File) {
     setUploadingPhoto(true);
-    setError(null);
+    clear();
     const { url, error: err } = await uploadBarberPhoto(file);
     setUploadingPhoto(false);
-    if (err) return setError(err);
-    if (url) setPhotoPath(url);
+    if (err) return fail(err);
+    if (url) {
+      setPhotoPath(url);
+      clearField("photo");
+    }
   }
 
   async function handleGalleryAdd(files: FileList) {
     setUploadingGallery(true);
-    setError(null);
+    clear();
     for (const file of Array.from(files)) {
       const { url, error: err } = await uploadBarberPhoto(file);
       if (err) {
-        setError(err);
+        fail(err);
         break;
       }
       if (url) setGallery((g) => [...g, url]);
@@ -90,12 +95,12 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
   }
 
   async function handleSave() {
-    if (!name.trim()) return setError("Digite o nome.");
-    if (!effectiveId) return setError("Defina o identificador.");
-    if (!photoPath) return setError("Envie uma foto.");
+    if (!name.trim()) return fail("Digite o nome.", ["name"]);
+    if (!effectiveId) return fail("Defina o identificador.", ["id"]);
+    if (!photoPath) return fail("Envie uma foto.", ["photo"]);
 
     setSaving(true);
-    setError(null);
+    clear();
     const { error: err } = await saveBarber(
       {
         id: effectiveId,
@@ -111,7 +116,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
       isNew,
     );
     setSaving(false);
-    if (err) return setError(err);
+    if (err) return fail(err);
     onSaved();
     onClose();
   }
@@ -135,8 +140,10 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
         </h3>
 
         <div className="flex flex-col gap-3.5">
-          <div className="flex items-center gap-4">
-            <span className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt">
+          <div className={`flex items-center gap-4 ${fieldProps("photo").shaking ? "field-shake" : ""}`}>
+            <span
+              className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt ${fieldClass(fieldProps("photo"))}`}
+            >
               {photoPath ? (
                 <img src={photoPath} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -160,7 +167,15 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
             </label>
           </div>
 
-          <Field label="Nome" value={name} onChange={setName} />
+          <Field
+            label="Nome"
+            value={name}
+            onChange={(v) => {
+              setName(v);
+              clearField("name");
+            }}
+            {...fieldProps("name")}
+          />
           {isNew && (
             <Field
               label="Identificador (slug)"
@@ -168,8 +183,10 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
               onChange={(v) => {
                 setId(v);
                 setIdTouched(true);
+                clearField("id");
               }}
               hint="Usado internamente. Sem espaços."
+              {...fieldProps("id")}
             />
           )}
           <Field label="Cargo" value={roleTitle} onChange={setRoleTitle} />
@@ -283,12 +300,16 @@ function Field({
   onChange,
   placeholder,
   hint,
+  invalid,
+  shaking,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   hint?: string;
+  invalid?: boolean;
+  shaking?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-2">
@@ -297,7 +318,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+        className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass({ invalid: !!invalid, shaking: !!shaking })}`}
       />
       {hint && <span className="text-xs text-muted-2">{hint}</span>}
     </label>

@@ -1,7 +1,7 @@
 export function LightBanner() {
   return (
-    <section className="bg-ink px-6 pt-14">
-      <div className="relative mt-24 h-[clamp(260px,42vh,420px)] border-y border-border">
+    <section className="bg-ink px-6 pt-6">
+      <div className="relative mt-10 h-[clamp(260px,42vh,420px)] border-y border-border">
         <div
           aria-hidden
           className="absolute inset-0"

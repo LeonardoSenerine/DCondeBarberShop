@@ -3,6 +3,10 @@ import { saveProduct, uploadProductPhoto, type ProductInput } from "@/hooks/useA
 import type { Product } from "@/hooks/useCatalog";
 import { formatCents } from "@/lib/format";
 import { effectivePriceCents } from "@/lib/product";
+import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import { DateRangePicker } from "@/components/admin/DateRangePicker";
+import { Select } from "@/components/admin/Select";
+import "@/styles/shake.css";
 
 const CATEGORIES: Product["category"][] = ["Cabelo", "Barba", "Pele"];
 
@@ -23,30 +27,36 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [onSale, setOnSale] = useState((product?.sale_percent ?? 0) > 0);
   const [salePercent, setSalePercent] = useState(product?.sale_percent ? String(product.sale_percent) : "10");
+  const [saleFrom, setSaleFrom] = useState(product?.sale_from ?? "");
   const [saleUntil, setSaleUntil] = useState(product?.sale_until ?? "");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
   const priceCents = Math.round((Number(price.replace(",", ".")) || 0) * 100);
   const pct = onSale ? Math.min(100, Math.max(0, Number(salePercent) || 0)) : 0;
-  const currentCents = effectivePriceCents({ price_cents: priceCents, sale_percent: pct, sale_until: saleUntil || null });
+  const currentCents = effectivePriceCents({
+    price_cents: priceCents,
+    sale_percent: pct,
+    sale_from: saleFrom || null,
+    sale_until: saleUntil || null,
+  });
 
   async function handlePhoto(file: File) {
     setUploadingPhoto(true);
-    setError(null);
+    clear();
     const { url, error: err } = await uploadProductPhoto(file);
     setUploadingPhoto(false);
-    if (err) return setError(err);
+    if (err) return fail(err);
     if (url) setImagePath(url);
   }
 
   async function handleSave() {
-    if (!name.trim()) return setError("Digite o nome.");
-    if (priceCents <= 0) return setError("Digite um preço válido.");
-    if (onSale && pct <= 0) return setError("Informe o percentual da promoção.");
+    if (!name.trim()) return fail("Digite o nome.", ["name"]);
+    if (priceCents <= 0) return fail("Digite um preço válido.", ["price"]);
+    if (onSale && pct <= 0) return fail("Informe o percentual da promoção.", ["salePercent"]);
 
     setSaving(true);
-    setError(null);
+    clear();
     const input: ProductInput = {
       name: name.trim(),
       description: description.trim() || null,
@@ -55,11 +65,12 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
       stock: Math.max(0, Math.round(Number(stock) || 0)),
       image_path: imagePath || null,
       sale_percent: pct,
+      sale_from: onSale && saleFrom ? saleFrom : null,
       sale_until: onSale && saleUntil ? saleUntil : null,
     };
     const { error: err } = await saveProduct(input, product?.id);
     setSaving(false);
-    if (err) return setError(err);
+    if (err) return fail(err);
     onSaved();
     onClose();
   }
@@ -109,9 +120,12 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
           <Field label="Nome">
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                clearField("name");
+              }}
               placeholder="Nome do produto"
-              className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+              className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("name"))}`}
             />
           </Field>
 
@@ -127,22 +141,11 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Categoria">
-              <div className="relative">
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as Product["category"])}
-                  className="min-h-12 w-full cursor-pointer appearance-none rounded-lg border border-border bg-surface-alt px-3.5 pr-9 text-[15px] text-white outline-none focus:border-silver"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-muted">
-                  ▼
-                </span>
-              </div>
+              <Select
+                value={category}
+                onChange={(v) => setCategory(v as Product["category"])}
+                options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+              />
             </Field>
             <Field label="Quantidade">
               <input
@@ -159,9 +162,12 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
             <input
               inputMode="decimal"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                setPrice(e.target.value);
+                clearField("price");
+              }}
               placeholder="0,00"
-              className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+              className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("price"))}`}
             />
           </Field>
 
@@ -191,27 +197,32 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
 
           {onSale && (
             <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface-alt p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Desconto (%)">
-                  <input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={salePercent}
-                    onChange={(e) => setSalePercent(e.target.value)}
-                    className="min-h-12 rounded-lg border border-border bg-ink px-3.5 text-[15px] text-white outline-none focus:border-silver"
-                  />
-                </Field>
-                <Field label="Até quando">
-                  <input
-                    type="date"
-                    value={saleUntil}
-                    min={new Date().toISOString().slice(0, 10)}
-                    onChange={(e) => setSaleUntil(e.target.value)}
-                    className="min-h-12 rounded-lg border border-border bg-ink px-3.5 text-[15px] text-white outline-none focus:border-silver"
-                  />
-                </Field>
-              </div>
+              <Field label="Desconto (%)">
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={salePercent}
+                  onChange={(e) => {
+                    setSalePercent(e.target.value);
+                    clearField("salePercent");
+                  }}
+                  className={`min-h-12 rounded-lg border border-border bg-ink px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("salePercent"))}`}
+                />
+              </Field>
+              <Field label="Período da promoção">
+                <DateRangePicker
+                  from={saleFrom}
+                  to={saleUntil}
+                  onChange={(r) => {
+                    setSaleFrom(r.from);
+                    setSaleUntil(r.to);
+                  }}
+                  placeholder="Começo e fim da promoção"
+                  className="w-full"
+                  variant="ink"
+                />
+              </Field>
               <div className="flex items-baseline justify-between border-t border-border pt-3">
                 <span className="text-[13px] text-muted">Valor atual</span>
                 <span className="font-heading text-[20px] text-white tabular-nums">

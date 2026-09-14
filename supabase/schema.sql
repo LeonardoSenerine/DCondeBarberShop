@@ -101,6 +101,12 @@ create table if not exists public.bookings (
   unique (barber_id, scheduled_date, scheduled_time)
 );
 
+-- Re-sync the status check for projects created before "pending" (or a
+-- later status) was added to the allowed list.
+alter table public.bookings drop constraint if exists bookings_status_check;
+alter table public.bookings add constraint bookings_status_check
+  check (status in ('pending', 'confirmed', 'completed', 'cancelled', 'no_show'));
+
 create index if not exists bookings_customer_idx on public.bookings (customer_id);
 create index if not exists bookings_barber_date_idx on public.bookings (barber_id, scheduled_date);
 

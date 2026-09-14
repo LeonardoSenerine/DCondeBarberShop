@@ -7,7 +7,7 @@ import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEK
 import { Skeleton } from "@/components/Skeleton";
 
 export function AccountPage() {
-  const { session, profile, loading, signOut, updateProfile } = useAuth();
+  const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
   const { createBooking } = useCreateBooking();
@@ -18,6 +18,9 @@ export function AccountPage() {
   const [bookingOpen, setBookingOpen] = useState(false);
 
   if (loading) return null;
+  // Barbers/admins have no personal customer bookings — send them to their
+  // own panel instead of an empty "Meus agendamentos".
+  if (isAdmin) return <Navigate to="/admin" replace />;
   // DEV-only: let the page open on `npm run dev` without a real login so it
   // can be previewed with mock bookings. Never active in a production build.
   if (!import.meta.env.DEV && !session) return <Navigate to="/" replace />;

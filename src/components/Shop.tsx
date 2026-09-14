@@ -17,6 +17,13 @@ const PRESS_FX = "active:scale-[0.94] transition-transform duration-150";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
+function bumpElement(el: HTMLElement) {
+  el.classList.remove("pop-bump");
+  void el.offsetWidth;
+  el.classList.add("pop-bump");
+  el.addEventListener("animationend", () => el.classList.remove("pop-bump"), { once: true });
+}
+
 function getVisibleCartTarget(): HTMLElement | null {
   const candidates = document.querySelectorAll<HTMLElement>("[data-cart-target]");
   for (const el of candidates) {
@@ -233,6 +240,7 @@ export function Shop() {
                         disabled={out}
                         onClick={(e) => {
                           add(p.id);
+                          bumpElement(e.currentTarget);
                           const card = e.currentTarget.closest<HTMLElement>("[data-product-card]");
                           if (card) requestAnimationFrame(() => flyProductToCart(card));
                         }}

@@ -8,6 +8,8 @@ import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
 import { BookingStatusBadge } from "@/components/StatusBadge";
 
+const AGENDA_COLS = "92px minmax(0,1fr) 130px 180px 230px 110px";
+
 /** "Hoje" / "Amanhã" for the next couple of days, otherwise dd/mm. */
 function shortDateLabel(iso: string): string {
   const today = dateKey(new Date());
@@ -61,6 +63,7 @@ export function AgendaTab() {
             {dateLabel} · {agenda.length} atendimentos
           </span>
         </div>
+        {agenda.length > 0 && <AgendaHeader />}
         {loading && agenda.length === 0 && <RowSkeletons count={5} />}
         {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
         {agenda.map((a) => (
@@ -94,6 +97,7 @@ export function AgendaTab() {
               {pending.length}
             </span>
           </div>
+          {pending.length > 0 && <AgendaHeader />}
           {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
           {!totalsLoading && pending.length === 0 && (
             <p className="text-muted">Nenhum agendamento pendente de aceite.</p>
@@ -120,6 +124,7 @@ export function AgendaTab() {
               {confirmed.length}
             </span>
           </div>
+          {confirmed.length > 0 && <AgendaHeader />}
           {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
           {!totalsLoading && confirmed.length === 0 && (
             <p className="text-muted">Nenhum agendamento confirmado aguardando conclusão.</p>
@@ -166,17 +171,39 @@ export function AgendaTab() {
   );
 }
 
+function AgendaHeader() {
+  return (
+    <div
+      className="grid items-center gap-4 border-t border-border px-3 py-3 font-heading text-sm tracking-widest text-muted-2 uppercase"
+      style={{ gridTemplateColumns: AGENDA_COLS }}
+    >
+      <span>Quando</span>
+      <span>Cliente</span>
+      <span>Barbeiro</span>
+      <span>Status</span>
+      <span>Ações</span>
+      <span className="text-right">Valor</span>
+    </div>
+  );
+}
+
 function RowSkeletons({ count }: { count: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 border-t border-border px-3 py-5 first:border-t-0">
+        <div
+          key={i}
+          className="grid items-center gap-4 border-t border-border px-3 py-5"
+          style={{ gridTemplateColumns: AGENDA_COLS }}
+        >
           <Skeleton className="h-7 w-16" />
-          <span className="flex min-w-0 flex-1 flex-col gap-2">
-            <Skeleton className="h-5 w-44" />
-            <Skeleton className="h-4 w-32" />
+          <span className="flex min-w-0 flex-col gap-2">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-28" />
           </span>
+          <Skeleton className="h-4 w-20" />
           <Skeleton className="h-7 w-28 rounded-full" />
+          <Skeleton className="h-11 w-full rounded-lg" />
           <Skeleton className="ml-auto h-6 w-20" />
         </div>
       ))}
@@ -196,8 +223,11 @@ interface AgendaRowProps {
 
 function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel }: AgendaRowProps) {
   return (
-    <div className="flex flex-wrap items-center gap-4 border-t border-border px-3 py-5 first:border-t-0">
-      <span className="w-20 flex-shrink-0">
+    <div
+      className="grid items-center gap-4 border-t border-border px-3 py-5 first:border-t-0"
+      style={{ gridTemplateColumns: AGENDA_COLS }}
+    >
+      <span>
         {showDate && (
           <span className="block font-heading text-[11px] tracking-[0.12em] text-muted-2 uppercase">
             {shortDateLabel(a.scheduled_date)}
@@ -205,47 +235,51 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
         )}
         <span className="font-heading text-xl text-white">{formatTimeShort(a.scheduled_time)}</span>
       </span>
-      <span className="min-w-0 flex-1 basis-[200px]">
-        <span className="block text-lg text-white">{a.customer_name}</span>
-        <span className="block text-base text-muted">{a.services?.name}</span>
+      <span className="min-w-0">
+        <span className="block truncate text-lg text-white">{a.customer_name}</span>
+        <span className="block truncate text-base text-muted">{a.services?.name}</span>
       </span>
-      <span className="w-28 text-base text-muted">{a.barbers?.name}</span>
-      <BookingStatusBadge status={a.status} />
-      {onAccept && onDecline && (
-        <span className="flex gap-2.5">
-          <button
-            onClick={onAccept}
-            disabled={acting}
-            className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
-          >
-            Aceitar
-          </button>
-          <button
-            onClick={onDecline}
-            disabled={acting}
-            className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
-          >
-            Recusar
-          </button>
-        </span>
-      )}
-      {onComplete && onCancel && (
-        <span className="flex gap-3.5">
-          <button
-            onClick={onComplete}
-            className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110"
-          >
-            Concluir
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-          >
-            Cancelar
-          </button>
-        </span>
-      )}
-      <span className="ml-auto font-heading text-xl text-white">{formatCents(a.price_cents)}</span>
+      <span className="truncate text-base text-muted">{a.barbers?.name}</span>
+      <span>
+        <BookingStatusBadge status={a.status} />
+      </span>
+      <span className="flex gap-2.5">
+        {onAccept && onDecline && (
+          <>
+            <button
+              onClick={onAccept}
+              disabled={acting}
+              className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
+            >
+              Aceitar
+            </button>
+            <button
+              onClick={onDecline}
+              disabled={acting}
+              className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
+            >
+              Recusar
+            </button>
+          </>
+        )}
+        {onComplete && onCancel && (
+          <>
+            <button
+              onClick={onComplete}
+              className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110"
+            >
+              Concluir
+            </button>
+            <button
+              onClick={onCancel}
+              className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+            >
+              Cancelar
+            </button>
+          </>
+        )}
+      </span>
+      <span className="text-right font-heading text-xl text-white">{formatCents(a.price_cents)}</span>
     </div>
   );
 }

@@ -133,7 +133,7 @@ export function Gallery({ onOpenLightbox }: GalleryProps) {
           className="mt-8 flex flex-wrap items-center justify-between gap-3.5 rounded-lg border border-border bg-surface px-6 py-5.5 transition-colors hover:border-silver hover:bg-surface-alt"
         >
           <span className="font-heading text-xl font-medium tracking-[0.1em] text-white uppercase">
-            Ver mais cortes
+            Conheça nosso trabalho
           </span>
           <span className="text-sm text-muted">{BRAND.instagramHandle}</span>
         </a>

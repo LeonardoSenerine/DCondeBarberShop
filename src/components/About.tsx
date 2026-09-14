@@ -30,18 +30,12 @@ export function About() {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3.5">
-            <a
-              href="#agendar"
-              className="bg-silver-gradient flex h-13 items-center rounded-lg px-7 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
-            >
-              Agendar horário
-            </a>
+          <div className="mt-8 flex items-center gap-3.5">
             <a
               href={BRAND.instagram}
               target="_blank"
               rel="noopener"
-              className="flex h-13 items-center rounded-lg border border-border px-7 font-heading text-xs tracking-[0.2em] text-white uppercase transition-colors hover:border-silver"
+              className="flex h-13 w-full items-center justify-center rounded-lg border border-border px-7 font-heading text-xs tracking-[0.2em] text-white uppercase transition-colors hover:border-silver"
             >
               Ver o Instagram
             </a>

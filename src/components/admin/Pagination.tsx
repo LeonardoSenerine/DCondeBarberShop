@@ -9,7 +9,7 @@ interface PaginationProps {
 /** Page numbers around `page`, with the first/last page and "…" gaps. */
 function pageList(page: number, pageCount: number): (number | "gap")[] {
   const list: (number | "gap")[] = [];
-  const add = (p: number) => list.push(p);
+  const add = (p: number | "gap") => list.push(p);
 
   add(1);
   if (page > 3) add("gap");

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useFinance, type FinancePeriod } from "@/hooks/useAdmin";
 import { useBarbers } from "@/hooks/useCatalog";
+import { useAuth } from "@/context/AuthContext";
 import { formatCents, MONTH_LABELS, dateKey } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
@@ -34,6 +35,7 @@ export function FinanceTab() {
   const [hover, setHover] = useState<number | null>(null);
   const [barberId, setBarberId] = useState("all");
   const { data: barbers } = useBarbers();
+  const { isOwner, barberId: myBarberId } = useAuth();
 
   const custom = period === "custom" ? { from: customFrom, to: customTo } : undefined;
   const {
@@ -50,8 +52,13 @@ export function FinanceTab() {
     transactions,
   } = useFinance(period, custom, barberId);
 
-  const barberName =
-    barberId === "all" ? "Toda a barbearia" : (barbers.find((b) => b.id === barberId)?.name ?? "Barbeiro");
+  // Staff only ever gets their own barber's rows back (RLS enforces this
+  // server-side) — the filter dropdown would be misleading, so it's owner-only.
+  const barberName = isOwner
+    ? barberId === "all"
+      ? "Toda a barbearia"
+      : (barbers.find((b) => b.id === barberId)?.name ?? "Barbeiro")
+    : (barbers.find((b) => b.id === myBarberId)?.name ?? "Você");
 
   const now = new Date();
   const monthLabel = `${MONTH_LABELS[now.getMonth()]} de ${now.getFullYear()}`;
@@ -92,21 +99,23 @@ export function FinanceTab() {
           {monthLabel} · {range.label} · <span className="text-white">{barberName}</span>
           {isSample && <span className="ml-2 text-faint">· dados de exemplo</span>}
         </p>
-        <div className="relative">
-          <select
-            value={barberId}
-            onChange={(e) => setBarberId(e.target.value)}
-            className="min-h-11 cursor-pointer appearance-none rounded-full border border-border bg-surface-alt py-0 pr-9 pl-4 font-heading text-[13px] tracking-[0.1em] text-white uppercase outline-none focus:border-silver"
-          >
-            <option value="all">Toda a barbearia</option>
-            {barbers.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] text-muted">▼</span>
-        </div>
+        {isOwner && (
+          <div className="relative">
+            <select
+              value={barberId}
+              onChange={(e) => setBarberId(e.target.value)}
+              className="min-h-11 cursor-pointer appearance-none rounded-full border border-border bg-surface-alt py-0 pr-9 pl-4 font-heading text-[13px] tracking-[0.1em] text-white uppercase outline-none focus:border-silver"
+            >
+              <option value="all">Toda a barbearia</option>
+              {barbers.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] text-muted">▼</span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">

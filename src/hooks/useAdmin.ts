@@ -50,6 +50,7 @@ export interface CompleteBookingProduct {
 
 export interface CompleteBookingInput {
   bookingId: string;
+  barberId: string;
   serviceName: string;
   serviceCents: number;
   paymentMethod: Transaction["payment_method"];
@@ -78,6 +79,7 @@ export async function completeBooking(input: CompleteBookingInput) {
     amount_cents: input.serviceCents,
     booking_id: input.bookingId,
     order_id: null,
+    barber_id: input.barberId,
   });
   if (serviceTxErr) return { error: serviceTxErr.message };
 
@@ -113,6 +115,7 @@ export async function completeBooking(input: CompleteBookingInput) {
       amount_cents: totalCents,
       booking_id: null,
       order_id: order.id,
+      barber_id: input.barberId,
     });
     if (productTxErr) return { error: productTxErr.message };
 

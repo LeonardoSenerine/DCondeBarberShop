@@ -8,7 +8,7 @@ export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" 
 export type OrderStatus = "pending" | "ready" | "completed" | "cancelled";
 export type ProductCategory = "Cabelo" | "Barba" | "Pele";
 export type PaymentMethod = "Pix" | "Crédito" | "Débito" | "Dinheiro";
-export type UserRole = "customer" | "admin";
+export type UserRole = "customer" | "staff" | "owner";
 export type GalleryKind = "autoral" | "dia";
 
 type ProfilesRow = {
@@ -17,6 +17,8 @@ type ProfilesRow = {
   email: string | null;
   phone: string | null;
   role: UserRole;
+  /** Which barber this account operates as, when role is "staff" (or an owner who also works the chair). */
+  barber_id: string | null;
   created_at: string;
 };
 
@@ -116,6 +118,7 @@ type TransactionsRow = {
   amount_cents: number;
   booking_id: string | null;
   order_id: string | null;
+  barber_id: string | null;
   created_at: string;
 };
 

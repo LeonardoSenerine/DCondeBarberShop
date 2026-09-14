@@ -9,7 +9,12 @@ interface AuthContextValue {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  /** Has admin-panel access — either role. */
   isAdmin: boolean;
+  /** Full access: every barber's Agenda/Financeiro/Clientes, not just their own. */
+  isOwner: boolean;
+  /** The barber this account operates as (role "staff", or an owner who also works the chair). */
+  barberId: string | null;
   sendMagicLink: (
     email: string,
     opts?: { fullName?: string; phone?: string; shouldCreateUser?: boolean },
@@ -82,7 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       loading,
-      isAdmin: profile?.role === "admin",
+      isAdmin: profile?.role === "staff" || profile?.role === "owner",
+      isOwner: profile?.role === "owner",
+      barberId: profile?.barber_id ?? null,
       async sendMagicLink(email, opts) {
         const { error } = await supabase.auth.signInWithOtp({
           email,

@@ -13,12 +13,21 @@ create table if not exists public.profiles (
   full_name text not null default '',
   email text,
   phone text,
-  role text not null default 'customer' check (role in ('customer', 'admin')),
+  role text not null default 'customer' check (role in ('customer', 'staff', 'owner')),
   created_at timestamptz not null default now()
 );
 
 -- migration safety net for projects that ran an earlier version of this file
 alter table public.profiles add column if not exists email text;
+
+-- Projects that predate the staff/owner split had everyone on 'admin' —
+-- drop the old constraint first so the rename below doesn't violate it,
+-- promote those accounts to 'owner' (full access), then re-add the
+-- constraint pointed at the new role names.
+alter table public.profiles drop constraint if exists profiles_role_check;
+update public.profiles set role = 'owner' where role = 'admin';
+alter table public.profiles add constraint profiles_role_check
+  check (role in ('customer', 'staff', 'owner'));
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -57,6 +66,10 @@ create table if not exists public.barbers (
   gallery_paths text[] not null default '{}',
   sort_order int not null default 0
 );
+
+-- which barber a staff/owner account operates as — drives the "só vejo o
+-- meu" scoping on Agenda, Financeiro and Clientes for role = 'staff'.
+alter table public.profiles add column if not exists barber_id text references public.barbers (id) on delete set null;
 
 -- weekly recurring hours + the discrete slot grid customers can pick from
 create table if not exists public.barber_hours (
@@ -176,8 +189,19 @@ create table if not exists public.transactions (
   created_at timestamptz not null default now()
 );
 
+-- which barber the sale belongs to — needed for staff to see only their
+-- own revenue. Service transactions carry it directly; product-only
+-- transactions (order_id set, no booking_id) get it from completeBooking().
+alter table public.transactions add column if not exists barber_id text references public.barbers (id) on delete set null;
+
+-- backfill: derive it from the linked booking for existing service rows
+update public.transactions t
+set barber_id = b.barber_id
+from public.bookings b
+where t.booking_id = b.id and t.barber_id is null;
+
 -- ---------------------------------------------------------------------------
--- helper: is the current user an admin?
+-- helpers: role checks used by the RLS policies below
 -- ---------------------------------------------------------------------------
 create or replace function public.is_admin()
 returns boolean
@@ -187,9 +211,53 @@ security definer set search_path = public
 as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
+    where id = auth.uid() and role in ('staff', 'owner')
   );
 $$;
+
+create or replace function public.is_owner()
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'owner'
+  );
+$$;
+
+create or replace function public.my_barber_id()
+returns text
+language sql
+stable
+security definer set search_path = public
+as $$
+  select barber_id from public.profiles where id = auth.uid();
+$$;
+
+-- Guards against a staff account escalating its own access: only an
+-- existing owner can change someone's role or which barber they're
+-- linked to (otherwise "id = auth.uid()" in the profiles RLS policy
+-- below would let any logged-in user promote themselves).
+create or replace function public.prevent_role_escalation()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if (new.role is distinct from old.role or new.barber_id is distinct from old.barber_id)
+    and not public.is_owner() then
+    raise exception 'Apenas o dono pode alterar cargo ou barbeiro vinculado.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_guard_role on public.profiles;
+create trigger profiles_guard_role
+  before update on public.profiles
+  for each row execute function public.prevent_role_escalation();
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
@@ -246,10 +314,15 @@ drop policy if exists "products_write_admin" on public.products;
 create policy "products_write_admin" on public.products for all
   using (public.is_admin()) with check (public.is_admin());
 
--- bookings: customers manage their own, admins manage all
+-- bookings: customers manage their own; the owner manages all; staff only
+-- the bookings assigned to the barber they operate as
 drop policy if exists "bookings_select_own_or_admin" on public.bookings;
 create policy "bookings_select_own_or_admin" on public.bookings for select
-  using (customer_id = auth.uid() or public.is_admin());
+  using (
+    customer_id = auth.uid()
+    or public.is_owner()
+    or (public.is_admin() and barber_id = public.my_barber_id())
+  );
 
 drop policy if exists "bookings_insert_own" on public.bookings;
 create policy "bookings_insert_own" on public.bookings for insert
@@ -257,7 +330,11 @@ create policy "bookings_insert_own" on public.bookings for insert
 
 drop policy if exists "bookings_update_own_or_admin" on public.bookings;
 create policy "bookings_update_own_or_admin" on public.bookings for update
-  using (customer_id = auth.uid() or public.is_admin());
+  using (
+    customer_id = auth.uid()
+    or public.is_owner()
+    or (public.is_admin() and barber_id = public.my_barber_id())
+  );
 
 drop policy if exists "bookings_delete_admin" on public.bookings;
 create policy "bookings_delete_admin" on public.bookings for delete
@@ -287,10 +364,26 @@ create policy "order_items_insert_own" on public.order_items for insert
     or exists (select 1 from public.orders o where o.id = order_id and o.customer_id = auth.uid())
   );
 
--- transactions: admin only
+-- transactions: the owner sees/creates every lançamento; staff only their
+-- own barber's. Update/delete stay owner-only — nothing in the app edits
+-- a transaction after the fact, so there's no reason for staff to.
 drop policy if exists "transactions_admin_all" on public.transactions;
-create policy "transactions_admin_all" on public.transactions for all
-  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "transactions_select" on public.transactions;
+create policy "transactions_select" on public.transactions for select
+  using (public.is_owner() or (public.is_admin() and barber_id = public.my_barber_id()));
+
+drop policy if exists "transactions_insert" on public.transactions;
+create policy "transactions_insert" on public.transactions for insert
+  with check (public.is_owner() or (public.is_admin() and barber_id = public.my_barber_id()));
+
+drop policy if exists "transactions_update_owner" on public.transactions;
+create policy "transactions_update_owner" on public.transactions for update
+  using (public.is_owner());
+
+drop policy if exists "transactions_delete_owner" on public.transactions;
+create policy "transactions_delete_owner" on public.transactions for delete
+  using (public.is_owner());
 
 -- ---------------------------------------------------------------------------
 -- Storage: public buckets for gallery/product photos uploaded from the

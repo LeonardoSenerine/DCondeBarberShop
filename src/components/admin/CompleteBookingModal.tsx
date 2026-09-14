@@ -44,6 +44,7 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
     clear();
     const { error: err } = await completeBooking({
       bookingId: booking.id,
+      barberId: booking.barber_id,
       serviceName: booking.services?.name ?? "Serviço",
       serviceCents,
       paymentMethod: method,

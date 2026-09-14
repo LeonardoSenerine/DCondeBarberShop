@@ -8,6 +8,8 @@ import { BookingStatusBadge } from "@/components/StatusBadge";
 import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 
+const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
+
 export function AccountPage() {
   const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -205,15 +207,39 @@ export function AccountPage() {
             {!bookingsLoading && history.length === 0 && (
               <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
             )}
-            {history.map((h) => (
-              <div key={h.id} className="flex flex-wrap items-center gap-3 border-t border-border py-3.5">
-                <span className="w-24 text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
-                <span className="min-w-0 flex-1 basis-[200px] text-[15px] text-white">{h.services?.name}</span>
-                <span className="w-22 text-sm text-muted">{h.barbers?.name}</span>
-                <BookingStatusBadge status={h.status} />
-                <span className="ml-auto font-heading text-[15px] text-white">{formatCents(h.price_cents)}</span>
+            {history.length > 0 && (
+              <div className="overflow-x-auto">
+                <div className="min-w-[680px]">
+                  <div
+                    className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                    style={{ gridTemplateColumns: HISTORY_COLS }}
+                  >
+                    <span>Data</span>
+                    <span>Tipo de corte</span>
+                    <span>Barbeiro</span>
+                    <span>Status</span>
+                    <span className="text-right">Total</span>
+                  </div>
+                  {history.map((h) => (
+                    <div
+                      key={h.id}
+                      className="grid items-center gap-4 border-t border-border py-4"
+                      style={{ gridTemplateColumns: HISTORY_COLS }}
+                    >
+                      <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
+                      <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
+                      <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
+                      <span>
+                        <BookingStatusBadge status={h.status} />
+                      </span>
+                      <span className="text-right font-heading text-[15px] text-white">
+                        {formatCents(h.price_cents)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
 

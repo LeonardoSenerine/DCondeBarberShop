@@ -95,7 +95,7 @@ export function FinanceTab() {
     <div className="flex flex-col gap-5">
       {/* filter bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[15px] text-muted">
+        <p className="text-lg text-muted">
           {monthLabel} · {range.label} · <span className="text-white">{barberName}</span>
           {isSample && <span className="ml-2 text-faint">· dados de exemplo</span>}
         </p>
@@ -104,7 +104,7 @@ export function FinanceTab() {
             <select
               value={barberId}
               onChange={(e) => setBarberId(e.target.value)}
-              className="min-h-11 cursor-pointer appearance-none rounded-full border border-border bg-surface-alt py-0 pr-9 pl-4 font-heading text-[13px] tracking-[0.1em] text-white uppercase outline-none focus:border-silver"
+              className="min-h-12 cursor-pointer appearance-none rounded-full border border-border bg-surface-alt py-0 pr-9 pl-4.5 font-heading text-sm tracking-[0.1em] text-white uppercase outline-none focus:border-silver"
             >
               <option value="all">Toda a barbearia</option>
               {barbers.map((b) => (
@@ -113,12 +113,12 @@ export function FinanceTab() {
                 </option>
               ))}
             </select>
-            <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[10px] text-muted">▼</span>
+            <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-xs text-muted">▼</span>
           </div>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
           {PERIODS.map((p) => {
             const on = period === p.id;
             return (
@@ -128,7 +128,7 @@ export function FinanceTab() {
                   setPeriod(p.id);
                   setHover(null);
                 }}
-                className="min-h-11 cursor-pointer rounded-full border px-4 font-heading text-[13px] tracking-[0.12em] uppercase transition-colors"
+                className="min-h-12 cursor-pointer rounded-full border px-5 font-heading text-sm tracking-[0.12em] uppercase transition-colors"
                 style={{
                   background: on ? "var(--color-silver)" : "transparent",
                   borderColor: on ? "var(--color-silver)" : "#2A2A2A",
@@ -144,7 +144,7 @@ export function FinanceTab() {
       {period === "custom" && (
         <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] tracking-widest text-muted-2 uppercase">Período</span>
+            <span className="text-sm tracking-widest text-muted-2 uppercase">Período</span>
             <DateRangePicker
               from={customFrom}
               to={customTo}
@@ -197,13 +197,13 @@ export function FinanceTab() {
       {!loading && (
         <>
       {/* hero + stat grid */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
         <div className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-8">
-          <span className="font-heading text-[13px] tracking-[0.2em] text-muted-2 uppercase">Receita no período</span>
-          <div className="mt-4 font-heading text-[46px] leading-none font-semibold text-white tabular-nums">
+          <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Receita no período</span>
+          <div className="mt-4 font-heading text-[54px] leading-none font-semibold text-white tabular-nums">
             {formatCents(revenue)}
           </div>
-          <p className="mt-4 text-[15px] leading-relaxed text-muted">
+          <p className="mt-4 text-lg leading-relaxed text-muted">
             {transactions.length} lançamentos · {serviceCount} atendimentos
             {peak && (
               <>
@@ -217,12 +217,12 @@ export function FinanceTab() {
 
         <div className="grid grid-cols-2 gap-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-border bg-surface p-6">
-              <span className="font-heading text-[12px] tracking-[0.18em] text-muted-2 uppercase">{s.label}</span>
-              <div className="mt-2.5 font-heading text-[26px] leading-tight font-semibold text-white tabular-nums">
+            <div key={s.label} className="rounded-2xl border border-border bg-surface p-7">
+              <span className="font-heading text-sm tracking-[0.18em] text-muted-2 uppercase">{s.label}</span>
+              <div className="mt-2.5 font-heading text-[30px] leading-tight font-semibold text-white tabular-nums">
                 {s.value}
               </div>
-              <div className="mt-1.5 text-[13px] text-muted">{s.note}</div>
+              <div className="mt-1.5 text-sm text-muted">{s.note}</div>
             </div>
           ))}
         </div>
@@ -231,10 +231,10 @@ export function FinanceTab() {
       {/* area chart */}
       <div className="rounded-2xl border border-border bg-surface p-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <span className="font-heading text-[13px] tracking-[0.2em] text-muted-2 uppercase">
+          <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
             Faturamento por {chartUnit}
           </span>
-          <span className="text-[15px] text-muted">
+          <span className="text-lg text-muted">
             Total <span className="text-white tabular-nums">{formatCents(revenue)}</span>
           </span>
         </div>
@@ -247,7 +247,7 @@ export function FinanceTab() {
           <>
           <div className="mt-6 flex gap-2">
             <div
-              className="flex w-14 flex-shrink-0 flex-col justify-between py-1 text-right text-[12px] text-faint tabular-nums"
+              className="flex w-16 flex-shrink-0 flex-col justify-between py-1 text-right text-sm text-faint tabular-nums"
               style={{ height: H }}
             >
               {[1, 0.5, 0].map((t) => (
@@ -318,10 +318,10 @@ export function FinanceTab() {
                       transform: `translate(-${Math.min(88, Math.max(12, xPct(hover)))}%, calc(-100% - 12px))`,
                     }}
                   >
-                    <span className="font-heading text-[12px] tracking-[0.14em] text-muted-2 uppercase">
+                    <span className="font-heading text-sm tracking-[0.14em] text-muted-2 uppercase">
                       {chartUnit === "hora" ? chart[hover].label : `Dia ${chart[hover].label}`}
                     </span>
-                    <span className="font-heading text-[19px] text-white tabular-nums">
+                    <span className="font-heading text-xl text-white tabular-nums">
                       {formatCents(chart[hover].value)}
                     </span>
                   </div>
@@ -331,8 +331,8 @@ export function FinanceTab() {
           </div>
 
           <div className="mt-2.5 flex gap-2">
-            <span className="w-14 flex-shrink-0" aria-hidden />
-            <div className="flex flex-1 text-center text-[12px] text-muted-2 tabular-nums">
+            <span className="w-16 flex-shrink-0" aria-hidden />
+            <div className="flex flex-1 text-center text-sm text-muted-2 tabular-nums">
               {chart.map((b, i) => (
                 <span key={b.key} className="flex-1 truncate">
                   {n > 16 && i % 3 !== 0 ? "" : b.label}
@@ -345,20 +345,20 @@ export function FinanceTab() {
       </div>
 
       {/* payment + ledger */}
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
         <div className="rounded-2xl border border-border bg-surface p-8">
-          <span className="font-heading text-[13px] tracking-[0.2em] text-muted-2 uppercase">Formas de pagamento</span>
-          <div className="mt-6 flex flex-col gap-5">
+          <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Formas de pagamento</span>
+          <div className="mt-6 flex flex-col gap-6">
             {byMethod.map((m) => (
               <div key={m.method}>
-                <div className="mb-2 flex items-baseline justify-between gap-3">
-                  <span className="text-[16px] text-white">{m.method}</span>
-                  <span className="text-[14px] text-muted">
+                <div className="mb-2.5 flex items-baseline justify-between gap-3">
+                  <span className="text-lg text-white">{m.method}</span>
+                  <span className="text-base text-muted">
                     <span className="tabular-nums">{Math.round(m.pct * 100)}%</span> ·{" "}
                     <span className="text-white tabular-nums">{formatCents(m.value)}</span>
                   </span>
                 </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-surface-alt">
+                <div className="h-3 overflow-hidden rounded-full bg-surface-alt">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${Math.round(m.pct * 100)}%`, background: "var(--color-silver)", opacity: 0.7 }}
@@ -370,21 +370,21 @@ export function FinanceTab() {
         </div>
 
         <div className="rounded-2xl border border-border bg-surface p-8">
-          <span className="font-heading text-[13px] tracking-[0.2em] text-muted-2 uppercase">Últimos lançamentos</span>
-          <div className="mt-4 flex max-h-[420px] flex-col overflow-y-auto pr-1">
+          <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Últimos lançamentos</span>
+          <div className="mt-4 flex max-h-[460px] flex-col overflow-y-auto pr-1">
             {transactions.map((t) => {
               const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
               return (
-                <div key={t.id} className="flex items-center gap-3.5 border-t border-border py-3.5 first:border-t-0">
-                  <span className="w-[76px] flex-shrink-0 text-[14px] text-muted">
+                <div key={t.id} className="flex items-center gap-4 border-t border-border py-4.5 first:border-t-0">
+                  <span className="w-[84px] flex-shrink-0 text-base text-muted">
                     <span className="tabular-nums">
                       {t.occurred_on.slice(8, 10)}/{t.occurred_on.slice(5, 7)}
                     </span>
                     <span className="ml-1 text-faint">{WEEKDAY_PT[wd]}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] text-white">{t.description}</span>
-                    <span className="block truncate text-[13px] text-muted">
+                    <span className="block truncate text-lg text-white">{t.description}</span>
+                    <span className="block truncate text-sm text-muted">
                       {t.customer_name ?? "Balcão"}
                       {barberId === "all" && t.barber_id && (
                         <span className="text-faint">
@@ -394,10 +394,10 @@ export function FinanceTab() {
                       )}
                     </span>
                   </span>
-                  <span className="hidden flex-shrink-0 rounded-full border border-border px-2.5 py-1 text-[12px] tracking-widest text-muted uppercase sm:inline">
+                  <span className="hidden flex-shrink-0 rounded-full border border-border px-3 py-1.5 text-sm tracking-widest text-muted uppercase sm:inline">
                     {t.payment_method}
                   </span>
-                  <span className="w-28 flex-shrink-0 text-right font-heading text-[16px] text-white tabular-nums">
+                  <span className="w-32 flex-shrink-0 text-right font-heading text-lg text-white tabular-nums">
                     {formatCents(t.amount_cents)}
                   </span>
                 </div>

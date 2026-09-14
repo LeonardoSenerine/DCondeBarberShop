@@ -39,11 +39,11 @@ export function BarbersTab() {
 
   return (
     <div>
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
         <button
           onClick={() => setEditing({ barber: null })}
-          className="bg-silver-gradient flex min-h-10 cursor-pointer items-center rounded-lg px-5 font-heading text-xs font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+          className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
         >
           + Adicionar barbeiro
         </button>
@@ -75,49 +75,49 @@ export function BarbersTab() {
           barbers.map((b) => {
           const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
           return (
-            <div key={b.id} className="rounded-lg border border-border bg-surface p-7">
-              <div className="flex items-center gap-3.5">
-                <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt">
+            <div key={b.id} className="rounded-lg border border-border bg-surface p-8">
+              <div className="flex items-center gap-4">
+                <span className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt">
                   {b.photo_path ? (
                     <img src={b.photo_path} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center font-display text-2xl text-silver">
+                    <span className="flex h-full w-full items-center justify-center font-display text-3xl text-silver">
                       {b.name.charAt(0)}
                     </span>
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-heading text-xl tracking-[0.08em] text-white uppercase">{b.name}</span>
-                  <span className="block text-[13px] text-muted">{b.role_title}</span>
+                  <span className="block font-heading text-2xl tracking-[0.08em] text-white uppercase">{b.name}</span>
+                  <span className="block text-base text-muted">{b.role_title}</span>
                 </span>
-                <span className="flex gap-2">
+                <span className="flex gap-2.5">
                   <button
                     onClick={() => setEditing({ barber: b })}
-                    className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
+                    className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(b)}
-                    className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                    className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                   >
                     Remover
                   </button>
                 </span>
               </div>
               {(b.email || b.phone) && (
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted">
+                <div className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1 text-base text-muted">
                   {b.email && <span>{b.email}</span>}
                   {b.phone && <span>{b.phone}</span>}
                 </div>
               )}
-              <div className="mt-5 flex flex-col">
+              <div className="mt-6 flex flex-col">
                 {barberHours.map((h) => (
-                  <div key={h.id} className="flex items-center justify-between gap-3 border-t border-border py-3">
-                    <span className="text-[15px] text-white">{WEEKDAY_LABELS[h.weekday]}</span>
+                  <div key={h.id} className="flex items-center justify-between gap-3 border-t border-border py-4">
+                    <span className="text-lg text-white">{WEEKDAY_LABELS[h.weekday]}</span>
                     <button
                       onClick={() => handleToggle(h.id)}
-                      className="min-h-9.5 cursor-pointer rounded-full border px-3.5 font-heading text-xs tracking-[0.12em]"
+                      className="min-h-11 cursor-pointer rounded-full border px-4 font-heading text-sm tracking-[0.12em]"
                       style={{
                         background: h.is_open ? "rgba(255,255,255,0.07)" : "transparent",
                         borderColor: h.is_open ? "#E0E0E0" : "#2A2A2A",

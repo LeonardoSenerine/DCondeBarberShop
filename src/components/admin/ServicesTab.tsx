@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { ServiceFormModal } from "@/components/admin/ServiceFormModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
-const ROW_COLS = "minmax(0,1fr) 96px 104px 200px";
+const ROW_COLS = "minmax(0,1fr) 120px 130px 220px";
 
 export function ServicesTab() {
   const { services, loading, reload } = useAdminServices();
@@ -35,16 +35,16 @@ export function ServicesTab() {
 
   return (
     <div className="rounded-lg border border-border bg-surface p-7">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase">
+          <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
             Serviços e preços
           </h2>
-          <span className="text-[13px] text-muted">As alterações aparecem no site na hora.</span>
+          <span className="text-base text-muted">As alterações aparecem no site na hora.</span>
         </div>
         <button
           onClick={() => setAdding(true)}
-          className="bg-silver-gradient flex min-h-10 cursor-pointer items-center rounded-lg px-5 font-heading text-xs font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+          className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
         >
           + Adicionar serviço
         </button>
@@ -53,17 +53,17 @@ export function ServicesTab() {
       {loading &&
         services.length === 0 &&
         Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-2.5 border-t border-border py-3">
-            <Skeleton className="h-11 flex-1 rounded-lg" />
+          <div key={i} className="flex items-center gap-3 border-t border-border py-4">
+            <Skeleton className="h-12 flex-1 rounded-lg" />
+            <Skeleton className="h-12 w-28 rounded-lg" />
+            <Skeleton className="h-12 w-32 rounded-lg" />
             <Skeleton className="h-11 w-24 rounded-lg" />
-            <Skeleton className="h-11 w-28 rounded-lg" />
-            <Skeleton className="h-9 w-20 rounded-lg" />
           </div>
         ))}
 
       {services.length > 0 && (
         <div
-          className="grid items-center gap-3 border-t border-border py-2.5 font-heading text-[11px] tracking-[0.1em] text-muted-2 uppercase"
+          className="grid items-center gap-3 border-t border-border py-3 font-heading text-sm tracking-[0.1em] text-muted-2 uppercase"
           style={{ gridTemplateColumns: ROW_COLS }}
         >
           <span>Nome</span>
@@ -136,38 +136,38 @@ function ServiceRow({ service, editing, saving, onEdit, onCancel, onSave, onRemo
 
   if (editing) {
     return (
-      <div className="grid items-center gap-3 border-t border-border py-3" style={{ gridTemplateColumns: ROW_COLS }}>
+      <div className="grid items-center gap-3 border-t border-border py-4" style={{ gridTemplateColumns: ROW_COLS }}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoFocus
-          className="min-h-11 min-w-0 rounded-lg border border-border bg-surface-alt px-3 text-[15px] text-white outline-none focus:border-silver"
+          className="min-h-12 min-w-0 rounded-lg border border-border bg-surface-alt px-4 text-lg text-white outline-none focus:border-silver"
         />
         <input
           type="number"
           min={1}
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
-          className="min-h-11 rounded-lg border border-border bg-surface-alt px-3 text-sm text-white outline-none focus:border-silver"
+          className="min-h-12 rounded-lg border border-border bg-surface-alt px-4 text-base text-white outline-none focus:border-silver"
         />
         <input
           inputMode="decimal"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="min-h-11 rounded-lg border border-border bg-surface-alt px-3 font-heading text-[15px] text-white outline-none focus:border-silver"
+          className="min-h-12 rounded-lg border border-border bg-surface-alt px-4 font-heading text-lg text-white outline-none focus:border-silver"
         />
-        <span className="flex justify-end gap-2">
+        <span className="flex justify-end gap-2.5">
           <button
             onClick={handleSaveClick}
             disabled={saving}
-            className="bg-silver-gradient flex min-h-9 cursor-pointer items-center justify-center rounded-lg px-3.5 font-heading text-[11px] font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
+            className="bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
           >
             {saving ? "Salvando…" : "Salvar"}
           </button>
           <button
             onClick={onCancel}
             disabled={saving}
-            className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
+            className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
           >
             Cancelar
           </button>
@@ -177,20 +177,20 @@ function ServiceRow({ service, editing, saving, onEdit, onCancel, onSave, onRemo
   }
 
   return (
-    <div className="grid items-center gap-3 border-t border-border py-3" style={{ gridTemplateColumns: ROW_COLS }}>
-      <span className="min-w-0 text-[15px] text-white">{service.name}</span>
-      <span className="text-sm text-muted">{formatDuration(service.duration_minutes)}</span>
-      <span className="font-heading text-[15px] text-white">{formatCents(service.price_cents)}</span>
-      <span className="flex justify-end gap-2">
+    <div className="grid items-center gap-3 border-t border-border py-4" style={{ gridTemplateColumns: ROW_COLS }}>
+      <span className="min-w-0 text-lg text-white">{service.name}</span>
+      <span className="text-base text-muted">{formatDuration(service.duration_minutes)}</span>
+      <span className="font-heading text-lg text-white">{formatCents(service.price_cents)}</span>
+      <span className="flex justify-end gap-2.5">
         <button
           onClick={onEdit}
-          className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
+          className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
         >
           Editar
         </button>
         <button
           onClick={onRemove}
-          className="min-h-9 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+          className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
         >
           Remover
         </button>

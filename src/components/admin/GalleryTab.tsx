@@ -53,17 +53,17 @@ export function GalleryTab() {
 
   return (
     <div className="rounded-lg border border-border bg-surface p-7">
-      <h2 className="m-0 mb-5 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase">
+      <h2 className="m-0 mb-6 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
         Fotos da galeria
       </h2>
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
-        {loading && photos.length === 0 && <Skeleton count={8} className="h-[150px] rounded-lg" />}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {loading && photos.length === 0 && <Skeleton count={8} className="h-[180px] rounded-lg" />}
         {photos.map((p) => (
-          <div key={p.id} className="relative h-[150px] overflow-hidden rounded-lg border border-border">
+          <div key={p.id} className="relative h-[180px] overflow-hidden rounded-lg border border-border">
             <img src={p.image_path} loading="lazy" alt="" className="h-full w-full object-cover" />
             <button
               onClick={() => handleRemove(p.id)}
-              className="absolute top-2 right-2 min-h-8.5 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
+              className="absolute top-2.5 right-2.5 min-h-10 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
               style={{ background: "rgba(10,10,10,0.86)" }}
             >
               Remover
@@ -72,9 +72,9 @@ export function GalleryTab() {
         ))}
         <button
           onClick={() => inputRef.current?.click()}
-          className="flex h-[150px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-surface-alt font-heading text-xs tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+          className="flex h-[180px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-surface-alt font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
         >
-          <span className="text-2xl leading-none">+</span>
+          <span className="text-3xl leading-none">+</span>
           Adicionar foto
         </button>
         <input

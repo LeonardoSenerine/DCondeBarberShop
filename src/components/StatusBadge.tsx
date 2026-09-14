@@ -30,10 +30,10 @@ export function BookingStatusBadge({ status, className = "" }: { status: string;
   const Icon = cfg.icon;
   return (
     <span
-      className={`flex w-fit flex-shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-[0.1em] uppercase ${className}`}
+      className={`flex w-fit flex-shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium tracking-[0.1em] uppercase ${className}`}
       style={{ color: cfg.color, borderColor: cfg.border, background: cfg.bg }}
     >
-      <Icon size={13} weight={cfg.filled ? "fill" : "bold"} />
+      <Icon size={16} weight={cfg.filled ? "fill" : "bold"} />
       {cfg.label}
     </span>
   );

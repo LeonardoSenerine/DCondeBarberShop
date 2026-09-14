@@ -26,15 +26,15 @@ export function Pagination({ page, pageCount, onChange }: PaginationProps) {
   return (
     <div className="flex items-center gap-1.5">
       <NavButton onClick={() => onChange(1)} disabled={page === 1} aria-label="Primeira página">
-        <CaretDoubleLeft size={14} weight="bold" />
+        <CaretDoubleLeft size={16} weight="bold" />
       </NavButton>
       <NavButton onClick={() => onChange(page - 1)} disabled={page === 1} aria-label="Página anterior">
-        <CaretLeft size={14} weight="bold" />
+        <CaretLeft size={16} weight="bold" />
       </NavButton>
 
       {items.map((it, i) =>
         it === "gap" ? (
-          <span key={`gap-${i}`} className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-sm text-muted">
+          <span key={`gap-${i}`} className="flex h-11 w-11 flex-shrink-0 items-center justify-center text-base text-muted">
             …
           </span>
         ) : (
@@ -42,7 +42,7 @@ export function Pagination({ page, pageCount, onChange }: PaginationProps) {
             key={it}
             onClick={() => onChange(it)}
             aria-current={it === page ? "page" : undefined}
-            className="flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[13px] font-medium transition-colors"
+            className="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border text-base font-medium transition-colors"
             style={
               it === page
                 ? { background: "var(--color-silver)", borderColor: "var(--color-silver)", color: "#0A0A0A" }
@@ -55,10 +55,10 @@ export function Pagination({ page, pageCount, onChange }: PaginationProps) {
       )}
 
       <NavButton onClick={() => onChange(page + 1)} disabled={page === pageCount} aria-label="Próxima página">
-        <CaretRight size={14} weight="bold" />
+        <CaretRight size={16} weight="bold" />
       </NavButton>
       <NavButton onClick={() => onChange(pageCount)} disabled={page === pageCount} aria-label="Última página">
-        <CaretDoubleRight size={14} weight="bold" />
+        <CaretDoubleRight size={16} weight="bold" />
       </NavButton>
     </div>
   );
@@ -80,7 +80,7 @@ function NavButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className="flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver disabled:cursor-default disabled:opacity-30 disabled:hover:border-border"
+      className="flex h-11 w-11 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver disabled:cursor-default disabled:opacity-30 disabled:hover:border-border"
     >
       {children}
     </button>

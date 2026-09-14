@@ -87,7 +87,7 @@ export function AdminPage() {
             className="h-10 w-11 object-contain"
             style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
           />
-          <span className="font-heading text-[15px] tracking-[0.2em] text-white uppercase">Painel</span>
+          <span className="font-heading text-base tracking-[0.2em] text-white uppercase">Painel</span>
         </div>
 
         <nav className="flex gap-1.5 overflow-x-auto p-3 lg:flex-1 lg:flex-col lg:overflow-visible">
@@ -97,13 +97,13 @@ export function AdminPage() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className="flex min-h-[52px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-[15px] tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
+                className="flex min-h-[58px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
                 style={{
                   background: on ? "var(--color-silver)" : "transparent",
                   color: on ? "#0A0A0A" : "#9E9E9E",
                 }}
               >
-                <span className="grid h-[22px] w-[22px] place-items-center" aria-hidden>
+                <span className="grid h-6 w-6 place-items-center" aria-hidden>
                   {t.icon()}
                 </span>
                 {t.name}
@@ -114,7 +114,7 @@ export function AdminPage() {
 
         {profile && (
           <div className="flex items-center gap-3 border-t border-border p-4">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-sm text-silver">
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-base text-silver">
               {myBarber?.photo_path ? (
                 <img src={myBarber.photo_path} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -122,10 +122,10 @@ export function AdminPage() {
               )}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-heading text-[14px] text-white">
+              <span className="block truncate font-heading text-base text-white">
                 {profile.full_name || profile.email}
               </span>
-              <span className="block text-[11px] tracking-[0.12em] text-muted-2 uppercase">{roleLabel}</span>
+              <span className="block text-xs tracking-[0.12em] text-muted-2 uppercase">{roleLabel}</span>
             </span>
           </div>
         )}
@@ -133,18 +133,18 @@ export function AdminPage() {
         <div className="flex gap-1.5 border-t border-border p-3 lg:flex-col">
           <Link
             to="/"
-            className="flex min-h-[50px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-[14px] tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            className="flex min-h-[54px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
           >
-            <span className="grid h-[22px] w-[22px] place-items-center" aria-hidden>
+            <span className="grid h-6 w-6 place-items-center" aria-hidden>
               {iconExternal()}
             </span>
             Ver site
           </Link>
           <button
             onClick={() => signOut().then(() => navigate("/"))}
-            className="flex min-h-[50px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-[14px] tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            className="flex min-h-[54px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
           >
-            <span className="grid h-[22px] w-[22px] place-items-center" aria-hidden>
+            <span className="grid h-6 w-6 place-items-center" aria-hidden>
               {iconLogout()}
             </span>
             Sair
@@ -154,10 +154,10 @@ export function AdminPage() {
 
       <main className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
         <header className="sticky top-0 z-10 border-b border-border bg-ink/95 px-6 py-6 backdrop-blur lg:px-10">
-          <h1 className="m-0 font-heading text-[28px] font-semibold tracking-[0.05em] text-white uppercase">
+          <h1 className="m-0 font-heading text-[34px] font-semibold tracking-[0.05em] text-white uppercase">
             {active.name}
           </h1>
-          <p className="mt-1.5 text-[15px] text-muted first-letter:uppercase">{dateLabel}</p>
+          <p className="mt-1.5 text-lg text-muted first-letter:uppercase">{dateLabel}</p>
         </header>
         <div className="mx-auto max-w-[1180px] px-6 py-9 pb-24 lg:px-10">
           {tab === "agenda" && <AgendaTab />}

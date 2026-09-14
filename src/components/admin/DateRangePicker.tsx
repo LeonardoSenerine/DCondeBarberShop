@@ -86,22 +86,22 @@ export function DateRangePicker({
   const label = from && to ? `${formatDateBR(from)} — ${formatDateBR(to)}` : from ? `${formatDateBR(from)} — …` : placeholder;
 
   return (
-    <div ref={rootRef} className={`relative ${className ?? "w-[280px]"}`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div ref={rootRef} className={`relative ${className ?? "w-[300px]"}`} style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div
-        className={`flex min-h-11 items-center gap-2 rounded-lg border border-border pr-2.5 pl-4 text-sm transition-colors ${variant === "ink" ? "bg-ink" : "bg-surface-alt"}`}
+        className={`flex min-h-12 items-center gap-2 rounded-lg border border-border pr-2.5 pl-4 text-base transition-colors ${variant === "ink" ? "bg-ink" : "bg-surface-alt"}`}
         style={{ borderColor: open ? "var(--color-silver)" : undefined }}
       >
         <button onClick={() => setOpen((v) => !v)} className="flex flex-1 cursor-pointer items-center gap-2.5 py-3 text-left">
-          <CalendarBlank size={22} className="flex-shrink-0 text-muted" />
+          <CalendarBlank size={24} className="flex-shrink-0 text-muted" />
           <span className={from ? "text-white" : "text-muted"}>{label}</span>
         </button>
         {from && (
           <button
             onClick={() => onChange({ from: "", to: "" })}
             aria-label="Limpar período"
-            className="flex h-7 w-7 flex-shrink-0 cursor-pointer items-center justify-center rounded-md text-muted transition-colors hover:bg-white/10 hover:text-white"
+            className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md text-muted transition-colors hover:bg-white/10 hover:text-white"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         )}
       </div>

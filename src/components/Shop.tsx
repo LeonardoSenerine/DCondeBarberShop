@@ -418,7 +418,7 @@ function CartPanel({
           </button>
         )}
       </div>
-      <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto overscroll-contain">
+      <div className="scroll-thin mt-2 flex max-h-[300px] flex-col overflow-y-auto overscroll-contain">
         {rows.map((row) => (
           <div
             key={row.product.id}

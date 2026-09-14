@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ShoppingCart, Trash, X } from "@phosphor-icons/react";
+import { Minus, Plus, ShoppingCart, Trash, X } from "@phosphor-icons/react";
 import { useProducts, type Product } from "@/hooks/useCatalog";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -17,9 +17,48 @@ const PRESS_FX = "active:scale-[0.94] transition-transform duration-150";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
+function getVisibleCartTarget(): HTMLElement | null {
+  const candidates = document.querySelectorAll<HTMLElement>("[data-cart-target]");
+  for (const el of candidates) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return el;
+  }
+  return null;
+}
+
+function flyToCart(fromEl: HTMLElement) {
+  const target = getVisibleCartTarget();
+  if (!target) return;
+
+  const fromRect = fromEl.getBoundingClientRect();
+  const toRect = target.getBoundingClientRect();
+  const startX = fromRect.left + fromRect.width / 2 - 7;
+  const startY = fromRect.top + fromRect.height / 2 - 7;
+  const endX = toRect.left + toRect.width / 2 - 7;
+  const endY = toRect.top + toRect.height / 2 - 7;
+  const midX = (startX + endX) / 2;
+  const midY = Math.min(startY, endY) - 90;
+
+  const dot = document.createElement("div");
+  dot.className = "fly-to-cart-dot";
+  dot.style.left = `${startX}px`;
+  dot.style.top = `${startY}px`;
+  document.body.appendChild(dot);
+
+  const anim = dot.animate(
+    [
+      { transform: "translate(0, 0) scale(1)", opacity: 1, offset: 0 },
+      { transform: `translate(${midX - startX}px, ${midY - startY}px) scale(1.1)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(0.25)`, opacity: 0.3, offset: 1 },
+    ],
+    { duration: 620, easing: "cubic-bezier(0.3, 0.8, 0.4, 1)" },
+  );
+  anim.onfinish = () => dot.remove();
+}
+
 export function Shop() {
   const { data: products, loading } = useProducts();
-  const { cart, add, remove, clear, isEmpty } = useCart();
+  const { cart, add, decrement, clear, isEmpty } = useCart();
   const { session, profile } = useAuth();
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Todos");
   const [query, setQuery] = useState("");
@@ -182,7 +221,11 @@ export function Shop() {
                       </span>
                       <button
                         disabled={out}
-                        onClick={() => add(p.id)}
+                        onClick={(e) => {
+                          add(p.id);
+                          const btn = e.currentTarget;
+                          requestAnimationFrame(() => flyToCart(btn));
+                        }}
                         className={`min-h-[42px] rounded-lg border px-4 font-heading text-[11px] font-semibold tracking-[0.16em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:active:scale-100 ${PRESS_FX}`}
                         style={{
                           background: out ? "transparent" : "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)",
@@ -200,13 +243,14 @@ export function Shop() {
           </div>
 
           <div className="flex min-w-0 flex-1 basis-[280px] flex-col gap-4 md:max-w-[340px]">
-            <div className="hidden md:block">
+            <div data-cart-target className="hidden md:block">
               <CartPanel
                 cartRows={cartRows}
                 totalCents={totalCents}
                 isEmpty={isEmpty}
                 placing={placing}
-                onRemove={remove}
+                onIncrement={add}
+                onDecrement={decrement}
                 onClear={() => setConfirmingClear(true)}
                 onCheckout={handleCheckout}
               />
@@ -224,6 +268,7 @@ export function Shop() {
 
       {itemCount > 0 && (
         <button
+          data-cart-target
           onClick={() => setMobileCartOpen(true)}
           aria-label={`Ver carrinho, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
           className={`bg-silver-gradient fixed bottom-24 left-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_34px_rgba(0,0,0,0.7)] transition-transform duration-300 hover:-translate-y-0.5 hover:brightness-110 active:scale-90 md:hidden ${bump ? "pop-bump" : ""}`}
@@ -261,7 +306,8 @@ export function Shop() {
                 totalCents={totalCents}
                 isEmpty={isEmpty}
                 placing={placing}
-                onRemove={remove}
+                onIncrement={add}
+                onDecrement={decrement}
                 onClear={() => setConfirmingClear(true)}
                 onCheckout={() => {
                   handleCheckout();
@@ -294,7 +340,8 @@ function CartPanel({
   totalCents,
   isEmpty,
   placing,
-  onRemove,
+  onIncrement,
+  onDecrement,
   onClear,
   onCheckout,
 }: {
@@ -302,7 +349,8 @@ function CartPanel({
   totalCents: number;
   isEmpty: boolean;
   placing: boolean;
-  onRemove: (productId: string) => void;
+  onIncrement: (productId: string) => void;
+  onDecrement: (productId: string) => void;
   onClear: () => void;
   onCheckout: () => void;
 }) {
@@ -324,17 +372,26 @@ function CartPanel({
         {cartRows.map((row) => (
           <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3 first:border-t-0">
             <span className="min-w-0 flex-1 text-sm text-white">{row.product.name}</span>
-            <span className="text-[13px] text-muted">{row.qty}×</span>
+            <div className="flex flex-shrink-0 items-center gap-1">
+              <button
+                onClick={() => onDecrement(row.product.id)}
+                aria-label="Diminuir quantidade"
+                className={`flex h-7 w-7 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white ${PRESS_FX}`}
+              >
+                <Minus size={12} weight="bold" />
+              </button>
+              <span className="w-5 text-center text-[13px] text-white tabular-nums">{row.qty}</span>
+              <button
+                onClick={() => onIncrement(row.product.id)}
+                aria-label="Aumentar quantidade"
+                className={`flex h-7 w-7 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white ${PRESS_FX}`}
+              >
+                <Plus size={12} weight="bold" />
+              </button>
+            </div>
             <span className="font-heading text-[15px] text-white">
               {formatCents(effectivePriceCents(row.product) * row.qty)}
             </span>
-            <button
-              onClick={() => onRemove(row.product.id)}
-              aria-label="Remover"
-              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white ${PRESS_FX}`}
-            >
-              ×
-            </button>
           </div>
         ))}
       </div>

@@ -28,61 +28,71 @@ export function ClientsTab() {
   return (
     <div className="rounded-lg border border-border bg-surface p-7">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase">Clientes</h2>
+        <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Clientes</h2>
         <div className="flex flex-wrap items-center gap-5">
           <DateRangePicker from={from} to={to} onChange={(r) => { setFrom(r.from); setTo(r.to); }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome"
-            className="min-h-11 min-w-[220px] rounded-lg border border-border bg-surface-alt px-3.5 text-sm text-white outline-none focus:border-silver"
+            className="min-h-12 min-w-[240px] rounded-lg border border-border bg-surface-alt px-4 text-base text-white outline-none focus:border-silver"
           />
         </div>
       </div>
-      {loading &&
-        clients.length === 0 &&
-        Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3.5 border-t border-border px-3 py-3.5">
-            <Skeleton className="h-9.5 w-9.5 rounded-full" />
-            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <Skeleton className="h-4 w-36" />
-              <Skeleton className="h-3 w-28" />
-            </span>
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="ml-auto h-5 w-16" />
-          </div>
-        ))}
       {!loading && clients.length === 0 && <p className="text-muted">Nenhum cliente encontrado.</p>}
-      {clients.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3.5 border-t border-border px-3 py-2.5 font-heading text-[11px] tracking-[0.1em] text-muted-2 uppercase">
-          <span className="h-9.5 w-9.5 flex-shrink-0" />
-          <span className="min-w-0 flex-1 basis-[160px]">Cliente</span>
-          <span className="w-24">Visitas</span>
-          <span className="w-32">Última visita</span>
-          <span className="ml-auto">Total gasto</span>
+      {(loading && clients.length === 0) || clients.length > 0 ? (
+        <div className="overflow-x-auto">
+          <div className="min-w-[720px]">
+            {clients.length > 0 && (
+              <div className="grid grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-4 font-heading text-sm tracking-[0.1em] text-muted-2 uppercase">
+                <span />
+                <span>Cliente</span>
+                <span>Visitas</span>
+                <span>Última visita</span>
+                <span className="text-right">Total gasto</span>
+              </div>
+            )}
+            {loading &&
+              clients.length === 0 &&
+              Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-5"
+                >
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <span className="flex min-w-0 flex-col gap-2">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-4 w-32" />
+                  </span>
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="ml-auto h-6 w-20" />
+                </div>
+              ))}
+            {pageClients.map((c) => (
+              <button
+                key={c.customerId}
+                onClick={() => setSelected(c)}
+                className="grid w-full cursor-pointer grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-5 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-lg text-silver">
+                  {c.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-lg text-white">{c.name}</span>
+                  <span className="block truncate text-[15px] text-muted">{c.phone}</span>
+                </span>
+                <span className="text-[15px] text-muted">{c.visits} visitas</span>
+                <span className="text-[15px] text-muted">Última: {formatDateBR(c.lastVisit)}</span>
+                <span className="text-right font-heading text-xl text-white">{formatCents(c.totalCents)}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
-      {pageClients.map((c) => (
-        <button
-          key={c.customerId}
-          onClick={() => setSelected(c)}
-          className="flex w-full cursor-pointer flex-wrap items-center gap-3.5 rounded-lg border-t border-border px-3 py-3.5 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
-        >
-          <span className="flex h-9.5 w-9.5 flex-shrink-0 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-sm text-silver">
-            {c.name.charAt(0).toUpperCase()}
-          </span>
-          <span className="min-w-0 flex-1 basis-[160px]">
-            <span className="block text-[15px] text-white">{c.name}</span>
-            <span className="block text-[13px] text-muted">{c.phone}</span>
-          </span>
-          <span className="w-24 text-[13px] text-muted">{c.visits} visitas</span>
-          <span className="w-32 text-[13px] text-muted">Última: {formatDateBR(c.lastVisit)}</span>
-          <span className="ml-auto font-heading text-base text-white">{formatCents(c.totalCents)}</span>
-        </button>
-      ))}
+      ) : null}
       {clients.length > 0 && (
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-5">
-          <span className="text-[13px] text-muted">
+          <span className="text-[15px] text-muted">
             {clients.length} cliente{clients.length === 1 ? "" : "s"} · página {currentPage} de {pageCount}
           </span>
           <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />

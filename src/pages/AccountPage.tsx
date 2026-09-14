@@ -105,7 +105,7 @@ export function AccountPage() {
               Olá, {profile?.full_name || (import.meta.env.DEV ? "Rafael Prado" : "cliente")}
             </span>
             <h1 className="m-0 mt-3 font-heading text-[clamp(28px,4vw,44px)] font-semibold tracking-[0.04em] text-white uppercase">
-              Seus agendamentos
+              Meus agendamentos
             </h1>
           </div>
           <button
@@ -133,22 +133,22 @@ export function AccountPage() {
                 <div className="font-heading text-[clamp(24px,3.2vw,38px)] leading-tight font-medium tracking-[0.04em] text-white uppercase">
                   {upcoming.services?.name}
                 </div>
-                <div className="mt-4 flex w-fit items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt">
-                  <div className="flex flex-col items-center justify-center px-5 py-2.5 text-center">
-                    <span className="font-heading text-[10px] tracking-[0.16em] text-muted-2 uppercase">
+                <div className="mt-4 flex w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt">
+                  <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
+                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">
                       {MONTH_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getMonth()].slice(0, 3)}
                     </span>
-                    <span className="font-heading text-[32px] leading-none text-white tabular-nums">
+                    <span className="font-heading text-[38px] leading-none text-white tabular-nums">
                       {upcoming.scheduled_date.slice(8, 10)}
                     </span>
-                    <span className="mt-0.5 text-[11px] text-muted-2 capitalize">
+                    <span className="mt-1 text-[13px] text-muted-2 capitalize">
                       {WEEKDAY_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getDay()].slice(0, 3)}
                     </span>
                   </div>
                   <div className="w-px flex-shrink-0 bg-border" aria-hidden />
-                  <div className="flex flex-col items-center justify-center px-5 py-2.5 text-center">
-                    <span className="font-heading text-[10px] tracking-[0.16em] text-muted-2 uppercase">Horário</span>
-                    <span className="font-heading text-[32px] leading-none text-white tabular-nums">
+                  <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
+                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Horário</span>
+                    <span className="font-heading text-[38px] leading-none text-white tabular-nums">
                       {formatTimeShort(upcoming.scheduled_time)}
                     </span>
                   </div>

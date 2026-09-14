@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAgendaForDate, useAgendaTotals, setBookingStatus } from "@/hooks/useAdmin";
 import type { BookingWithDetails } from "@/hooks/useBooking";
-import { dateKey, formatCents, formatDateBR, formatTimeShort, WEEKDAY_LABELS } from "@/lib/format";
+import { dateKey, formatCents, formatDateBR, formatTimeShort, toWhatsAppPhone, whatsAppLink, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -40,6 +40,17 @@ export function AgendaTab() {
     reloadAll();
   }
 
+  async function handleAccept(booking: BookingWithDetails) {
+    setActing(booking.id);
+    await setBookingStatus(booking.id, "confirmed");
+    setActing(null);
+    reloadAll();
+
+    if (!booking.customer_phone) return;
+    const message = `Olá, ${booking.customer_name}! Seu agendamento (${booking.services?.name ?? "atendimento"}) no dia ${formatDateBR(booking.scheduled_date)} às ${formatTimeShort(booking.scheduled_time)} foi confirmado. Te esperamos na D'Conde Barbearia!`;
+    window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
+  }
+
   async function handleConfirmCancel() {
     if (!cancelling) return;
     setActing(cancelling.id);
@@ -71,7 +82,7 @@ export function AgendaTab() {
             key={a.id}
             booking={a}
             acting={acting === a.id}
-            onAccept={a.status === "pending" ? () => decide(a.id, "confirmed") : undefined}
+            onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
             onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
             onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
             onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
@@ -108,7 +119,7 @@ export function AgendaTab() {
               booking={a}
               showDate
               acting={acting === a.id}
-              onAccept={() => decide(a.id, "confirmed")}
+              onAccept={() => handleAccept(a)}
               onDecline={() => decide(a.id, "cancelled")}
             />
           ))}

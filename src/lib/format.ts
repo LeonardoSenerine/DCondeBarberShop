@@ -64,3 +64,9 @@ export function normalizeDigits(value: string): string {
 export function whatsAppLink(phoneE164NoPlus: string, message: string): string {
   return `https://wa.me/${phoneE164NoPlus}?text=${encodeURIComponent(message)}`;
 }
+
+/** Brazilian phone (any formatting) -> digits-only with the 55 country code, for whatsAppLink. */
+export function toWhatsAppPhone(raw: string): string {
+  const digits = normalizeDigits(raw);
+  return digits.startsWith("55") ? digits : `55${digits}`;
+}

@@ -14,7 +14,7 @@ const STATUS_KEY: Record<string, string> = {
   Faltou: "no_show",
 };
 
-const APPT_COLS = "88px minmax(0,1fr) 104px 100px 84px";
+const APPT_COLS = "88px minmax(0,1fr) 104px 150px 100px";
 const PRODUCT_COLS = "88px minmax(0,1fr) 56px 84px";
 
 export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {

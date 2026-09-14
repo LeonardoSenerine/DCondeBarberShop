@@ -35,6 +35,38 @@ export function useAgendaForDate(date: Date) {
   return { agenda, loading, reload };
 }
 
+/**
+ * All bookings still needing action, across every date — not just today.
+ * Split into "pending" (awaiting accept/decline) and "confirmed" (awaiting
+ * completion) so nothing scheduled for another day gets missed.
+ */
+export function useAgendaTotals() {
+  const [pending, setPending] = useState<BookingWithDetails[]>([]);
+  const [confirmed, setConfirmed] = useState<BookingWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    supabase
+      .from("bookings")
+      .select("*, barbers(name), services(name, duration_minutes)")
+      .in("status", ["pending", "confirmed"])
+      .order("scheduled_date")
+      .order("scheduled_time")
+      .then(({ data }) => {
+        const rows = (data ?? []) as unknown as BookingWithDetails[];
+        const source = rows.length === 0 && import.meta.env.DEV ? sampleAgendaTotals() : rows;
+        setPending(source.filter((r) => r.status === "pending"));
+        setConfirmed(source.filter((r) => r.status === "confirmed"));
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => reload(), [reload]);
+
+  return { pending, confirmed, loading, reload };
+}
+
 /** Barber accepts ("confirmed") or turns down ("cancelled") a pending request. */
 export async function setBookingStatus(id: string, status: "confirmed" | "cancelled") {
   const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
@@ -395,6 +427,15 @@ function sampleAgenda(key: string): BookingWithDetails[] {
   }
 
   return rows.sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
+}
+
+/** DEV-only mocked agenda spanning a few days, for previewing the "totals" queue. */
+function sampleAgendaTotals(): BookingWithDetails[] {
+  const today = new Date();
+  const keys = [-1, 0, 1, 2, 3].map((d) => dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + d)));
+  return keys
+    .flatMap((k) => sampleAgenda(k).map((r) => ({ ...r, id: `${r.id}-totals` })))
+    .filter((r) => r.status === "pending" || r.status === "confirmed");
 }
 
 export interface ClientAppointment {

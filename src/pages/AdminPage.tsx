@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useBarbers } from "@/hooks/useCatalog";
 import { WEEKDAY_LABELS, MONTH_LABELS } from "@/lib/format";
 import { AgendaTab } from "@/components/admin/AgendaTab";
 import { FinanceTab } from "@/components/admin/FinanceTab";
@@ -23,7 +24,8 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 export function AdminPage() {
-  const { session, loading, isAdmin, signOut } = useAuth();
+  const { session, profile, loading, isAdmin, isOwner, signOut } = useAuth();
+  const { data: barbers } = useBarbers();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("agenda");
 
@@ -35,6 +37,9 @@ export function AdminPage() {
   const active = TABS.find((t) => t.id === tab)!;
   const now = new Date();
   const dateLabel = `${WEEKDAY_LABELS[now.getDay()]}, ${now.getDate()} de ${MONTH_LABELS[now.getMonth()].toLowerCase()} de ${now.getFullYear()}`;
+
+  const myBarber = barbers.find((b) => b.id === profile?.barber_id);
+  const roleLabel = isOwner ? "Dono" : "Barbeiro";
 
   return (
     <div className="bg-ink text-white lg:flex lg:h-screen lg:overflow-hidden">
@@ -70,6 +75,24 @@ export function AdminPage() {
             );
           })}
         </nav>
+
+        {profile && (
+          <div className="flex items-center gap-3 border-t border-border p-4">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-sm text-silver">
+              {myBarber?.photo_path ? (
+                <img src={myBarber.photo_path} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (profile.full_name || profile.email || "?").charAt(0).toUpperCase()
+              )}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-heading text-[14px] text-white">
+                {profile.full_name || profile.email}
+              </span>
+              <span className="block text-[11px] tracking-[0.12em] text-muted-2 uppercase">{roleLabel}</span>
+            </span>
+          </div>
+        )}
 
         <div className="flex gap-1.5 border-t border-border p-3 lg:flex-col">
           <Link

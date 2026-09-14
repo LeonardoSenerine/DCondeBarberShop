@@ -306,7 +306,7 @@ export function Shop() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-[dc-up_320ms_ease_both] fixed inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-surface shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
+            className="animate-[dc-up_320ms_ease_both] fixed inset-x-0 bottom-0 max-h-[85vh] overscroll-contain overflow-y-auto rounded-t-2xl border-t border-border bg-surface shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
           >
             <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-surface px-6 py-4">
               <span className="font-heading text-sm tracking-[0.2em] text-white uppercase">Seu carrinho</span>
@@ -386,7 +386,7 @@ function CartPanel({
           </button>
         )}
       </div>
-      <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto">
+      <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto overscroll-contain">
         {cartRows.map((row) => (
           <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3 first:border-t-0">
             <span className="min-w-0 flex-1 text-sm text-white">{row.product.name}</span>

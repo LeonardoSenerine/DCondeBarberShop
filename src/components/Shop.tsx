@@ -105,10 +105,11 @@ export function Shop() {
   }, [itemCount]);
 
   async function handleCheckout() {
-    const items = cartRows
-      .map((row) => `${row.qty}x ${row.product.name}`)
-      .join(", ");
-    const message = `Olá! Quero reservar: ${items || "produtos da D'Conde"}`;
+    const itemLines = cartRows.map((row) => `${row.qty}x ${row.product.name}`).join("\n");
+    const message =
+      cartRows.length > 0
+        ? `Olá! Vim pelo site da D'Conde Barbearia e quero reservar:\n\n${itemLines}\n\nTotal: ${formatCents(totalCents)}`
+        : "Olá! Vim pelo site da D'Conde Barbearia.";
 
     if (session?.user) {
       setPlacing(true);

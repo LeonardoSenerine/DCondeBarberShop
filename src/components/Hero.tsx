@@ -61,16 +61,16 @@ export function Hero() {
             {HERO.lead}
           </p>
 
-          <div className="mb-9 flex flex-wrap gap-3.5 [animation:dc-up_700ms_360ms_ease_both]">
+          <div className="mb-9 flex gap-3 sm:gap-3.5 [animation:dc-up_700ms_360ms_ease_both]">
             <a
               href="#agendar"
-              className="bg-silver-gradient flex h-14 items-center rounded-lg px-8 font-heading text-sm font-semibold tracking-[0.22em] text-ink uppercase shadow-[0_18px_40px_rgba(0,0,0,0.55)] transition-[filter] hover:brightness-110"
+              className="bg-silver-gradient flex h-14 flex-1 items-center justify-center rounded-lg px-3 font-heading text-[13px] font-semibold tracking-[0.14em] text-ink uppercase shadow-[0_18px_40px_rgba(0,0,0,0.55)] transition-[filter] hover:brightness-110 sm:flex-none sm:px-8 sm:text-sm sm:tracking-[0.22em]"
             >
               Agendar agora
             </a>
             <a
               href="#servicos"
-              className="flex h-14 items-center rounded-lg border border-white px-8 font-heading text-sm font-medium tracking-[0.22em] text-white uppercase transition-colors hover:bg-white/10"
+              className="flex h-14 flex-1 items-center justify-center rounded-lg border border-white px-3 font-heading text-[13px] font-medium tracking-[0.14em] text-white uppercase transition-colors hover:bg-white/10 sm:flex-none sm:px-8 sm:text-sm sm:tracking-[0.22em]"
             >
               Ver serviços
             </a>

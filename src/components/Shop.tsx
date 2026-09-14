@@ -26,34 +26,40 @@ function getVisibleCartTarget(): HTMLElement | null {
   return null;
 }
 
-function flyToCart(fromEl: HTMLElement) {
+function flyProductToCart(cardEl: HTMLElement) {
+  const thumb = cardEl.querySelector<HTMLElement>("[data-product-thumb]");
   const target = getVisibleCartTarget();
-  if (!target) return;
+  if (!thumb || !target) return;
 
-  const fromRect = fromEl.getBoundingClientRect();
+  const fromRect = thumb.getBoundingClientRect();
   const toRect = target.getBoundingClientRect();
-  const startX = fromRect.left + fromRect.width / 2 - 7;
-  const startY = fromRect.top + fromRect.height / 2 - 7;
-  const endX = toRect.left + toRect.width / 2 - 7;
-  const endY = toRect.top + toRect.height / 2 - 7;
-  const midX = (startX + endX) / 2;
-  const midY = Math.min(startY, endY) - 90;
+  const startCenterX = fromRect.left + fromRect.width / 2;
+  const startCenterY = fromRect.top + fromRect.height / 2;
+  const endCenterX = toRect.left + toRect.width / 2;
+  const endCenterY = toRect.top + toRect.height / 2;
+  const dx = endCenterX - startCenterX;
+  const dy = endCenterY - startCenterY;
+  const arcPeakY = Math.min(startCenterY, endCenterY) - 110;
+  const midX = dx * 0.5;
+  const midY = arcPeakY - startCenterY;
 
-  const dot = document.createElement("div");
-  dot.className = "fly-to-cart-dot";
-  dot.style.left = `${startX}px`;
-  dot.style.top = `${startY}px`;
-  document.body.appendChild(dot);
+  const clone = thumb.cloneNode(true) as HTMLElement;
+  clone.classList.add("fly-to-cart-card");
+  clone.style.left = `${fromRect.left}px`;
+  clone.style.top = `${fromRect.top}px`;
+  clone.style.width = `${fromRect.width}px`;
+  clone.style.height = `${fromRect.height}px`;
+  document.body.appendChild(clone);
 
-  const anim = dot.animate(
+  const anim = clone.animate(
     [
-      { transform: "translate(0, 0) scale(1)", opacity: 1, offset: 0 },
-      { transform: `translate(${midX - startX}px, ${midY - startY}px) scale(1.1)`, opacity: 1, offset: 0.55 },
-      { transform: `translate(${endX - startX}px, ${endY - startY}px) scale(0.25)`, opacity: 0.3, offset: 1 },
+      { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
+      { transform: `translate(${midX}px, ${midY}px) scale(0.5) rotate(-6deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0.1) rotate(8deg)`, opacity: 0.15, offset: 1 },
     ],
-    { duration: 620, easing: "cubic-bezier(0.3, 0.8, 0.4, 1)" },
+    { duration: 680, easing: "cubic-bezier(0.3, 0.7, 0.35, 1)" },
   );
-  anim.onfinish = () => dot.remove();
+  anim.onfinish = () => clone.remove();
 }
 
 export function Shop() {
@@ -192,9 +198,13 @@ export function Shop() {
                 return (
                   <div
                     key={p.id}
+                    data-product-card
                     className="flex flex-col gap-3.5 rounded-lg border border-border bg-surface-alt p-4.5 transition-transform duration-300 hover:-translate-y-1 hover:border-silver"
                   >
-                    <div className="relative flex h-[170px] items-center justify-center overflow-hidden rounded-lg border border-border bg-ink">
+                    <div
+                      data-product-thumb
+                      className="relative flex h-[170px] items-center justify-center overflow-hidden rounded-lg border border-border bg-ink"
+                    >
                       {p.image_path ? (
                         <img src={p.image_path} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -223,8 +233,8 @@ export function Shop() {
                         disabled={out}
                         onClick={(e) => {
                           add(p.id);
-                          const btn = e.currentTarget;
-                          requestAnimationFrame(() => flyToCart(btn));
+                          const card = e.currentTarget.closest<HTMLElement>("[data-product-card]");
+                          if (card) requestAnimationFrame(() => flyProductToCart(card));
                         }}
                         className={`min-h-[42px] rounded-lg border px-4 font-heading text-[11px] font-semibold tracking-[0.16em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:active:scale-100 ${PRESS_FX}`}
                         style={{

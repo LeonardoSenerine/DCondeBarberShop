@@ -1,25 +1,26 @@
 import { useRef, useState, type ReactNode } from "react";
-import { useAdminGallery, removeGalleryPhoto, uploadGalleryPhoto } from "@/hooks/useAdmin";
+import { useAdminGallery, removeGalleryPhoto, uploadGalleryPhoto, updateGalleryPhoto } from "@/hooks/useAdmin";
+import type { GalleryPhoto } from "@/hooks/useAdmin";
 import { useBarbers, useServices } from "@/hooks/useCatalog";
 import { Skeleton } from "@/components/Skeleton";
+
+type FormState = { mode: "add"; file: File; previewUrl: string } | { mode: "edit"; photo: GalleryPhoto } | null;
 
 export function GalleryTab() {
   const { photos, loading, reload } = useAdminGallery();
   const { data: barbers } = useBarbers();
   const { data: services } = useServices();
-  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [form, setForm] = useState<FormState>(null);
   const [barberId, setBarberId] = useState("");
   const [serviceLabel, setServiceLabel] = useState("");
   const [description, setDescription] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPending(null);
-    setPreviewUrl("");
+    if (form?.mode === "add") URL.revokeObjectURL(form.previewUrl);
+    setForm(null);
     setBarberId("");
     setServiceLabel("");
     setDescription("");
@@ -27,8 +28,19 @@ export function GalleryTab() {
   }
 
   function pickFile(file: File) {
-    setPending(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setForm({ mode: "add", file, previewUrl: URL.createObjectURL(file) });
+    setBarberId("");
+    setServiceLabel("");
+    setDescription("");
+    setError(null);
+  }
+
+  function openEdit(photo: GalleryPhoto) {
+    setForm({ mode: "edit", photo });
+    setBarberId(photo.barber_id ?? "");
+    setServiceLabel(photo.service_label ?? "");
+    setDescription(photo.client_label ?? "");
+    setError(null);
   }
 
   async function handleRemove(id: string) {
@@ -37,15 +49,19 @@ export function GalleryTab() {
   }
 
   async function handleConfirm() {
-    if (!pending) return;
-    setUploading(true);
+    if (!form) return;
+    setSaving(true);
     setError(null);
-    const { error: err } = await uploadGalleryPhoto(pending, photos.length + 1, {
+    const meta = {
       barberId: barberId || null,
       serviceLabel: serviceLabel || null,
       clientLabel: description.trim() || null,
-    });
-    setUploading(false);
+    };
+    const { error: err } =
+      form.mode === "add"
+        ? await uploadGalleryPhoto(form.file, photos.length + 1, meta)
+        : await updateGalleryPhoto(form.photo.id, meta);
+    setSaving(false);
     if (err) return setError(err);
     resetForm();
     reload();
@@ -61,13 +77,22 @@ export function GalleryTab() {
         {photos.map((p) => (
           <div key={p.id} className="relative h-[180px] overflow-hidden rounded-lg border border-border">
             <img src={p.image_path} loading="lazy" alt="" className="h-full w-full object-cover" />
-            <button
-              onClick={() => handleRemove(p.id)}
-              className="absolute top-2.5 right-2.5 min-h-10 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
-              style={{ background: "rgba(10,10,10,0.86)" }}
-            >
-              Remover
-            </button>
+            <div className="absolute top-2.5 right-2.5 left-2.5 flex flex-wrap justify-end gap-2">
+              <button
+                onClick={() => openEdit(p)}
+                className="min-h-10 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
+                style={{ background: "rgba(10,10,10,0.86)" }}
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => handleRemove(p.id)}
+                className="min-h-10 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
+                style={{ background: "rgba(10,10,10,0.86)" }}
+              >
+                Remover
+              </button>
+            </div>
           </div>
         ))}
         <button
@@ -90,7 +115,7 @@ export function GalleryTab() {
         />
       </div>
 
-      {pending && (
+      {form && (
         <div
           className="fixed inset-0 z-[120] overflow-y-auto"
           style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
@@ -105,10 +130,10 @@ export function GalleryTab() {
               ×
             </button>
             <h3 className="m-0 mb-4 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
-              Detalhes da foto
+              {form.mode === "add" ? "Detalhes da foto" : "Editar foto"}
             </h3>
             <img
-              src={previewUrl}
+              src={form.mode === "add" ? form.previewUrl : form.photo.image_path}
               alt=""
               className="mb-5 max-h-[52vh] w-full rounded-lg border border-border bg-ink object-contain"
             />
@@ -149,14 +174,14 @@ export function GalleryTab() {
               <div className="mt-1 flex gap-2.5">
                 <button
                   onClick={handleConfirm}
-                  disabled={uploading}
+                  disabled={saving}
                   className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
                 >
-                  {uploading ? "Enviando…" : "Adicionar"}
+                  {saving ? "Salvando…" : form.mode === "add" ? "Adicionar" : "Salvar"}
                 </button>
                 <button
                   onClick={resetForm}
-                  disabled={uploading}
+                  disabled={saving}
                   className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
                 >
                   Cancelar

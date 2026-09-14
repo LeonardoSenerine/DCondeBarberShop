@@ -7,7 +7,7 @@ import type { BookingStatus, Database } from "@/types/database";
 type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type Service = Database["public"]["Tables"]["services"]["Row"];
-type GalleryPhoto = Database["public"]["Tables"]["gallery_photos"]["Row"];
+export type GalleryPhoto = Database["public"]["Tables"]["gallery_photos"]["Row"];
 type BarberHours = Database["public"]["Tables"]["barber_hours"]["Row"];
 
 export function useAgendaForDate(date: Date) {
@@ -831,6 +831,14 @@ export interface GalleryPhotoMeta {
   barberId: string | null;
   serviceLabel: string | null;
   clientLabel: string | null;
+}
+
+export async function updateGalleryPhoto(id: string, meta: GalleryPhotoMeta) {
+  const { error } = await supabase
+    .from("gallery_photos")
+    .update({ barber_id: meta.barberId, service_label: meta.serviceLabel, client_label: meta.clientLabel })
+    .eq("id", id);
+  return { error: error?.message ?? null };
 }
 
 export async function uploadGalleryPhoto(file: File, sortOrder: number, meta: GalleryPhotoMeta) {

@@ -123,6 +123,18 @@ alter table public.bookings add constraint bookings_status_check
 create index if not exists bookings_customer_idx on public.bookings (customer_id);
 create index if not exists bookings_barber_date_idx on public.bookings (barber_id, scheduled_date);
 
+-- Powers the admin panel's live "novo agendamento" alert (Supabase
+-- Realtime, filtered by the bookings RLS policies above).
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'bookings'
+  ) then
+    alter publication supabase_realtime add table public.bookings;
+  end if;
+end $$;
+
 -- The booking calendar needs to grey out already-taken slots for EVERY
 -- visitor, including anonymous ones — but bookings' own RLS only ever let
 -- someone see their own rows (or admin/owner ones), so that query always

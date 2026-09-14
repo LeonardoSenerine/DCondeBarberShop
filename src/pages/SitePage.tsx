@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
@@ -23,7 +23,7 @@ import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
 
 export function SitePage() {
   const navigate = useNavigate();
-  const { session, profile } = useAuth();
+  const { session, profile, isAdmin } = useAuth();
   const { createBooking } = useCreateBooking();
   const { data: photos } = useGallery();
 
@@ -100,6 +100,10 @@ export function SitePage() {
     setPendingBooking(draft);
     setAuthOpen(true);
   }
+
+  // Owner/staff have nothing to do on the marketing homepage — send them
+  // straight to their panel instead of the booking wizard.
+  if (isAdmin) return <Navigate to="/admin" replace />;
 
   const lightboxIndex = photos.findIndex((p) => p.image_path === lightbox);
   const lightboxLabel = lightboxIndex >= 0 ? (photos[lightboxIndex].service_label ?? "D'Conde") : "";

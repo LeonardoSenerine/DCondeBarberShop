@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
+import { BookingStatusBadge } from "@/components/StatusBadge";
 
 export function AgendaTab() {
   const [date] = useState(() => new Date());
@@ -66,15 +67,7 @@ export function AgendaTab() {
             <span className="block text-[13px] text-muted">{a.services?.name}</span>
           </span>
           <span className="w-20 text-sm text-muted">{a.barbers?.name}</span>
-          <span
-            className="rounded-full border px-2.5 py-1 text-[11px] tracking-[0.14em] uppercase"
-            style={{
-              color: a.status === "confirmed" ? "#FFFFFF" : a.status === "pending" ? "#E0B341" : "#A3A3A3",
-              borderColor: a.status === "confirmed" ? "#E0E0E0" : a.status === "pending" ? "#E0B341" : "#2A2A2A",
-            }}
-          >
-            {statusLabel(a.status)}
-          </span>
+          <BookingStatusBadge status={a.status} />
           {a.status === "pending" && (
             <span className="flex gap-2">
               <button
@@ -140,21 +133,4 @@ export function AgendaTab() {
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </div>
   );
-}
-
-function statusLabel(status: string) {
-  switch (status) {
-    case "pending":
-      return "Em análise";
-    case "confirmed":
-      return "Confirmado";
-    case "completed":
-      return "Concluído";
-    case "cancelled":
-      return "Cancelado";
-    case "no_show":
-      return "Faltou";
-    default:
-      return status;
-  }
 }

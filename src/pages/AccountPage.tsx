@@ -3,6 +3,8 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useMyBookings, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { BookingStatusBadge } from "@/components/StatusBadge";
 import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 
@@ -16,6 +18,8 @@ export function AccountPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancellingBusy, setCancellingBusy] = useState(false);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -32,9 +36,12 @@ export function AccountPage() {
   const history = bookings.filter((b) => b !== upcoming && b.status !== "cancelled");
   const upcomingPending = upcoming?.status === "pending";
 
-  async function handleCancel() {
+  async function handleConfirmCancel() {
     if (!upcoming) return;
+    setCancellingBusy(true);
     await cancelBooking(upcoming.id);
+    setCancellingBusy(false);
+    setCancelling(false);
     reload();
   }
 
@@ -112,19 +119,7 @@ export function AccountPage() {
         <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
           <div className="mb-6 flex items-center justify-between gap-3">
             <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Próximo agendamento</span>
-            {upcoming &&
-              (upcomingPending ? (
-                <span
-                  className="rounded-full border px-2.5 py-1 text-[11px] tracking-[0.14em] uppercase"
-                  style={{ color: "#E0B341", borderColor: "#E0B341" }}
-                >
-                  Em análise
-                </span>
-              ) : (
-                <span className="bg-silver-gradient rounded-full px-2.5 py-1 text-[11px] tracking-[0.14em] text-ink uppercase">
-                  Confirmado
-                </span>
-              ))}
+            {upcoming && <BookingStatusBadge status={upcoming.status} />}
           </div>
           {bookingsLoading ? (
             <div className="flex flex-col gap-3">
@@ -184,7 +179,7 @@ export function AccountPage() {
                   Remarcar
                 </button>
                 <button
-                  onClick={handleCancel}
+                  onClick={() => setCancelling(true)}
                   className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                 >
                   {upcomingPending ? "Cancelar solicitação" : "Cancelar"}
@@ -213,9 +208,10 @@ export function AccountPage() {
             )}
             {history.map((h) => (
               <div key={h.id} className="flex flex-wrap items-center gap-3 border-t border-border py-3.5">
-                <span className="w-24 font-heading text-sm text-white">{formatDateBR(h.scheduled_date)}</span>
+                <span className="w-24 text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
                 <span className="min-w-0 flex-1 basis-[200px] text-[15px] text-white">{h.services?.name}</span>
                 <span className="w-22 text-sm text-muted">{h.barbers?.name}</span>
+                <BookingStatusBadge status={h.status} />
                 <span className="ml-auto font-heading text-[15px] text-white">{formatCents(h.price_cents)}</span>
               </div>
             ))}
@@ -319,6 +315,18 @@ export function AccountPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {cancelling && upcoming && (
+        <ConfirmModal
+          title="Cancelar agendamento?"
+          message={`Tem certeza que deseja cancelar "${upcoming.services?.name}" em ${formatDateBR(upcoming.scheduled_date)} às ${formatTimeShort(upcoming.scheduled_time)}? Essa ação não pode ser desfeita.`}
+          confirmLabel="Cancelar agendamento"
+          cancelLabel="Voltar"
+          busy={cancellingBusy}
+          onConfirm={handleConfirmCancel}
+          onClose={() => setCancelling(false)}
+        />
       )}
     </div>
   );

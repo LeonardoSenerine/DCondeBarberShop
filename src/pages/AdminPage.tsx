@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useBarbers } from "@/hooks/useCatalog";
+import { supabase } from "@/lib/supabaseClient";
 import { WEEKDAY_LABELS, MONTH_LABELS } from "@/lib/format";
 import { AgendaTab } from "@/components/admin/AgendaTab";
 import { FinanceTab } from "@/components/admin/FinanceTab";
@@ -10,6 +11,14 @@ import { ProductsTab } from "@/components/admin/ProductsTab";
 import { ServicesTab } from "@/components/admin/ServicesTab";
 import { GalleryTab } from "@/components/admin/GalleryTab";
 import { BarbersTab } from "@/components/admin/BarbersTab";
+import { NewBookingAlert } from "@/components/admin/NewBookingAlert";
+
+interface IncomingBooking {
+  customer_name: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  status: string;
+}
 
 const TABS = [
   { id: "agenda", name: "Agenda do dia", icon: iconCalendar },
@@ -28,6 +37,33 @@ export function AdminPage() {
   const { data: barbers } = useBarbers();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("agenda");
+  const [incoming, setIncoming] = useState<IncomingBooking | null>(null);
+
+  // Live alert when a new booking request comes in — RLS scopes what each
+  // session receives, so staff only ever hears about their own barber's.
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase
+      .channel("admin-new-bookings")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "bookings" },
+        (payload) => {
+          const row = payload.new as IncomingBooking;
+          if (row.status === "pending") setIncoming(row);
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session]);
+
+  useEffect(() => {
+    if (!incoming) return;
+    const t = window.setTimeout(() => setIncoming(null), 10000);
+    return () => window.clearTimeout(t);
+  }, [incoming]);
 
   if (loading) return null;
   // DEV-only: let the panel open on `npm run dev` without an admin login so
@@ -133,6 +169,19 @@ export function AdminPage() {
           {tab === "barbeiros" && <BarbersTab />}
         </div>
       </main>
+
+      {incoming && (
+        <NewBookingAlert
+          customerName={incoming.customer_name}
+          date={incoming.scheduled_date}
+          time={incoming.scheduled_time}
+          onView={() => {
+            setTab("agenda");
+            setIncoming(null);
+          }}
+          onDismiss={() => setIncoming(null)}
+        />
+      )}
     </div>
   );
 }

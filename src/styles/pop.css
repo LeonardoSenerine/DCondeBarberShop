@@ -1,0 +1,20 @@
+/* A quick attention-grabbing bump — e.g. a cart badge when the count changes. */
+
+@keyframes pop-bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pop-bump {
+  animation: pop-bump 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}

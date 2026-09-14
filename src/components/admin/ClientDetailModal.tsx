@@ -1,11 +1,18 @@
 import { useClientHistory, type ClientSummary } from "@/hooks/useAdmin";
 import { formatCents, formatDateBR } from "@/lib/format";
+import { BookingStatusBadge } from "@/components/StatusBadge";
 import "@/styles/scrollbar.css";
 
 interface ClientDetailModalProps {
   client: ClientSummary;
   onClose: () => void;
 }
+
+const STATUS_KEY: Record<string, string> = {
+  Concluído: "completed",
+  Confirmado: "confirmed",
+  Faltou: "no_show",
+};
 
 const APPT_COLS = "88px minmax(0,1fr) 104px 100px 84px";
 const PRODUCT_COLS = "88px minmax(0,1fr) 56px 84px";
@@ -74,12 +81,7 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
                       <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
                       <span className="text-[15px] text-white">{a.service}</span>
                       <span className="text-[13px] text-muted">{a.barber}</span>
-                      <span
-                        className="w-fit rounded-full border border-border px-2.5 py-1 text-center text-[11px] tracking-[0.08em] uppercase"
-                        style={{ color: a.status === "Confirmado" ? "#FFFFFF" : "#9E9E9E" }}
-                      >
-                        {a.status}
-                      </span>
+                      <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
                       <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
                     </div>
                   ))}

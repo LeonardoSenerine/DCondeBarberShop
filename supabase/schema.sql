@@ -246,7 +246,11 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- auth.uid() is null when this runs outside a logged-in user's request
+  -- (the SQL Editor, a migration, a service-role job) — that's already a
+  -- trusted context, so only block changes coming from an actual session.
   if (new.role is distinct from old.role or new.barber_id is distinct from old.barber_id)
+    and auth.uid() is not null
     and not public.is_owner() then
     raise exception 'Apenas o dono pode alterar cargo ou barbeiro vinculado.';
   end if;

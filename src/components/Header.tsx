@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NAV_LINKS } from "@/data/content";
 import { useAuth } from "@/context/AuthContext";
 
@@ -10,7 +10,13 @@ interface HeaderProps {
 export function Header({ onOpenAuth }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { session, profile } = useAuth();
+  const { session, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  function handleSignOut() {
+    setMenuOpen(false);
+    signOut().then(() => navigate("/"));
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -66,6 +72,14 @@ export function Header({ onOpenAuth }: HeaderProps) {
                 className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
               >
                 {accountLabel}
+              </button>
+            )}
+            {session && (
+              <button
+                onClick={handleSignOut}
+                className="cursor-pointer font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+              >
+                Sair
               </button>
             )}
           </div>
@@ -134,6 +148,14 @@ export function Header({ onOpenAuth }: HeaderProps) {
               className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
             >
               {accountLabel}
+            </button>
+          )}
+          {session && (
+            <button
+              onClick={handleSignOut}
+              className="cursor-pointer py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
+            >
+              Sair
             </button>
           )}
         </div>

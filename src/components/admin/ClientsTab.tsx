@@ -44,7 +44,7 @@ export function ClientsTab() {
         <div className="overflow-x-auto">
           <div className="min-w-[720px]">
             {clients.length > 0 && (
-              <div className="grid grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-4 font-heading text-sm tracking-[0.1em] text-muted-2 uppercase">
+              <div className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-4 font-heading text-base tracking-[0.1em] text-muted-2 uppercase">
                 <span />
                 <span>Cliente</span>
                 <span>Visitas</span>
@@ -57,34 +57,34 @@ export function ClientsTab() {
               Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-5"
+                  className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6"
                 >
-                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <Skeleton className="h-14 w-14 rounded-full" />
                   <span className="flex min-w-0 flex-col gap-2">
-                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-6 w-44" />
                     <Skeleton className="h-4 w-32" />
                   </span>
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="ml-auto h-6 w-20" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-28" />
+                  <Skeleton className="ml-auto h-7 w-24" />
                 </div>
               ))}
             {pageClients.map((c) => (
               <button
                 key={c.customerId}
                 onClick={() => setSelected(c)}
-                className="grid w-full cursor-pointer grid-cols-[64px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-5 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
+                className="grid w-full cursor-pointer grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-lg text-silver">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-xl text-silver">
                   {c.name.charAt(0).toUpperCase()}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-lg text-white">{c.name}</span>
-                  <span className="block truncate text-[15px] text-muted">{c.phone}</span>
+                  <span className="block truncate text-xl text-white">{c.name}</span>
+                  <span className="block truncate text-base text-muted">{c.phone}</span>
                 </span>
-                <span className="text-[15px] text-muted">{c.visits} visitas</span>
-                <span className="text-[15px] text-muted">Última: {formatDateBR(c.lastVisit)}</span>
-                <span className="text-right font-heading text-xl text-white">{formatCents(c.totalCents)}</span>
+                <span className="text-base text-muted">{c.visits} visitas</span>
+                <span className="text-base text-muted">Última: {formatDateBR(c.lastVisit)}</span>
+                <span className="text-right font-heading text-2xl text-white">{formatCents(c.totalCents)}</span>
               </button>
             ))}
           </div>
@@ -92,7 +92,7 @@ export function ClientsTab() {
       ) : null}
       {clients.length > 0 && (
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-5">
-          <span className="text-[15px] text-muted">
+          <span className="text-base text-muted">
             {clients.length} cliente{clients.length === 1 ? "" : "s"} · página {currentPage} de {pageCount}
           </span>
           <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />

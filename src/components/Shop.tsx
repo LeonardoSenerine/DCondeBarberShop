@@ -10,6 +10,7 @@ import { effectivePriceCents, isOnSale } from "@/lib/product";
 import { Reveal } from "@/components/Reveal";
 import { Skeleton } from "@/components/Skeleton";
 import "@/styles/pop.css";
+import "@/styles/scrollbar.css";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
@@ -237,9 +238,9 @@ export function Shop() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-[dc-up_320ms_ease_both] fixed inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-surface p-6 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
+            className="animate-[dc-up_320ms_ease_both] fixed inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-surface shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
           >
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-surface px-6 py-4">
               <span className="font-heading text-sm tracking-[0.2em] text-white uppercase">Seu carrinho</span>
               <button
                 onClick={() => setMobileCartOpen(false)}
@@ -249,17 +250,19 @@ export function Shop() {
                 <X size={16} weight="bold" />
               </button>
             </div>
-            <CartPanel
-              cartRows={cartRows}
-              totalCents={totalCents}
-              isEmpty={isEmpty}
-              placing={placing}
-              onRemove={remove}
-              onCheckout={() => {
-                handleCheckout();
-                setMobileCartOpen(false);
-              }}
-            />
+            <div className="p-6 pt-4">
+              <CartPanel
+                cartRows={cartRows}
+                totalCents={totalCents}
+                isEmpty={isEmpty}
+                placing={placing}
+                onRemove={remove}
+                onCheckout={() => {
+                  handleCheckout();
+                  setMobileCartOpen(false);
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -285,9 +288,9 @@ function CartPanel({
   return (
     <div className="rounded-lg border border-border bg-surface-alt p-6">
       <span className="font-heading text-xs tracking-[0.24em] text-white uppercase">Carrinho</span>
-      <div className="mt-4 flex flex-col">
+      <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto">
         {cartRows.map((row) => (
-          <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3">
+          <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3 first:border-t-0">
             <span className="min-w-0 flex-1 text-sm text-white">{row.product.name}</span>
             <span className="text-[13px] text-muted">{row.qty}×</span>
             <span className="font-heading text-[15px] text-white">
@@ -296,7 +299,7 @@ function CartPanel({
             <button
               onClick={() => onRemove(row.product.id)}
               aria-label="Remover"
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
             >
               ×
             </button>

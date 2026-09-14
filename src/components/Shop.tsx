@@ -95,29 +95,37 @@ export function Shop() {
 
         <Reveal className="flex flex-wrap items-start gap-5" delayMs={120}>
           <div className="min-w-0 flex-1 basis-[460px]">
-            <div className="mb-4.5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface-alt px-4.5 py-3.5">
-              <span className="font-heading text-xs tracking-[0.2em] text-muted uppercase">
-                {products.length} produtos
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((c) => {
-                  const on = category === c;
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => setCategory(c)}
-                      className="min-h-9.5 rounded-full border px-3.5 font-heading text-[11px] tracking-[0.16em] uppercase transition-colors"
-                      style={{
-                        background: on ? "rgba(255,255,255,0.08)" : "transparent",
-                        borderColor: on ? "#E0E0E0" : "#2A2A2A",
-                        color: on ? "#FFFFFF" : "#A3A3A3",
-                      }}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
+            <div className="mb-4.5 flex flex-col gap-3.5 rounded-lg border border-border bg-surface-alt px-4.5 py-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="font-heading text-xs tracking-[0.2em] text-muted uppercase">
+                  {products.length} produtos
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((c) => {
+                    const on = category === c;
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setCategory(c)}
+                        className="min-h-9.5 rounded-full border px-3.5 font-heading text-[11px] tracking-[0.16em] uppercase transition-colors"
+                        style={{
+                          background: on ? "rgba(255,255,255,0.08)" : "transparent",
+                          borderColor: on ? "#E0E0E0" : "#2A2A2A",
+                          color: on ? "#FFFFFF" : "#A3A3A3",
+                        }}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar produto"
+                className="min-h-11 w-full rounded-lg border border-border bg-ink px-3.5 text-sm text-white outline-none focus:border-silver"
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
@@ -195,16 +203,6 @@ export function Shop() {
                 placing={placing}
                 onRemove={remove}
                 onCheckout={handleCheckout}
-              />
-            </div>
-
-            <div className="rounded-lg border border-border bg-surface-alt p-6">
-              <span className="font-heading text-xs tracking-[0.24em] text-white uppercase">Buscar</span>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Nome do produto"
-                className="mt-3.5 min-h-[46px] w-full rounded-lg border border-border bg-ink px-3.5 text-sm text-white outline-none focus:border-silver"
               />
             </div>
 

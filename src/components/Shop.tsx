@@ -372,11 +372,43 @@ function CartPanel({
   onClear: () => void;
   onCheckout: () => void;
 }) {
+  const [rows, setRows] = useState(cartRows);
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+  const prevRowsRef = useRef(cartRows);
+
+  useEffect(() => {
+    const currentIds = new Set(cartRows.map((r) => r.product.id));
+    const removed = prevRowsRef.current.filter((r) => !currentIds.has(r.product.id));
+    prevRowsRef.current = cartRows;
+
+    if (removed.length === 0) {
+      setRows(cartRows);
+      return;
+    }
+
+    setExitingIds((prev) => {
+      const next = new Set(prev);
+      removed.forEach((r) => next.add(r.product.id));
+      return next;
+    });
+    setRows([...cartRows, ...removed]);
+
+    const timer = window.setTimeout(() => {
+      setRows(cartRows);
+      setExitingIds((prev) => {
+        const next = new Set(prev);
+        removed.forEach((r) => next.delete(r.product.id));
+        return next;
+      });
+    }, 220);
+    return () => window.clearTimeout(timer);
+  }, [cartRows]);
+
   return (
     <div className="rounded-lg border border-border bg-surface-alt p-6">
       <div className="flex items-center justify-between gap-3">
         <span className="font-heading text-xs tracking-[0.24em] text-white uppercase">Carrinho</span>
-        {!isEmpty && (
+        {rows.length > 0 && (
           <button
             onClick={onClear}
             className={`flex items-center gap-1.5 text-[11px] font-medium text-muted-2 transition-colors hover:text-white ${PRESS_FX}`}
@@ -387,8 +419,13 @@ function CartPanel({
         )}
       </div>
       <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto overscroll-contain">
-        {cartRows.map((row) => (
-          <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3 first:border-t-0">
+        {rows.map((row) => (
+          <div
+            key={row.product.id}
+            className={`flex items-center gap-2.5 border-t border-border py-3 first:border-t-0 ${
+              exitingIds.has(row.product.id) ? "cart-row-exit" : "cart-row-enter"
+            }`}
+          >
             <span className="min-w-0 flex-1 text-sm text-white">{row.product.name}</span>
             <div className="flex flex-shrink-0 items-center gap-1">
               <button
@@ -413,7 +450,7 @@ function CartPanel({
           </div>
         ))}
       </div>
-      {isEmpty && (
+      {rows.length === 0 && (
         <div className="flex flex-col items-center gap-1.5 pt-4.5 pb-1">
           <span aria-hidden className="font-display text-[52px] leading-none text-white opacity-18">
             D

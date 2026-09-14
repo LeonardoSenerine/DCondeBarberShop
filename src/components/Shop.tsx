@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ShoppingCart, X } from "@phosphor-icons/react";
+import { ShoppingCart, Trash, X } from "@phosphor-icons/react";
 import { useProducts, type Product } from "@/hooks/useCatalog";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -9,8 +9,11 @@ import { formatCents, whatsAppLink } from "@/lib/format";
 import { effectivePriceCents, isOnSale } from "@/lib/product";
 import { Reveal } from "@/components/Reveal";
 import { Skeleton } from "@/components/Skeleton";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import "@/styles/pop.css";
 import "@/styles/scrollbar.css";
+
+const PRESS_FX = "active:scale-[0.94] transition-transform duration-150";
 
 const CATEGORIES = ["Todos", "Cabelo", "Barba", "Pele"] as const;
 
@@ -23,6 +26,7 @@ export function Shop() {
   const [placing, setPlacing] = useState(false);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
   const [bump, setBump] = useState(false);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   const byId = useMemo(() => new Map(products.map((p) => [p.id, p] as const)), [products]);
 
@@ -179,7 +183,7 @@ export function Shop() {
                       <button
                         disabled={out}
                         onClick={() => add(p.id)}
-                        className="min-h-[42px] rounded-lg border px-4 font-heading text-[11px] font-semibold tracking-[0.16em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed"
+                        className={`min-h-[42px] rounded-lg border px-4 font-heading text-[11px] font-semibold tracking-[0.16em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:active:scale-100 ${PRESS_FX}`}
                         style={{
                           background: out ? "transparent" : "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)",
                           borderColor: out ? "#2A2A2A" : "#FFFFFF",
@@ -203,6 +207,7 @@ export function Shop() {
                 isEmpty={isEmpty}
                 placing={placing}
                 onRemove={remove}
+                onClear={() => setConfirmingClear(true)}
                 onCheckout={handleCheckout}
               />
             </div>
@@ -221,7 +226,7 @@ export function Shop() {
         <button
           onClick={() => setMobileCartOpen(true)}
           aria-label={`Ver carrinho, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
-          className={`bg-silver-gradient fixed bottom-24 left-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_34px_rgba(0,0,0,0.7)] transition-transform duration-300 hover:-translate-y-0.5 hover:brightness-110 md:hidden ${bump ? "pop-bump" : ""}`}
+          className={`bg-silver-gradient fixed bottom-24 left-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_34px_rgba(0,0,0,0.7)] transition-transform duration-300 hover:-translate-y-0.5 hover:brightness-110 active:scale-90 md:hidden ${bump ? "pop-bump" : ""}`}
         >
           <ShoppingCart size={24} weight="bold" color="#0A0A0A" />
           <span className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-ink bg-ink px-1 font-heading text-[11px] font-semibold text-white tabular-nums">
@@ -257,6 +262,7 @@ export function Shop() {
                 isEmpty={isEmpty}
                 placing={placing}
                 onRemove={remove}
+                onClear={() => setConfirmingClear(true)}
                 onCheckout={() => {
                   handleCheckout();
                   setMobileCartOpen(false);
@@ -265,6 +271,19 @@ export function Shop() {
             </div>
           </div>
         </div>
+      )}
+
+      {confirmingClear && (
+        <ConfirmModal
+          title="Esvaziar carrinho"
+          message="Todos os itens serão removidos do carrinho. Deseja continuar?"
+          confirmLabel="Esvaziar"
+          onConfirm={() => {
+            clear();
+            setConfirmingClear(false);
+          }}
+          onClose={() => setConfirmingClear(false)}
+        />
       )}
     </section>
   );
@@ -276,6 +295,7 @@ function CartPanel({
   isEmpty,
   placing,
   onRemove,
+  onClear,
   onCheckout,
 }: {
   cartRows: { product: Product; qty: number }[];
@@ -283,11 +303,23 @@ function CartPanel({
   isEmpty: boolean;
   placing: boolean;
   onRemove: (productId: string) => void;
+  onClear: () => void;
   onCheckout: () => void;
 }) {
   return (
     <div className="rounded-lg border border-border bg-surface-alt p-6">
-      <span className="font-heading text-xs tracking-[0.24em] text-white uppercase">Carrinho</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-heading text-xs tracking-[0.24em] text-white uppercase">Carrinho</span>
+        {!isEmpty && (
+          <button
+            onClick={onClear}
+            className={`flex items-center gap-1.5 text-[11px] font-medium text-muted-2 transition-colors hover:text-white ${PRESS_FX}`}
+          >
+            <Trash size={14} weight="bold" />
+            Esvaziar
+          </button>
+        )}
+      </div>
       <div className="scroll-thin mt-2 flex max-h-[260px] flex-col overflow-y-auto">
         {cartRows.map((row) => (
           <div key={row.product.id} className="flex items-center gap-2.5 border-t border-border py-3 first:border-t-0">
@@ -299,7 +331,7 @@ function CartPanel({
             <button
               onClick={() => onRemove(row.product.id)}
               aria-label="Remover"
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white ${PRESS_FX}`}
             >
               ×
             </button>
@@ -321,7 +353,7 @@ function CartPanel({
       <button
         disabled={isEmpty || placing}
         onClick={onCheckout}
-        className="bg-silver-gradient mt-4 flex min-h-[50px] w-full items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-50"
+        className={`bg-silver-gradient mt-4 flex min-h-[50px] w-full items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-50 disabled:active:scale-100 ${PRESS_FX}`}
       >
         Fechar pelo WhatsApp
       </button>

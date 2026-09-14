@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useMyBookings, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
-import { formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
+import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 
 export function AccountPage() {
@@ -22,7 +22,7 @@ export function AccountPage() {
   // can be previewed with mock bookings. Never active in a production build.
   if (!import.meta.env.DEV && !session) return <Navigate to="/" replace />;
 
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = dateKey(new Date());
   const upcoming = bookings
     .filter((b) => (b.status === "confirmed" || b.status === "pending") && b.scheduled_date >= todayKey)
     .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))[0];

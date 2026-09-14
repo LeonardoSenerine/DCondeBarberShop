@@ -15,6 +15,7 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton, MobileBottomBar } from "@/components/FloatingActions";
 import { Lightbox } from "@/components/Lightbox";
 import { AuthModal } from "@/components/AuthModal";
+import { Toast } from "@/components/admin/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateBooking } from "@/hooks/useBooking";
 import { useGallery } from "@/hooks/useCatalog";
@@ -29,6 +30,7 @@ export function SitePage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [pendingBooking, setPendingBooking] = useState<BookingDraft | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   // Completes a booking left pending across the magic-link email round
   // trip: once the session shows up (same tab after the redirect, or
@@ -57,9 +59,13 @@ export function SitePage() {
       price_cents: stored.draft.priceCents,
       customer_name: customerName,
       customer_phone: customerPhone,
-    }).then(() => {
+    }).then(({ error }) => {
       setAuthOpen(false);
       setPendingBooking(null);
+      if (error) {
+        setBookingError(`Não deu pra confirmar seu agendamento: ${error}`);
+        return;
+      }
       navigate("/conta");
     });
   }, [session?.user, profile, createBooking, navigate]);
@@ -73,7 +79,7 @@ export function SitePage() {
 
   async function handleConfirmBooking(draft: BookingDraft) {
     if (session?.user) {
-      await createBooking({
+      const { error } = await createBooking({
         customer_id: session.user.id,
         barber_id: draft.barberId,
         service_id: draft.serviceId,
@@ -84,6 +90,10 @@ export function SitePage() {
         customer_name: profile?.full_name ?? "",
         customer_phone: profile?.phone ?? "",
       });
+      if (error) {
+        setBookingError(`Não deu pra confirmar seu agendamento: ${error}`);
+        return;
+      }
       navigate("/conta");
       return;
     }
@@ -135,6 +145,8 @@ export function SitePage() {
           }}
         />
       )}
+
+      {bookingError && <Toast message={bookingError} onDismiss={() => setBookingError(null)} duration={6000} />}
     </div>
   );
 }

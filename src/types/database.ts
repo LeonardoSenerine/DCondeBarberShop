@@ -195,7 +195,16 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      booked_slots: {
+        Row: {
+          barber_id: string;
+          scheduled_date: string;
+          scheduled_time: string;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

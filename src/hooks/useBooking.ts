@@ -41,10 +41,9 @@ export function useMonthBookings(barberId: string | null, year: number, month: n
     const to = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
     supabase
-      .from("bookings")
+      .from("booked_slots")
       .select("scheduled_date, scheduled_time")
       .eq("barber_id", barberId)
-      .neq("status", "cancelled")
       .gte("scheduled_date", from)
       .lte("scheduled_date", to)
       .then(({ data }) => {

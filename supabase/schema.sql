@@ -123,6 +123,21 @@ alter table public.bookings add constraint bookings_status_check
 create index if not exists bookings_customer_idx on public.bookings (customer_id);
 create index if not exists bookings_barber_date_idx on public.bookings (barber_id, scheduled_date);
 
+-- The booking calendar needs to grey out already-taken slots for EVERY
+-- visitor, including anonymous ones — but bookings' own RLS only ever let
+-- someone see their own rows (or admin/owner ones), so that query always
+-- came back empty for a regular customer and let two people double-book
+-- the same slot. This view exposes just enough to check availability
+-- (which barber/date/time is taken) without leaking whose booking it is.
+-- Views run as their owner by default, so this bypasses bookings' RLS for
+-- exactly these three columns — nothing else is exposed.
+create or replace view public.booked_slots as
+  select barber_id, scheduled_date, scheduled_time
+  from public.bookings
+  where status <> 'cancelled';
+
+grant select on public.booked_slots to anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- shop: products, orders (pickup-in-store reservations), order_items
 -- ---------------------------------------------------------------------------

@@ -109,7 +109,7 @@ export function AdminPage() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 flex max-h-screen w-[280px] flex-col border-r border-b border-border bg-surface transition-transform duration-300 lg:static lg:z-auto lg:h-screen lg:max-h-none lg:w-[264px] lg:border-b-0 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-surface transition-transform duration-300 lg:static lg:z-auto lg:h-screen lg:w-[264px] lg:translate-x-0 ${
           navOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -200,6 +200,12 @@ export function AdminPage() {
             Sair
           </button>
         </div>
+
+        {/* Keeps the panel's own background filling the screen below "Sair"
+            on mobile, instead of ending mid-screen and exposing the dimmed
+            backdrop there — desktop already reaches the bottom via nav's
+            lg:flex-1 above, so this collapses to nothing there. */}
+        <div className="flex-1 lg:hidden" aria-hidden />
       </aside>
 
       <main className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">

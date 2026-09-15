@@ -132,7 +132,7 @@ export function AdminPage() {
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto p-3">
+        <nav className="flex flex-col gap-1.5 overflow-y-auto p-3 lg:flex-1">
           {TABS.map((t) => {
             const on = tab === t.id;
             return (

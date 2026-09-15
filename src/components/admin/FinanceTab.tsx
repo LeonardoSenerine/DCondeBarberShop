@@ -143,7 +143,7 @@ export function FinanceTab() {
 
       {period === "custom" && (
         <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-4">
-          <label className="flex flex-col gap-1.5">
+          <label className="flex w-full flex-col gap-1.5 sm:w-auto">
             <span className="text-sm tracking-widest text-muted-2 uppercase">Período</span>
             <DateRangePicker
               from={customFrom}
@@ -152,6 +152,7 @@ export function FinanceTab() {
                 setCustomFrom(r.from);
                 setCustomTo(r.to);
               }}
+              className="w-full sm:w-[300px]"
             />
           </label>
         </div>

@@ -28,15 +28,20 @@ export function ClientsTab() {
 
   return (
     <div className="rounded-lg border border-border bg-surface p-7">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Clientes</h2>
-        <div className="flex flex-wrap items-center gap-5">
-          <DateRangePicker from={from} to={to} onChange={(r) => { setFrom(r.from); setTo(r.to); }} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
+          <DateRangePicker
+            from={from}
+            to={to}
+            onChange={(r) => { setFrom(r.from); setTo(r.to); }}
+            className="w-full sm:w-[300px]"
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome"
-            className="min-h-12 min-w-[240px] rounded-lg border border-border bg-surface-alt px-4 text-base text-white outline-none focus:border-silver"
+            className="min-h-12 w-full rounded-lg border border-border bg-surface-alt px-4 text-base text-white outline-none focus:border-silver sm:w-[240px]"
           />
         </div>
       </div>

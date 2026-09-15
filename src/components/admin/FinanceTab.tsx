@@ -197,13 +197,13 @@ export function FinanceTab() {
       {!loading && (
         <>
       {/* hero + stat grid */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+        <div className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-8">
           <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Receita no período</span>
-          <div className="mt-4 font-heading text-[54px] leading-none font-semibold text-white tabular-nums">
+          <div className="mt-4 font-heading text-[38px] leading-none font-semibold text-white tabular-nums sm:text-[54px]">
             {formatCents(revenue)}
           </div>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
+          <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
             {transactions.length} lançamentos · {serviceCount} atendimentos
             {peak && (
               <>
@@ -215,14 +215,14 @@ export function FinanceTab() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-border bg-surface p-7">
-              <span className="font-heading text-sm tracking-[0.18em] text-muted-2 uppercase">{s.label}</span>
-              <div className="mt-2.5 font-heading text-[30px] leading-tight font-semibold text-white tabular-nums">
+            <div key={s.label} className="rounded-2xl border border-border bg-surface p-4 sm:p-7">
+              <span className="font-heading text-xs tracking-[0.18em] text-muted-2 uppercase sm:text-sm">{s.label}</span>
+              <div className="mt-2 font-heading text-xl leading-tight font-semibold text-white tabular-nums sm:mt-2.5 sm:text-[30px]">
                 {s.value}
               </div>
-              <div className="mt-1.5 text-sm text-muted">{s.note}</div>
+              <div className="mt-1 text-xs text-muted sm:mt-1.5 sm:text-sm">{s.note}</div>
             </div>
           ))}
         </div>
@@ -355,20 +355,20 @@ export function FinanceTab() {
       </div>
 
       {/* payment + ledger */}
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
-        <div className="rounded-2xl border border-border bg-surface p-8">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
+        <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
           <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Formas de pagamento</span>
-          <div className="mt-6 flex flex-col gap-6">
+          <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
             {byMethod.map((m) => (
               <div key={m.method}>
-                <div className="mb-2.5 flex items-baseline justify-between gap-3">
-                  <span className="text-lg text-white">{m.method}</span>
-                  <span className="text-base text-muted">
+                <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
+                  <span className="text-base text-white sm:text-lg">{m.method}</span>
+                  <span className="text-sm text-muted sm:text-base">
                     <span className="tabular-nums">{Math.round(m.pct * 100)}%</span> ·{" "}
                     <span className="text-white tabular-nums">{formatCents(m.value)}</span>
                   </span>
                 </div>
-                <div className="h-3 overflow-hidden rounded-full bg-surface-alt">
+                <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${Math.round(m.pct * 100)}%`, background: "var(--color-silver)", opacity: 0.7 }}
@@ -379,21 +379,21 @@ export function FinanceTab() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-8">
+        <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
           <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">Últimos lançamentos</span>
           <div className="mt-4 flex max-h-[460px] flex-col overflow-y-auto pr-1">
             {transactions.map((t) => {
               const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
               return (
-                <div key={t.id} className="flex items-center gap-4 border-t border-border py-4.5 first:border-t-0">
-                  <span className="w-[84px] flex-shrink-0 text-base text-muted">
+                <div key={t.id} className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 sm:gap-4 sm:py-4.5">
+                  <span className="w-[64px] flex-shrink-0 text-sm text-muted sm:w-[84px] sm:text-base">
                     <span className="tabular-nums">
                       {t.occurred_on.slice(8, 10)}/{t.occurred_on.slice(5, 7)}
                     </span>
                     <span className="ml-1 text-faint">{WEEKDAY_PT[wd]}</span>
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-lg text-white">{t.description}</span>
+                    <span className="block truncate text-base text-white sm:text-lg">{t.description}</span>
                     <span className="block truncate text-sm text-muted">
                       {t.customer_name ?? "Balcão"}
                       {barberId === "all" && t.barber_id && (
@@ -407,7 +407,7 @@ export function FinanceTab() {
                   <span className="hidden flex-shrink-0 rounded-full border border-border px-3 py-1.5 text-sm tracking-widest text-muted uppercase sm:inline">
                     {t.payment_method}
                   </span>
-                  <span className="w-32 flex-shrink-0 text-right font-heading text-lg text-white tabular-nums">
+                  <span className="w-24 flex-shrink-0 text-right font-heading text-base text-white tabular-nums sm:w-32 sm:text-lg">
                     {formatCents(t.amount_cents)}
                   </span>
                 </div>

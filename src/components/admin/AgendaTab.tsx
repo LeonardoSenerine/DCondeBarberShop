@@ -3,6 +3,7 @@ import { useAgendaForDate, useAgendaTotals, setBookingStatus } from "@/hooks/use
 import type { BookingWithDetails } from "@/hooks/useBooking";
 import { dateKey, formatCents, formatDateBR, formatTimeShort, toWhatsAppPhone, whatsAppLink, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
+import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
@@ -76,23 +77,21 @@ export function AgendaTab() {
         </div>
         {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
         {(agenda.length > 0 || (loading && agenda.length === 0)) && (
-          <div className="overflow-x-auto">
-            <div className="min-w-[900px]">
-              {agenda.length > 0 && <AgendaHeader />}
-              {loading && agenda.length === 0 && <RowSkeletons count={5} />}
-              {agenda.map((a) => (
-                <AgendaRow
-                  key={a.id}
-                  booking={a}
-                  acting={acting === a.id}
-                  onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
-                  onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
-                  onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
-                  onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
-                />
-              ))}
-            </div>
-          </div>
+          <ScrollFadeX minWidth="1040px">
+            {agenda.length > 0 && <AgendaHeader />}
+            {loading && agenda.length === 0 && <RowSkeletons count={5} />}
+            {agenda.map((a) => (
+              <AgendaRow
+                key={a.id}
+                booking={a}
+                acting={acting === a.id}
+                onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
+                onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
+                onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
+                onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
+              />
+            ))}
+          </ScrollFadeX>
         )}
       </div>
 
@@ -118,22 +117,20 @@ export function AgendaTab() {
             <p className="text-muted">Nenhum agendamento pendente de aceite.</p>
           )}
           {(pending.length > 0 || (totalsLoading && pending.length === 0)) && (
-            <div className="overflow-x-auto">
-              <div className="min-w-[900px]">
-                {pending.length > 0 && <AgendaHeader />}
-                {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
-                {pending.map((a) => (
-                  <AgendaRow
-                    key={a.id}
-                    booking={a}
-                    showDate
-                    acting={acting === a.id}
-                    onAccept={() => handleAccept(a)}
-                    onDecline={() => decide(a.id, "cancelled")}
-                  />
-                ))}
-              </div>
-            </div>
+            <ScrollFadeX minWidth="1040px">
+              {pending.length > 0 && <AgendaHeader />}
+              {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
+              {pending.map((a) => (
+                <AgendaRow
+                  key={a.id}
+                  booking={a}
+                  showDate
+                  acting={acting === a.id}
+                  onAccept={() => handleAccept(a)}
+                  onDecline={() => decide(a.id, "cancelled")}
+                />
+              ))}
+            </ScrollFadeX>
           )}
         </div>
 
@@ -151,22 +148,20 @@ export function AgendaTab() {
             <p className="text-muted">Nenhum agendamento confirmado aguardando conclusão.</p>
           )}
           {(confirmed.length > 0 || (totalsLoading && confirmed.length === 0)) && (
-            <div className="overflow-x-auto">
-              <div className="min-w-[900px]">
-                {confirmed.length > 0 && <AgendaHeader />}
-                {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
-                {confirmed.map((a) => (
-                  <AgendaRow
-                    key={a.id}
-                    booking={a}
-                    showDate
-                    acting={acting === a.id}
-                    onComplete={() => setCompleting(a)}
-                    onCancel={() => setCancelling(a)}
-                  />
-                ))}
-              </div>
-            </div>
+            <ScrollFadeX minWidth="1040px">
+              {confirmed.length > 0 && <AgendaHeader />}
+              {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
+              {confirmed.map((a) => (
+                <AgendaRow
+                  key={a.id}
+                  booking={a}
+                  showDate
+                  acting={acting === a.id}
+                  onComplete={() => setCompleting(a)}
+                  onCancel={() => setCancelling(a)}
+                />
+              ))}
+            </ScrollFadeX>
           )}
         </div>
       </div>
@@ -203,7 +198,7 @@ export function AgendaTab() {
 function AgendaHeader() {
   return (
     <div
-      className="grid items-center gap-4 border-t border-border px-3 py-3 font-heading text-sm tracking-widest text-muted-2 uppercase"
+      className="grid items-center gap-6 border-t border-border px-3 py-3 font-heading text-sm tracking-widest text-muted-2 uppercase"
       style={{ gridTemplateColumns: AGENDA_COLS }}
     >
       <span>Quando</span>
@@ -222,7 +217,7 @@ function RowSkeletons({ count }: { count: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="grid items-center gap-4 border-t border-border px-3 py-5"
+          className="grid items-center gap-6 border-t border-border px-3 py-5"
           style={{ gridTemplateColumns: AGENDA_COLS }}
         >
           <Skeleton className="h-7 w-16" />
@@ -253,7 +248,7 @@ interface AgendaRowProps {
 function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel }: AgendaRowProps) {
   return (
     <div
-      className="grid items-center gap-4 border-t border-border px-3 py-5 first:border-t-0"
+      className="grid items-center gap-6 border-t border-border px-3 py-5 first:border-t-0"
       style={{ gridTemplateColumns: AGENDA_COLS }}
     >
       <span>

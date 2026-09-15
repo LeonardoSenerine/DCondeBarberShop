@@ -1,6 +1,7 @@
 import { useClientHistory, type ClientSummary } from "@/hooks/useAdmin";
 import { formatCents, formatDateBR } from "@/lib/format";
 import { BookingStatusBadge } from "@/components/StatusBadge";
+import { ScrollFadeX } from "@/components/ScrollFadeX";
 import "@/styles/scrollbar.css";
 
 interface ClientDetailModalProps {
@@ -63,32 +64,28 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
             ) : appointments.length === 0 ? (
               <p className="m-0 py-3 text-[13px] text-muted">Nenhum agendamento.</p>
             ) : (
-              <>
-                <div className="scroll-thin max-h-[280px] overflow-auto">
-                  <div className="min-w-[580px]">
-                    <ColumnHeaders cols={APPT_COLS}>
-                      <span>Data</span>
-                      <span>Serviço</span>
-                      <span>Barbeiro</span>
-                      <span>Status</span>
-                      <span className="text-right">Valor</span>
-                    </ColumnHeaders>
-                    {appointments.map((a) => (
-                      <div
-                        key={a.id}
-                        className="grid items-center gap-3 border-t border-border py-3.5"
-                        style={{ gridTemplateColumns: APPT_COLS }}
-                      >
-                        <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
-                        <span className="text-[15px] text-white">{a.service}</span>
-                        <span className="text-[13px] text-muted">{a.barber}</span>
-                        <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
-                        <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
-                      </div>
-                    ))}
+              <ScrollFadeX minWidth="580px" scrollClassName="scroll-thin max-h-[280px] overflow-y-auto">
+                <ColumnHeaders cols={APPT_COLS}>
+                  <span>Data</span>
+                  <span>Serviço</span>
+                  <span>Barbeiro</span>
+                  <span>Status</span>
+                  <span className="text-right">Valor</span>
+                </ColumnHeaders>
+                {appointments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="grid items-center gap-3 border-t border-border py-3.5"
+                    style={{ gridTemplateColumns: APPT_COLS }}
+                  >
+                    <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
+                    <span className="text-[15px] text-white">{a.service}</span>
+                    <span className="text-[13px] text-muted">{a.barber}</span>
+                    <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
+                    <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
                   </div>
-                </div>
-              </>
+                ))}
+              </ScrollFadeX>
             )}
           </Section>
 
@@ -98,30 +95,26 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
             ) : purchases.length === 0 ? (
               <p className="m-0 py-3 text-[13px] text-muted">Nenhuma compra de produto.</p>
             ) : (
-              <>
-                <div className="scroll-thin max-h-[280px] overflow-auto">
-                  <div className="min-w-[420px]">
-                    <ColumnHeaders cols={PRODUCT_COLS}>
-                      <span>Data</span>
-                      <span>Produto</span>
-                      <span>Qtd.</span>
-                      <span className="text-right">Valor</span>
-                    </ColumnHeaders>
-                    {purchases.map((p) => (
-                      <div
-                        key={p.id}
-                        className="grid items-center gap-3 border-t border-border py-3.5"
-                        style={{ gridTemplateColumns: PRODUCT_COLS }}
-                      >
-                        <span className="text-[13px] text-muted">{formatDateBR(p.date)}</span>
-                        <span className="text-[15px] text-white">{p.product}</span>
-                        <span className="text-[13px] text-muted">x{p.qty}</span>
-                        <span className="text-right font-heading text-[15px] text-white">{formatCents(p.priceCents)}</span>
-                      </div>
-                    ))}
+              <ScrollFadeX minWidth="420px" scrollClassName="scroll-thin max-h-[280px] overflow-y-auto">
+                <ColumnHeaders cols={PRODUCT_COLS}>
+                  <span>Data</span>
+                  <span>Produto</span>
+                  <span>Qtd.</span>
+                  <span className="text-right">Valor</span>
+                </ColumnHeaders>
+                {purchases.map((p) => (
+                  <div
+                    key={p.id}
+                    className="grid items-center gap-3 border-t border-border py-3.5"
+                    style={{ gridTemplateColumns: PRODUCT_COLS }}
+                  >
+                    <span className="text-[13px] text-muted">{formatDateBR(p.date)}</span>
+                    <span className="text-[15px] text-white">{p.product}</span>
+                    <span className="text-[13px] text-muted">x{p.qty}</span>
+                    <span className="text-right font-heading text-[15px] text-white">{formatCents(p.priceCents)}</span>
                   </div>
-                </div>
-              </>
+                ))}
+              </ScrollFadeX>
             )}
           </Section>
         </div>

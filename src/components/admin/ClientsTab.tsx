@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useClients, type ClientSummary } from "@/hooks/useAdmin";
 import { formatCents, formatDateBR } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
+import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { ClientDetailModal } from "@/components/admin/ClientDetailModal";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { Pagination } from "@/components/admin/Pagination";
@@ -41,54 +42,52 @@ export function ClientsTab() {
       </div>
       {!loading && clients.length === 0 && <p className="text-muted">Nenhum cliente encontrado.</p>}
       {(loading && clients.length === 0) || clients.length > 0 ? (
-        <div className="overflow-x-auto">
-          <div className="min-w-[720px]">
-            {clients.length > 0 && (
-              <div className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-4 font-heading text-base tracking-[0.1em] text-muted-2 uppercase">
-                <span />
-                <span>Cliente</span>
-                <span>Visitas</span>
-                <span>Última visita</span>
-                <span className="text-right">Total gasto</span>
-              </div>
-            )}
-            {loading &&
-              clients.length === 0 &&
-              Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6"
-                >
-                  <Skeleton className="h-14 w-14 rounded-full" />
-                  <span className="flex min-w-0 flex-col gap-2">
-                    <Skeleton className="h-6 w-44" />
-                    <Skeleton className="h-4 w-32" />
-                  </span>
-                  <Skeleton className="h-5 w-20" />
-                  <Skeleton className="h-5 w-28" />
-                  <Skeleton className="ml-auto h-7 w-24" />
-                </div>
-              ))}
-            {pageClients.map((c) => (
-              <button
-                key={c.customerId}
-                onClick={() => setSelected(c)}
-                className="grid w-full cursor-pointer grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
+        <ScrollFadeX minWidth="720px">
+          {clients.length > 0 && (
+            <div className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-4 font-heading text-base tracking-[0.1em] text-muted-2 uppercase">
+              <span />
+              <span>Cliente</span>
+              <span>Visitas</span>
+              <span>Última visita</span>
+              <span className="text-right">Total gasto</span>
+            </div>
+          )}
+          {loading &&
+            clients.length === 0 &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6"
               >
-                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-xl text-silver">
-                  {c.name.charAt(0).toUpperCase()}
+                <Skeleton className="h-14 w-14 rounded-full" />
+                <span className="flex min-w-0 flex-col gap-2">
+                  <Skeleton className="h-6 w-44" />
+                  <Skeleton className="h-4 w-32" />
                 </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-xl text-white">{c.name}</span>
-                  <span className="block truncate text-base text-muted">{c.phone}</span>
-                </span>
-                <span className="text-base text-muted">{c.visits} visitas</span>
-                <span className="text-base text-muted">Última: {formatDateBR(c.lastVisit)}</span>
-                <span className="text-right font-heading text-2xl text-white">{formatCents(c.totalCents)}</span>
-              </button>
+                <Skeleton className="h-5 w-20" />
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="ml-auto h-7 w-24" />
+              </div>
             ))}
-          </div>
-        </div>
+          {pageClients.map((c) => (
+            <button
+              key={c.customerId}
+              onClick={() => setSelected(c)}
+              className="grid w-full cursor-pointer grid-cols-[72px_2fr_1fr_1.2fr_1fr] items-center gap-4 border-t border-border px-4 py-6 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt"
+            >
+              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-xl text-silver">
+                {c.name.charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-xl text-white">{c.name}</span>
+                <span className="block truncate text-base text-muted">{c.phone}</span>
+              </span>
+              <span className="text-base text-muted">{c.visits} visitas</span>
+              <span className="text-base text-muted">Última: {formatDateBR(c.lastVisit)}</span>
+              <span className="text-right font-heading text-2xl text-white">{formatCents(c.totalCents)}</span>
+            </button>
+          ))}
+        </ScrollFadeX>
       ) : null}
       {clients.length > 0 && (
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-5">

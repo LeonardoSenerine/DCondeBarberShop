@@ -10,33 +10,29 @@
   ONDE COLAR
     Painel do Supabase → Authentication → Emails → Templates → Magic Link
 
-  1) CAMPO "Subject heading" — cole a linha abaixo (uma linha só, sem quebrar):
+  1) CAMPO "Subject heading" — cole a linha abaixo:
 
-{{ if eq .Data.intent "signup" }}Confirme seu cadastro — D'Conde Barbearia{{ else }}Seu link de acesso — D'Conde Barbearia{{ end }}
+Seu link de acesso — D'Conde Barbearia
 
   2) CAMPO "Source" / HTML do corpo — copie TUDO a partir da linha
      "<!doctype html>" logo abaixo (incluindo essas duas tags) até o fim do
      arquivo. Este bloco de comentário não precisa ir junto.
 
-  COMO FUNCIONA A DIFERENCIAÇÃO CADASTRO x LOGIN
-  O Supabase manda ESTE MESMO template "Magic Link" nos dois casos
-  (signInWithOtp não usa o template "Confirm signup" — esse é só para
-  supabase.auth.signUp() com senha, que este app não usa). A única forma de
-  diferenciar o texto é o app mandar um sinalizador junto e o template (e o
-  subject, acima) lerem esse valor:
-    - src/context/AuthContext.tsx manda options.data.intent como "signup"
-      (aba Cadastro) ou "login" (aba Entrar) em toda chamada de signInWithOtp.
-    - Esse valor chega aqui como {{ .Data.intent }}. Tanto o subject quanto
-      o corpo usam {{ if eq .Data.intent "signup" }}...{{ else }}...{{ end }}
-      pra trocar assunto, título, texto e botão.
-  Se algum dia o Magic Link for disparado por um caminho que não passe esse
-  `data` (ex.: um teste manual pelo painel), .Data.intent vem vazio e cai no
-  texto de "login" (o `else`), que é o mais genérico dos dois.
+  SOBRE DIFERENCIAR CADASTRO x LOGIN NO TEXTO DO E-MAIL
+  Uma versão anterior deste arquivo tentava trocar o texto usando
+  {{ .Data.intent }} (um valor customizado mandado via options.data no
+  signInWithOtp). Isso quebrou o login pra todo mundo: se `.Data` não existe
+  como variável no motor de e-mail do Supabase (ou vem nula), o Supabase
+  falha ao montar o e-mail inteiro, e signInWithOtp passa a dar erro pra
+  qualquer e-mail digitado. Foi revertido por segurança. src/context/
+  AuthContext.tsx ainda manda options.data.intent (isso sozinho não quebra
+  nada), mas o template não lê mais esse valor. Se quiser reintroduzir essa
+  diferenciação no futuro, teste um e-mail de verdade a cada mudança antes
+  de considerar concluído — um erro de template só aparece tentando logar.
 
   VARIÁVEIS DO SUPABASE USADAS AQUI
     {{ .ConfirmationURL }} — link de login (o botão e o link de texto usam o mesmo)
     {{ .SiteURL }} — usada só para montar a URL da logo (ver abaixo)
-    {{ .Data.intent }} — "signup" ou "login", mandado pelo app (ver acima)
     Mais variáveis disponíveis: .Token, .TokenHash, .Email
 
   LOGO
@@ -57,11 +53,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <title>{{ if eq .Data.intent "signup" }}Confirme seu cadastro{{ else }}Seu link de acesso{{ end }} — D'Conde Barbearia</title>
+    <title>Seu link de acesso — D'Conde Barbearia</title>
   </head>
   <body style="margin:0; padding:0; background-color:#0a0a0a; width:100%;">
     <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
-      {{ if eq .Data.intent "signup" }}Toque para confirmar seu cadastro e garantir seu horário.{{ else }}Toque para entrar na sua conta.{{ end }} O link expira em breve, por segurança.
+      Toque para entrar na sua conta. O link expira em breve, por segurança.
     </div>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0a;">
@@ -88,14 +84,14 @@
                   <tr>
                     <td align="center" style="padding-bottom:16px;">
                       <span style="font-family:'Oswald', Arial, Helvetica, sans-serif; font-size:24px; font-weight:600; letter-spacing:1px; color:#ffffff; text-transform:uppercase;">
-                        {{ if eq .Data.intent "signup" }}Confirmar cadastro{{ else }}Entrar na sua conta{{ end }}
+                        Entrar na sua conta
                       </span>
                     </td>
                   </tr>
                   <tr>
                     <td align="center" style="padding-bottom:32px;">
                       <span style="font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#a3a3a3;">
-                        {{ if eq .Data.intent "signup" }}Toque no botão abaixo para confirmar seu cadastro na D&rsquo;Conde Barbearia. Depois disso seu horário já fica garantido.{{ else }}Toque no botão abaixo para acessar seus agendamentos na D&rsquo;Conde Barbearia. Este link é pessoal e válido por um tempo limitado.{{ end }}
+                        Toque no botão abaixo para acessar seus agendamentos na D&rsquo;Conde Barbearia. Este link é pessoal e válido por um tempo limitado.
                       </span>
                     </td>
                   </tr>
@@ -111,7 +107,7 @@
                               target="_blank"
                               style="display:inline-block; padding:16px 36px; font-family:'Oswald', Arial, Helvetica, sans-serif; font-size:13px; font-weight:600; letter-spacing:2px; color:#0a0a0a; text-decoration:none; text-transform:uppercase;"
                             >
-                              {{ if eq .Data.intent "signup" }}Confirmar cadastro{{ else }}Entrar agora{{ end }}
+                              Entrar agora
                             </a>
                           </td>
                         </tr>

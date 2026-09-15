@@ -3,6 +3,7 @@ import { useAdminGallery, removeGalleryPhoto, uploadGalleryPhoto, updateGalleryP
 import type { GalleryPhoto } from "@/hooks/useAdmin";
 import { useBarbers, useServices } from "@/hooks/useCatalog";
 import { Skeleton } from "@/components/Skeleton";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 type FormState = { mode: "add"; file: File; previewUrl: string } | { mode: "edit"; photo: GalleryPhoto } | null;
 
@@ -16,6 +17,8 @@ export function GalleryTab() {
   const [barberId, setBarberId] = useState("");
   const [serviceLabel, setServiceLabel] = useState("");
   const [description, setDescription] = useState("");
+  const [removing, setRemoving] = useState<GalleryPhoto | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
@@ -43,8 +46,12 @@ export function GalleryTab() {
     setError(null);
   }
 
-  async function handleRemove(id: string) {
-    await removeGalleryPhoto(id);
+  async function handleConfirmRemove() {
+    if (!removing) return;
+    setDeleting(true);
+    await removeGalleryPhoto(removing.id);
+    setDeleting(false);
+    setRemoving(null);
     reload();
   }
 
@@ -86,7 +93,7 @@ export function GalleryTab() {
                 Editar
               </button>
               <button
-                onClick={() => handleRemove(p.id)}
+                onClick={() => setRemoving(p)}
                 className="min-h-10 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
                 style={{ background: "rgba(10,10,10,0.86)" }}
               >
@@ -191,6 +198,16 @@ export function GalleryTab() {
           </div>
           </div>
         </div>
+      )}
+
+      {removing && (
+        <ConfirmModal
+          title="Remover foto?"
+          message="Tem certeza que deseja remover esta foto da galeria? Essa ação não pode ser desfeita."
+          busy={deleting}
+          onConfirm={handleConfirmRemove}
+          onClose={() => setRemoving(null)}
+        />
       )}
     </div>
   );

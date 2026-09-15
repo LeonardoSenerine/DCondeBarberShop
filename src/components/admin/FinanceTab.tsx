@@ -304,6 +304,16 @@ export function FinanceTab() {
                 )}
               </svg>
 
+              {/* A single point has no line segment to draw (an SVG path needs two
+                  points to stroke anything), so it'd otherwise render as an empty
+                  chart — show a static dot for it instead of relying on hover. */}
+              {n === 1 && chart[0] && hover == null && (
+                <span
+                  className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink bg-white"
+                  style={{ left: `${xPct(0)}%`, top: `${yPct(chart[0].value)}%` }}
+                />
+              )}
+
               {hover != null && chart[hover] && (
                 <>
                   <span

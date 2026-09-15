@@ -195,16 +195,12 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: {
-      booked_slots: {
-        Row: {
-          barber_id: string;
-          scheduled_date: string;
-          scheduled_time: string;
-        };
-        Relationships: [];
-      };
-    };
+    Views: Record<never, never>;
+    // booked_slots is a SECURITY DEFINER function (see schema.sql), called via
+    // .rpc() — its Args/Returns are cast locally in useBooking.ts rather than
+    // declared here, since giving Functions a non-empty entry here breaks
+    // unrelated embedded-select type inference elsewhere in this file (a
+    // postgrest-js/TS generic-caching quirk with this dependency version).
     Functions: Record<string, never>;
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

@@ -7,6 +7,11 @@ import type { Database } from "@/types/database";
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingInsert = Database["public"]["Tables"]["bookings"]["Insert"];
 
+// booked_slots isn't declared in the Database["public"]["Functions"] map (see
+// the comment on that field in database.ts) — cast the RPC name so we can
+// still chain filters, then annotate the response shape at the call site.
+type BookedSlotRow = { barber_id: string; scheduled_date: string; scheduled_time: string };
+
 export interface BookingWithDetails extends BookingRow {
   barbers: { name: string } | null;
   services: { name: string; duration_minutes: number } | null;
@@ -40,13 +45,12 @@ export function useMonthBookings(barberId: string | null, year: number, month: n
     const lastDay = new Date(year, month + 1, 0).getDate();
     const to = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
-    supabase
-      .from("booked_slots")
+    (supabase.rpc("booked_slots") as any)
       .select("scheduled_date, scheduled_time")
       .eq("barber_id", barberId)
       .gte("scheduled_date", from)
       .lte("scheduled_date", to)
-      .then(({ data }) => {
+      .then(({ data }: { data: Pick<BookedSlotRow, "scheduled_date" | "scheduled_time">[] | null }) => {
         if (!active) return;
         const map: Record<string, string[]> = {};
         (data ?? []).forEach((row) => {
@@ -171,4 +175,77 @@ export function useMyBookings(customerId: string | null) {
 export async function cancelBooking(id: string) {
   const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", id);
   return { error: error?.message ?? null };
+}
+
+export interface MyPurchase {
+  id: string;
+  date: string;
+  product: string;
+  qty: number;
+  priceCents: number;
+}
+
+/** DEV-only mocked product purchases for the "Meus agendamentos" page. */
+function sampleMyPurchases(): MyPurchase[] {
+  const today = new Date();
+  const daysAgo = (n: number) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - n);
+    return dateKey(d);
+  };
+
+  return [
+    { id: "sample-my-purchase-1", date: daysAgo(14), product: "Pomada modeladora efeito matte", qty: 1, priceCents: 4200 },
+    { id: "sample-my-purchase-2", date: daysAgo(40), product: "Óleo para barba 30ml", qty: 2, priceCents: 8800 },
+  ];
+}
+
+/** The logged-in customer's completed product purchases, for the account page's history. */
+export function useMyPurchases(customerId: string | null) {
+  const [purchases, setPurchases] = useState<MyPurchase[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!customerId) {
+      setPurchases(import.meta.env.DEV ? sampleMyPurchases() : []);
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    setLoading(true);
+    supabase
+      .from("orders")
+      .select("id, created_at, order_items(quantity, unit_price_cents, products(name))")
+      .eq("customer_id", customerId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!active) return;
+        const rawOrders = (data ?? []) as unknown as {
+          id: string;
+          created_at: string;
+          order_items: { quantity: number; unit_price_cents: number; products: { name: string } | null }[] | null;
+        }[];
+        const items: MyPurchase[] = [];
+        rawOrders.forEach((o) => {
+          (o.order_items ?? []).forEach((it, i) => {
+            items.push({
+              id: `${o.id}-${i}`,
+              date: dateKey(new Date(o.created_at)),
+              product: it.products?.name ?? "Produto",
+              qty: it.quantity,
+              priceCents: it.unit_price_cents * it.quantity,
+            });
+          });
+        });
+        setPurchases(items.length === 0 && import.meta.env.DEV ? sampleMyPurchases() : items);
+        setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [customerId]);
+
+  return { purchases, loading };
 }

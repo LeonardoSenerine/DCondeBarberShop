@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useMyBookings, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
+import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
@@ -9,11 +9,13 @@ import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEK
 import { Skeleton } from "@/components/Skeleton";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
+const PRODUCT_COLS = "88px minmax(0,1fr) 64px 100px";
 
 export function AccountPage() {
   const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
+  const { purchases, loading: purchasesLoading } = useMyPurchases(session?.user.id ?? null);
   const { createBooking } = useCreateBooking();
   const [name, setName] = useState(profile?.full_name ?? (import.meta.env.DEV ? "Rafael Prado" : ""));
   const [phone, setPhone] = useState(profile?.phone ?? (import.meta.env.DEV ? "(18) 99863-4127" : ""));
@@ -37,6 +39,10 @@ export function AccountPage() {
     .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))[0];
   const history = bookings.filter((b) => b !== upcoming && b.status !== "cancelled");
   const upcomingPending = upcoming?.status === "pending";
+  const historyLoading = bookingsLoading || purchasesLoading;
+  const servicesTotalCents = history.reduce((sum, h) => sum + h.price_cents, 0);
+  const productsTotalCents = purchases.reduce((sum, p) => sum + p.priceCents, 0);
+  const grandTotalCents = servicesTotalCents + productsTotalCents;
 
   async function handleConfirmCancel() {
     if (!upcoming) return;
@@ -201,45 +207,94 @@ export function AccountPage() {
         </div>
 
         <div className="mb-5 rounded-lg border border-border bg-surface p-7">
-          <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Histórico de atendimentos</span>
-          <div className="mt-4.5 flex flex-col">
-            {bookingsLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
-            {!bookingsLoading && history.length === 0 && (
-              <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
-            )}
-            {history.length > 0 && (
-              <div className="overflow-x-auto">
-                <div className="min-w-[680px]">
-                  <div
-                    className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
-                    style={{ gridTemplateColumns: HISTORY_COLS }}
-                  >
-                    <span>Data</span>
-                    <span>Tipo de corte</span>
-                    <span>Barbeiro</span>
-                    <span>Status</span>
-                    <span className="text-right">Total</span>
-                  </div>
-                  {history.map((h) => (
+          <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Histórico</span>
+
+          <div className="mt-4.5 grid gap-3.5 sm:grid-cols-3">
+            <HistoryStat label="Atendimentos" value={String(history.length)} />
+            <HistoryStat label="Produtos comprados" value={String(purchases.length)} />
+            <HistoryStat label="Total gasto" value={formatCents(grandTotalCents)} />
+          </div>
+
+          <div className="mt-7">
+            <span className="font-heading text-[11px] tracking-[0.18em] text-muted-2 uppercase">Serviços</span>
+            <div className="mt-3 flex flex-col">
+              {historyLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
+              {!historyLoading && history.length === 0 && (
+                <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
+              )}
+              {history.length > 0 && (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[680px]">
                     <div
-                      key={h.id}
-                      className="grid items-center gap-4 border-t border-border py-4"
+                      className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
                       style={{ gridTemplateColumns: HISTORY_COLS }}
                     >
-                      <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
-                      <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
-                      <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
-                      <span>
-                        <BookingStatusBadge status={h.status} />
-                      </span>
-                      <span className="text-right font-heading text-[15px] text-white">
-                        {formatCents(h.price_cents)}
-                      </span>
+                      <span>Data</span>
+                      <span>Tipo de corte</span>
+                      <span>Barbeiro</span>
+                      <span>Status</span>
+                      <span className="text-right">Total</span>
                     </div>
-                  ))}
+                    {history.map((h) => (
+                      <div
+                        key={h.id}
+                        className="grid items-center gap-4 border-t border-border py-4"
+                        style={{ gridTemplateColumns: HISTORY_COLS }}
+                      >
+                        <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
+                        <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
+                        <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
+                        <span>
+                          <BookingStatusBadge status={h.status} />
+                        </span>
+                        <span className="text-right font-heading text-[15px] text-white">
+                          {formatCents(h.price_cents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </div>
+
+          <div className="mt-7">
+            <span className="font-heading text-[11px] tracking-[0.18em] text-muted-2 uppercase">Produtos</span>
+            <div className="mt-3 flex flex-col">
+              {historyLoading && <Skeleton count={2} className="my-2 h-6 w-full" />}
+              {!historyLoading && purchases.length === 0 && (
+                <p className="py-3 text-[15px] text-muted">Nenhuma compra de produto.</p>
+              )}
+              {purchases.length > 0 && (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[520px]">
+                    <div
+                      className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                      style={{ gridTemplateColumns: PRODUCT_COLS }}
+                    >
+                      <span>Data</span>
+                      <span>Produto</span>
+                      <span>Qtd.</span>
+                      <span className="text-right">Total</span>
+                    </div>
+                    {purchases.map((p) => (
+                      <div
+                        key={p.id}
+                        className="grid items-center gap-4 border-t border-border py-4"
+                        style={{ gridTemplateColumns: PRODUCT_COLS }}
+                      >
+                        <span className="text-sm text-muted">{formatDateBR(p.date)}</span>
+                        <span className="min-w-0 truncate text-[15px] text-white">{p.product}</span>
+                        <span className="text-sm text-muted">x{p.qty}</span>
+                        <span className="text-right font-heading text-[15px] text-white">
+                          {formatCents(p.priceCents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -353,6 +408,15 @@ export function AccountPage() {
           onClose={() => setCancelling(false)}
         />
       )}
+    </div>
+  );
+}
+
+function HistoryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-surface-alt px-4.5 py-3.5">
+      <span className="block text-[11px] tracking-[0.1em] text-muted uppercase">{label}</span>
+      <span className="block font-heading text-lg text-white">{value}</span>
     </div>
   );
 }

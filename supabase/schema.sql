@@ -139,16 +139,28 @@ end $$;
 -- visitor, including anonymous ones — but bookings' own RLS only ever let
 -- someone see their own rows (or admin/owner ones), so that query always
 -- came back empty for a regular customer and let two people double-book
--- the same slot. This view exposes just enough to check availability
+-- the same slot. This function returns just enough to check availability
 -- (which barber/date/time is taken) without leaking whose booking it is.
--- Views run as their owner by default, so this bypasses bookings' RLS for
--- exactly these three columns — nothing else is exposed.
-create or replace view public.booked_slots as
+-- It's SECURITY DEFINER (with search_path pinned) so it bypasses bookings'
+-- RLS for exactly these three columns — nothing else is exposed. A plain
+-- view with the same effect trips Supabase's security-definer-view lint,
+-- since a view can't pin search_path and the linter can't distinguish this
+-- intentional, narrow bypass from an accidental one — a function can.
+drop view if exists public.booked_slots;
+
+create or replace function public.booked_slots()
+returns table (barber_id text, scheduled_date date, scheduled_time time)
+language sql
+security definer
+set search_path = public
+stable
+as $$
   select barber_id, scheduled_date, scheduled_time
   from public.bookings
   where status <> 'cancelled';
+$$;
 
-grant select on public.booked_slots to anon, authenticated;
+grant execute on function public.booked_slots() to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- shop: products, orders (pickup-in-store reservations), order_items

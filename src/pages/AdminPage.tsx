@@ -178,6 +178,7 @@ export function AdminPage() {
         <div className="flex flex-col gap-1.5 border-t border-border p-3">
           <Link
             to="/"
+            state={{ fromAdmin: true }}
             onClick={() => setNavOpen(false)}
             className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
           >

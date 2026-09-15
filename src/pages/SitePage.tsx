@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
@@ -23,6 +23,7 @@ import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
 
 export function SitePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { session, profile, isAdmin } = useAuth();
   const { createBooking } = useCreateBooking();
   const { data: photos } = useGallery();
@@ -101,9 +102,14 @@ export function SitePage() {
     setAuthOpen(true);
   }
 
-  // Owner/staff have nothing to do on the marketing homepage — send them
-  // straight to their panel instead of the booking wizard.
-  if (isAdmin) return <Navigate to="/admin" replace />;
+  // Owner/staff have nothing to do on the marketing homepage right after
+  // login — send them straight to their panel instead of the booking
+  // wizard. But "Ver site" in the admin panel deliberately sends them here
+  // (with this state flag) to preview the live site, so don't bounce them
+  // right back in that case.
+  if (isAdmin && !(location.state as { fromAdmin?: boolean } | null)?.fromAdmin) {
+    return <Navigate to="/admin" replace />;
+  }
 
   const lightboxIndex = photos.findIndex((p) => p.image_path === lightbox);
   const lightboxLabel = lightboxIndex >= 0 ? (photos[lightboxIndex].service_label ?? "D'Conde") : "";

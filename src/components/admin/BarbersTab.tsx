@@ -3,6 +3,7 @@ import { useBarbers, useBarberHours, type Barber } from "@/hooks/useCatalog";
 import { toggleBarberHour, deleteBarber } from "@/hooks/useAdmin";
 import { WEEKDAY_LABELS } from "@/lib/format";
 import { BarberFormModal } from "@/components/admin/BarberFormModal";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Skeleton } from "@/components/Skeleton";
 
 const DEFAULT_WEEKDAY_SLOTS = ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "18:00", "19:00"];
@@ -14,6 +15,8 @@ export function BarbersTab() {
   const { data: barbers, loading: barbersLoading, reload: reloadBarbers } = useBarbers();
   const { data: hours, loading: hoursLoading, error, reload: reloadHours } = useBarberHours();
   const [editing, setEditing] = useState<Editing>(null);
+  const [removing, setRemoving] = useState<Barber | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleToggle(hourId: number) {
     const row = hours.find((h) => h.id === hourId);
@@ -23,9 +26,12 @@ export function BarbersTab() {
     reloadHours();
   }
 
-  async function handleDelete(b: Barber) {
-    if (!confirm(`Remover ${b.name}? Os horários dele também serão apagados.`)) return;
-    await deleteBarber(b.id);
+  async function handleConfirmDelete() {
+    if (!removing) return;
+    setDeleting(true);
+    await deleteBarber(removing.id);
+    setDeleting(false);
+    setRemoving(null);
     reloadBarbers();
     reloadHours();
   }
@@ -107,7 +113,7 @@ export function BarbersTab() {
                   Editar
                 </button>
                 <button
-                  onClick={() => handleDelete(b)}
+                  onClick={() => setRemoving(b)}
                   className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-muted uppercase transition-colors hover:border-silver hover:text-white sm:min-h-11 sm:flex-none sm:text-sm"
                 >
                   Remover
@@ -143,6 +149,17 @@ export function BarbersTab() {
           hours={editing.barber ? hours.filter((h) => h.barber_id === editing.barber!.id) : []}
           onClose={() => setEditing(null)}
           onSaved={reloadAll}
+        />
+      )}
+
+      {removing && (
+        <ConfirmModal
+          title="Remover barbeiro?"
+          message={`Tem certeza que deseja remover ${removing.name}? Os horários dele também serão apagados — essa ação não pode ser desfeita.`}
+          confirmDelaySeconds={5}
+          busy={deleting}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setRemoving(null)}
         />
       )}
     </div>

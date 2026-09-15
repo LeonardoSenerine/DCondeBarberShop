@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { WarningCircle } from "@phosphor-icons/react";
 
 interface ConfirmModalProps {
@@ -6,6 +7,10 @@ interface ConfirmModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   busy?: boolean;
+  /** Keeps the confirm button disabled for this many seconds, counting down on
+   *  its label — for actions destructive enough that a reflexive click is a
+   *  real risk (e.g. deleting a barber wipes their whole schedule). */
+  confirmDelaySeconds?: number;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -16,9 +21,20 @@ export function ConfirmModal({
   confirmLabel = "Remover",
   cancelLabel = "Cancelar",
   busy = false,
+  confirmDelaySeconds = 0,
   onConfirm,
   onClose,
 }: ConfirmModalProps) {
+  const [secondsLeft, setSecondsLeft] = useState(confirmDelaySeconds);
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [secondsLeft]);
+
+  const waiting = secondsLeft > 0;
+
   return (
     <div
       className="fixed inset-0 z-[130] overflow-y-auto"
@@ -51,11 +67,11 @@ export function ConfirmModal({
             </button>
             <button
               onClick={onConfirm}
-              disabled={busy}
+              disabled={busy || waiting}
               className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border font-heading text-sm font-semibold tracking-[0.16em] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-60"
               style={{ borderColor: "#e5484d", background: "#e5484d", color: "#FFFFFF" }}
             >
-              {busy ? "Removendo…" : confirmLabel}
+              {busy ? "Removendo…" : waiting ? `Aguarde (${secondsLeft})` : confirmLabel}
             </button>
           </div>
         </div>

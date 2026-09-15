@@ -28,9 +28,9 @@ export function ProductsTab() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
+    <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
+        <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase sm:text-3xl">
           Produtos e estoque
         </h2>
         <button
@@ -50,9 +50,6 @@ export function ProductsTab() {
               <Skeleton className="h-5 w-48" />
               <Skeleton className="h-4 w-20" />
             </span>
-            <Skeleton className="h-7 w-24 rounded-full" />
-            <Skeleton className="h-11 w-32 rounded-lg" />
-            <Skeleton className="h-6 w-20" />
           </div>
         ))}
 
@@ -62,86 +59,91 @@ export function ProductsTab() {
         const sale = isOnSale(p);
         const current = effectivePriceCents(p);
         return (
-          <div key={p.id} className="flex flex-wrap items-center gap-4 border-t border-border py-5 first:border-t-0">
-            <span className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt">
-              {p.image_path ? (
-                <img src={p.image_path} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="flex h-full w-full items-center justify-center font-display text-xl text-silver">D</span>
-              )}
-            </span>
-
-            <span className="min-w-0 flex-1 basis-[200px]">
-              <span className="flex flex-wrap items-center gap-2">
-                <span className="text-lg text-white">{p.name}</span>
-                {sale && (
-                  <span className="rounded-full border border-silver px-2.5 py-0.5 text-xs tracking-[0.14em] text-white uppercase">
-                    -{p.sale_percent}%{p.sale_until ? ` até ${formatDateBR(p.sale_until).slice(0, 5)}` : ""}
+          <div key={p.id} className="border-t border-border py-4 first:border-t-0 sm:py-5">
+            {/* image · name/category · price */}
+            <div className="flex items-start gap-3.5">
+              <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt sm:h-14 sm:w-14">
+                {p.image_path ? (
+                  <img src={p.image_path} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center font-display text-lg text-silver sm:text-xl">
+                    D
                   </span>
                 )}
               </span>
-              <span className="block text-sm text-muted-2">{p.category}</span>
-            </span>
 
-            <span
-              className="rounded-full border px-3 py-1.5 text-sm tracking-[0.14em] uppercase"
-              style={{ color: lowStock ? "#FFFFFF" : "#A3A3A3", borderColor: lowStock ? "#E0E0E0" : "#2A2A2A" }}
-            >
-              {status}
-            </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-base text-white sm:text-lg">{p.name}</span>
+                  {sale && (
+                    <span className="rounded-full border border-silver px-2 py-0.5 text-[11px] tracking-[0.1em] text-white uppercase">
+                      -{p.sale_percent}%{p.sale_until ? ` até ${formatDateBR(p.sale_until).slice(0, 5)}` : ""}
+                    </span>
+                  )}
+                </div>
+                <span className="block text-sm text-muted-2">{p.category}</span>
+              </div>
 
-            <span className="flex items-center gap-2.5">
-              <button
-                onClick={() => handleAdjust(p.id, -1)}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-xl text-white transition-colors hover:border-silver"
-              >
-                −
-              </button>
-              <span className="w-10 text-center font-heading text-xl text-white tabular-nums">{p.stock}</span>
-              <button
-                onClick={() => handleAdjust(p.id, 1)}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-xl text-white transition-colors hover:border-silver"
-              >
-                +
-              </button>
-            </span>
+              <div className="flex-shrink-0 text-right font-heading text-white tabular-nums">
+                {sale ? (
+                  <>
+                    <span className="block text-base sm:text-lg">{formatCents(current)}</span>
+                    <span className="block text-xs text-faint line-through sm:text-sm">{formatCents(p.price_cents)}</span>
+                  </>
+                ) : (
+                  <span className="text-base sm:text-lg">{formatCents(p.price_cents)}</span>
+                )}
+              </div>
+            </div>
 
-            <span className="w-32 text-right font-heading text-white tabular-nums">
-              {sale ? (
-                <>
-                  <span className="block text-lg">{formatCents(current)}</span>
-                  <span className="block text-sm text-faint line-through">{formatCents(p.price_cents)}</span>
-                </>
-              ) : (
-                <span className="text-lg">{formatCents(p.price_cents)}</span>
-              )}
-            </span>
+            {/* status · stock stepper · actions */}
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="rounded-full border px-2.5 py-1 text-xs tracking-[0.1em] uppercase sm:px-3 sm:py-1.5 sm:text-sm"
+                  style={{ color: lowStock ? "#FFFFFF" : "#A3A3A3", borderColor: lowStock ? "#E0E0E0" : "#2A2A2A" }}
+                >
+                  {status}
+                </span>
+                <span className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleAdjust(p.id, -1)}
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border text-lg text-white transition-colors hover:border-silver sm:h-11 sm:w-11 sm:text-xl"
+                  >
+                    −
+                  </button>
+                  <span className="w-7 text-center font-heading text-base text-white tabular-nums sm:w-10 sm:text-xl">
+                    {p.stock}
+                  </span>
+                  <button
+                    onClick={() => handleAdjust(p.id, 1)}
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border text-lg text-white transition-colors hover:border-silver sm:h-11 sm:w-11 sm:text-xl"
+                  >
+                    +
+                  </button>
+                </span>
+              </div>
 
-            <span className="flex gap-2.5">
-              <button
-                onClick={() => setEditing({ product: p })}
-                className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => setRemoving(p)}
-                className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-              >
-                Remover
-              </button>
-            </span>
+              <span className="flex gap-2">
+                <button
+                  onClick={() => setEditing({ product: p })}
+                  className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.12em] text-white uppercase transition-colors hover:border-silver sm:min-h-11 sm:px-4 sm:text-sm"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => setRemoving(p)}
+                  className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.12em] text-muted uppercase transition-colors hover:border-silver hover:text-white sm:min-h-11 sm:px-4 sm:text-sm"
+                >
+                  Remover
+                </button>
+              </span>
+            </div>
           </div>
         );
       })}
 
-      {editing && (
-        <ProductFormModal
-          product={editing.product}
-          onClose={() => setEditing(null)}
-          onSaved={reload}
-        />
-      )}
+      {editing && <ProductFormModal product={editing.product} onClose={() => setEditing(null)} onSaved={reload} />}
 
       {removing && (
         <ConfirmModal

@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { addService } from "@/hooks/useAdmin";
+import { addService, updateService } from "@/hooks/useAdmin";
+import type { Service } from "@/hooks/useCatalog";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import "@/styles/shake.css";
 
 interface ServiceFormModalProps {
+  service: Service | null;
+  /** Only used when creating a new service. */
   sortOrder: number;
   onClose: () => void;
   onSaved: () => void;
 }
 
-export function ServiceFormModal({ sortOrder, onClose, onSaved }: ServiceFormModalProps) {
-  const [name, setName] = useState("");
-  const [duration, setDuration] = useState("30");
-  const [price, setPrice] = useState("");
+export function ServiceFormModal({ service, sortOrder, onClose, onSaved }: ServiceFormModalProps) {
+  const isNew = !service;
+  const [name, setName] = useState(service?.name ?? "");
+  const [duration, setDuration] = useState(service ? String(service.duration_minutes) : "30");
+  const [price, setPrice] = useState(service ? (service.price_cents / 100).toFixed(2) : "");
   const [saving, setSaving] = useState(false);
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
@@ -25,15 +29,21 @@ export function ServiceFormModal({ sortOrder, onClose, onSaved }: ServiceFormMod
 
     setSaving(true);
     clear();
-    const { error: err } = await addService({
-      id: `svc-${Date.now()}`,
-      name: name.trim(),
-      description: "",
-      duration_minutes: durationMinutes,
-      price_cents: priceCents,
-      sort_order: sortOrder,
-      active: true,
-    });
+    const { error: err } = isNew
+      ? await addService({
+          id: `svc-${Date.now()}`,
+          name: name.trim(),
+          description: "",
+          duration_minutes: durationMinutes,
+          price_cents: priceCents,
+          sort_order: sortOrder,
+          active: true,
+        })
+      : await updateService(service.id, {
+          name: name.trim(),
+          duration_minutes: durationMinutes,
+          price_cents: priceCents,
+        });
     setSaving(false);
     if (err) return fail(err);
     onSaved();
@@ -59,7 +69,7 @@ export function ServiceFormModal({ sortOrder, onClose, onSaved }: ServiceFormMod
             ×
           </button>
           <h3 className="m-0 mb-6 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
-            Novo serviço
+            {isNew ? "Novo serviço" : `Editar ${service.name}`}
           </h3>
 
           <div className="flex flex-col gap-4">

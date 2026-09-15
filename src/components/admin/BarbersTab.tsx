@@ -75,49 +75,51 @@ export function BarbersTab() {
           barbers.map((b) => {
           const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
           return (
-            <div key={b.id} className="rounded-lg border border-border bg-surface p-8">
-              <div className="flex items-center gap-4">
-                <span className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt">
+            <div key={b.id} className="rounded-lg border border-border bg-surface p-5 sm:p-8">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt sm:h-16 sm:w-16">
                   {b.photo_path ? (
                     <img src={b.photo_path} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center font-display text-3xl text-silver">
+                    <span className="flex h-full w-full items-center justify-center font-display text-xl text-silver sm:text-3xl">
                       {b.name.charAt(0)}
                     </span>
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-heading text-2xl tracking-[0.08em] text-white uppercase">{b.name}</span>
-                  <span className="block text-base text-muted">{b.role_title}</span>
-                </span>
-                <span className="flex gap-2.5">
-                  <button
-                    onClick={() => setEditing({ barber: b })}
-                    className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(b)}
-                    className="min-h-11 cursor-pointer rounded-lg border border-border px-4 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-                  >
-                    Remover
-                  </button>
+                  <span className="block truncate font-heading text-lg tracking-[0.06em] text-white uppercase sm:text-2xl sm:tracking-[0.08em]">
+                    {b.name}
+                  </span>
+                  <span className="block text-sm text-muted sm:text-base">{b.role_title}</span>
                 </span>
               </div>
               {(b.email || b.phone) && (
-                <div className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1 text-base text-muted">
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted sm:mt-3.5 sm:text-base">
                   {b.email && <span>{b.email}</span>}
                   {b.phone && <span>{b.phone}</span>}
                 </div>
               )}
-              <div className="mt-6 flex flex-col">
+              <div className="mt-4 flex gap-2 sm:mt-5">
+                <button
+                  onClick={() => setEditing({ barber: b })}
+                  className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-white uppercase transition-colors hover:border-silver sm:min-h-11 sm:flex-none sm:text-sm"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(b)}
+                  className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-muted uppercase transition-colors hover:border-silver hover:text-white sm:min-h-11 sm:flex-none sm:text-sm"
+                >
+                  Remover
+                </button>
+              </div>
+              <div className="mt-5 flex flex-col sm:mt-6">
                 {barberHours.map((h) => (
-                  <div key={h.id} className="flex items-center justify-between gap-3 border-t border-border py-4">
-                    <span className="text-lg text-white">{WEEKDAY_LABELS[h.weekday]}</span>
+                  <div key={h.id} className="flex items-center justify-between gap-2 border-t border-border py-3 sm:gap-3 sm:py-4">
+                    <span className="text-sm text-white sm:text-lg">{WEEKDAY_LABELS[h.weekday]}</span>
                     <button
                       onClick={() => handleToggle(h.id)}
-                      className="min-h-11 cursor-pointer rounded-full border px-4 font-heading text-sm tracking-[0.12em]"
+                      className="min-h-9 cursor-pointer rounded-full border px-3 font-heading text-xs tracking-[0.1em] whitespace-nowrap sm:min-h-11 sm:px-4 sm:text-sm sm:tracking-[0.12em]"
                       style={{
                         background: h.is_open ? "rgba(255,255,255,0.07)" : "transparent",
                         borderColor: h.is_open ? "#E0E0E0" : "#2A2A2A",

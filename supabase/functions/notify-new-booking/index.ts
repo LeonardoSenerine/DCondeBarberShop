@@ -48,10 +48,11 @@
 //
 // 4) QUEM RECEBE O E-MAIL
 //
-//    O barbeiro do agendamento (public.barbers.email) + todo mundo com
-//    role "owner" em public.profiles (o dono vê tudo, como já é o caso no
-//    resto do painel). Barbeiro/dono sem e-mail cadastrado é simplesmente
-//    pulado — não dá erro.
+//    Hoje é fixo: senerineleonardo@gmail.com (pedido explícito, todo aviso
+//    cai num único e-mail em vez de ir pro barbeiro/donos individualmente).
+//    Pra voltar a mandar por barbeiro + donos, troca a linha `recipients`
+//    lá embaixo por uma consulta em public.barbers.email (pelo
+//    booking.barber_id) e public.profiles.email (role = 'owner').
 // ─────────────────────────────────────────────────────────────────────────
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -123,23 +124,14 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const [{ data: barber }, { data: service }, { data: owners }] = await Promise.all([
-    supabase.from("barbers").select("name, email").eq("id", booking.barber_id).maybeSingle(),
+  const [{ data: barber }, { data: service }] = await Promise.all([
+    supabase.from("barbers").select("name").eq("id", booking.barber_id).maybeSingle(),
     supabase.from("services").select("name").eq("id", booking.service_id).maybeSingle(),
-    supabase.from("profiles").select("email").eq("role", "owner"),
   ]);
 
-  const recipients = Array.from(
-    new Set(
-      [barber?.email, ...(owners ?? []).map((o) => o.email)].filter(
-        (email): email is string => !!email,
-      ),
-    ),
-  );
-
-  if (recipients.length === 0) {
-    return new Response(JSON.stringify({ skipped: true, reason: "no recipients" }), { status: 200 });
-  }
+  // Todo mundo cai neste e-mail por enquanto, em vez de barbeiro/donos
+  // individuais — pedido explícito, pra ter um único ponto de recebimento.
+  const recipients = ["senerineleonardo@gmail.com"];
 
   const dateLabel = formatDateBR(booking.scheduled_date);
   const timeLabel = formatTimeShort(booking.scheduled_time);

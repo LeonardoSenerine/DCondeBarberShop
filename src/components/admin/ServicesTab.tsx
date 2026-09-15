@@ -62,29 +62,33 @@ export function ServicesTab() {
         ))}
 
       {services.length > 0 && (
-        <div
-          className="grid items-center gap-3 border-t border-border py-3 font-heading text-sm tracking-[0.1em] text-muted-2 uppercase"
-          style={{ gridTemplateColumns: ROW_COLS }}
-        >
-          <span>Nome</span>
-          <span>Duração</span>
-          <span>Preço</span>
-          <span className="text-right">Ações</span>
+        <div className="overflow-x-auto">
+          <div className="min-w-[620px]">
+            <div
+              className="grid items-center gap-3 border-t border-border py-3 font-heading text-sm tracking-[0.1em] text-muted-2 uppercase"
+              style={{ gridTemplateColumns: ROW_COLS }}
+            >
+              <span>Nome</span>
+              <span>Duração</span>
+              <span>Preço</span>
+              <span className="text-right">Ações</span>
+            </div>
+
+            {services.map((s) => (
+              <ServiceRow
+                key={s.id}
+                service={s}
+                editing={editingId === s.id}
+                saving={savingId === s.id}
+                onEdit={() => setEditingId(s.id)}
+                onCancel={() => setEditingId(null)}
+                onSave={(patch) => handleSaveRow(s.id, patch)}
+                onRemove={() => setRemoving(s)}
+              />
+            ))}
+          </div>
         </div>
       )}
-
-      {services.map((s) => (
-        <ServiceRow
-          key={s.id}
-          service={s}
-          editing={editingId === s.id}
-          saving={savingId === s.id}
-          onEdit={() => setEditingId(s.id)}
-          onCancel={() => setEditingId(null)}
-          onSave={(patch) => handleSaveRow(s.id, patch)}
-          onRemove={() => setRemoving(s)}
-        />
-      ))}
 
       {adding && (
         <ServiceFormModal sortOrder={services.length + 1} onClose={() => setAdding(false)} onSaved={reload} />

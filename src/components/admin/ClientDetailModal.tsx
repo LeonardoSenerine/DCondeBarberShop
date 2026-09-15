@@ -26,10 +26,10 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
       onClick={onClose}
     >
-      <div className="flex min-h-full items-center justify-center p-6">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative max-h-[88vh] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-border bg-surface p-9 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+          className="relative max-h-[88vh] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-[0_40px_90px_rgba(0,0,0,0.8)] sm:p-9"
         >
           <button
             onClick={onClose}
@@ -64,27 +64,29 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
               <p className="m-0 py-3 text-[13px] text-muted">Nenhum agendamento.</p>
             ) : (
               <>
-                <div className="scroll-thin max-h-[280px] overflow-y-auto">
-                  <ColumnHeaders cols={APPT_COLS}>
-                    <span>Data</span>
-                    <span>Serviço</span>
-                    <span>Barbeiro</span>
-                    <span>Status</span>
-                    <span className="text-right">Valor</span>
-                  </ColumnHeaders>
-                  {appointments.map((a) => (
-                    <div
-                      key={a.id}
-                      className="grid items-center gap-3 border-t border-border py-3.5"
-                      style={{ gridTemplateColumns: APPT_COLS }}
-                    >
-                      <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
-                      <span className="text-[15px] text-white">{a.service}</span>
-                      <span className="text-[13px] text-muted">{a.barber}</span>
-                      <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
-                      <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
-                    </div>
-                  ))}
+                <div className="scroll-thin max-h-[280px] overflow-auto">
+                  <div className="min-w-[580px]">
+                    <ColumnHeaders cols={APPT_COLS}>
+                      <span>Data</span>
+                      <span>Serviço</span>
+                      <span>Barbeiro</span>
+                      <span>Status</span>
+                      <span className="text-right">Valor</span>
+                    </ColumnHeaders>
+                    {appointments.map((a) => (
+                      <div
+                        key={a.id}
+                        className="grid items-center gap-3 border-t border-border py-3.5"
+                        style={{ gridTemplateColumns: APPT_COLS }}
+                      >
+                        <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
+                        <span className="text-[15px] text-white">{a.service}</span>
+                        <span className="text-[13px] text-muted">{a.barber}</span>
+                        <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
+                        <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
@@ -97,25 +99,27 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
               <p className="m-0 py-3 text-[13px] text-muted">Nenhuma compra de produto.</p>
             ) : (
               <>
-                <div className="scroll-thin max-h-[280px] overflow-y-auto">
-                  <ColumnHeaders cols={PRODUCT_COLS}>
-                    <span>Data</span>
-                    <span>Produto</span>
-                    <span>Qtd.</span>
-                    <span className="text-right">Valor</span>
-                  </ColumnHeaders>
-                  {purchases.map((p) => (
-                    <div
-                      key={p.id}
-                      className="grid items-center gap-3 border-t border-border py-3.5"
-                      style={{ gridTemplateColumns: PRODUCT_COLS }}
-                    >
-                      <span className="text-[13px] text-muted">{formatDateBR(p.date)}</span>
-                      <span className="text-[15px] text-white">{p.product}</span>
-                      <span className="text-[13px] text-muted">x{p.qty}</span>
-                      <span className="text-right font-heading text-[15px] text-white">{formatCents(p.priceCents)}</span>
-                    </div>
-                  ))}
+                <div className="scroll-thin max-h-[280px] overflow-auto">
+                  <div className="min-w-[420px]">
+                    <ColumnHeaders cols={PRODUCT_COLS}>
+                      <span>Data</span>
+                      <span>Produto</span>
+                      <span>Qtd.</span>
+                      <span className="text-right">Valor</span>
+                    </ColumnHeaders>
+                    {purchases.map((p) => (
+                      <div
+                        key={p.id}
+                        className="grid items-center gap-3 border-t border-border py-3.5"
+                        style={{ gridTemplateColumns: PRODUCT_COLS }}
+                      >
+                        <span className="text-[13px] text-muted">{formatDateBR(p.date)}</span>
+                        <span className="text-[15px] text-white">{p.product}</span>
+                        <span className="text-[13px] text-muted">x{p.qty}</span>
+                        <span className="text-right font-heading text-[15px] text-white">{formatCents(p.priceCents)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}

@@ -74,20 +74,26 @@ export function AgendaTab() {
             {dateLabel} · {agenda.length} atendimentos
           </span>
         </div>
-        {agenda.length > 0 && <AgendaHeader />}
-        {loading && agenda.length === 0 && <RowSkeletons count={5} />}
         {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
-        {agenda.map((a) => (
-          <AgendaRow
-            key={a.id}
-            booking={a}
-            acting={acting === a.id}
-            onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
-            onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
-            onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
-            onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
-          />
-        ))}
+        {(agenda.length > 0 || (loading && agenda.length === 0)) && (
+          <div className="overflow-x-auto">
+            <div className="min-w-[900px]">
+              {agenda.length > 0 && <AgendaHeader />}
+              {loading && agenda.length === 0 && <RowSkeletons count={5} />}
+              {agenda.map((a) => (
+                <AgendaRow
+                  key={a.id}
+                  booking={a}
+                  acting={acting === a.id}
+                  onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
+                  onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
+                  onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
+                  onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-7">
@@ -108,21 +114,27 @@ export function AgendaTab() {
               {pending.length}
             </span>
           </div>
-          {pending.length > 0 && <AgendaHeader />}
-          {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
           {!totalsLoading && pending.length === 0 && (
             <p className="text-muted">Nenhum agendamento pendente de aceite.</p>
           )}
-          {pending.map((a) => (
-            <AgendaRow
-              key={a.id}
-              booking={a}
-              showDate
-              acting={acting === a.id}
-              onAccept={() => handleAccept(a)}
-              onDecline={() => decide(a.id, "cancelled")}
-            />
-          ))}
+          {(pending.length > 0 || (totalsLoading && pending.length === 0)) && (
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px]">
+                {pending.length > 0 && <AgendaHeader />}
+                {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
+                {pending.map((a) => (
+                  <AgendaRow
+                    key={a.id}
+                    booking={a}
+                    showDate
+                    acting={acting === a.id}
+                    onAccept={() => handleAccept(a)}
+                    onDecline={() => decide(a.id, "cancelled")}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -135,21 +147,27 @@ export function AgendaTab() {
               {confirmed.length}
             </span>
           </div>
-          {confirmed.length > 0 && <AgendaHeader />}
-          {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
           {!totalsLoading && confirmed.length === 0 && (
             <p className="text-muted">Nenhum agendamento confirmado aguardando conclusão.</p>
           )}
-          {confirmed.map((a) => (
-            <AgendaRow
-              key={a.id}
-              booking={a}
-              showDate
-              acting={acting === a.id}
-              onComplete={() => setCompleting(a)}
-              onCancel={() => setCancelling(a)}
-            />
-          ))}
+          {(confirmed.length > 0 || (totalsLoading && confirmed.length === 0)) && (
+            <div className="overflow-x-auto">
+              <div className="min-w-[900px]">
+                {confirmed.length > 0 && <AgendaHeader />}
+                {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
+                {confirmed.map((a) => (
+                  <AgendaRow
+                    key={a.id}
+                    booking={a}
+                    showDate
+                    acting={acting === a.id}
+                    onComplete={() => setCompleting(a)}
+                    onCancel={() => setCancelling(a)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

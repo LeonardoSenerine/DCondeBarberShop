@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { List, X } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { useBarbers } from "@/hooks/useCatalog";
 import { supabase } from "@/lib/supabaseClient";
@@ -38,6 +39,7 @@ export function AdminPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("agenda");
   const [incoming, setIncoming] = useState<IncomingBooking | null>(null);
+  const [navOpen, setNavOpen] = useState(false);
 
   // Live alert when a new booking request comes in — RLS scopes what each
   // session receives, so staff only ever hears about their own barber's.
@@ -79,8 +81,8 @@ export function AdminPage() {
 
   return (
     <div className="bg-ink text-white lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className="flex shrink-0 flex-col border-b border-border bg-surface lg:h-screen lg:w-[264px] lg:border-r lg:border-b-0">
-        <div className="flex items-center gap-3 border-b border-border px-5 py-5">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-5 py-4 lg:hidden">
+        <div className="flex items-center gap-3">
           <img
             src="/img/monogram.jpg"
             alt=""
@@ -89,15 +91,58 @@ export function AdminPage() {
           />
           <span className="font-heading text-base tracking-[0.2em] text-white uppercase">Painel</span>
         </div>
+        <button
+          onClick={() => setNavOpen(true)}
+          aria-label="Abrir menu"
+          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver"
+        >
+          <List size={22} />
+        </button>
+      </div>
 
-        <nav className="flex gap-1.5 overflow-x-auto p-3 lg:flex-1 lg:flex-col lg:overflow-visible">
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+          onClick={() => setNavOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-surface transition-transform duration-300 lg:static lg:z-auto lg:h-screen lg:w-[264px] lg:translate-x-0 ${
+          navOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-5">
+          <div className="flex items-center gap-3">
+            <img
+              src="/img/monogram.jpg"
+              alt=""
+              className="h-10 w-11 object-contain"
+              style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
+            />
+            <span className="font-heading text-base tracking-[0.2em] text-white uppercase">Painel</span>
+          </div>
+          <button
+            onClick={() => setNavOpen(false)}
+            aria-label="Fechar menu"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:text-white lg:hidden"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto p-3">
           {TABS.map((t) => {
             const on = tab === t.id;
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
-                className="flex min-h-[58px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
+                onClick={() => {
+                  setTab(t.id);
+                  setNavOpen(false);
+                }}
+                className="flex min-h-[54px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
                 style={{
                   background: on ? "var(--color-silver)" : "transparent",
                   color: on ? "#0A0A0A" : "#9E9E9E",
@@ -130,10 +175,11 @@ export function AdminPage() {
           </div>
         )}
 
-        <div className="flex gap-1.5 border-t border-border p-3 lg:flex-col">
+        <div className="flex flex-col gap-1.5 border-t border-border p-3">
           <Link
             to="/"
-            className="flex min-h-[54px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            onClick={() => setNavOpen(false)}
+            className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
           >
             <span className="grid h-6 w-6 place-items-center" aria-hidden>
               {iconExternal()}
@@ -141,8 +187,11 @@ export function AdminPage() {
             Ver site
           </Link>
           <button
-            onClick={() => signOut().then(() => navigate("/"))}
-            className="flex min-h-[54px] flex-1 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            onClick={() => {
+              setNavOpen(false);
+              signOut().then(() => navigate("/"));
+            }}
+            className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
           >
             <span className="grid h-6 w-6 place-items-center" aria-hidden>
               {iconLogout()}

@@ -91,12 +91,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isOwner: profile?.role === "owner",
       barberId: profile?.barber_id ?? null,
       async sendMagicLink(email, opts) {
+        const shouldCreateUser = opts?.shouldCreateUser ?? true;
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            data: opts?.fullName ? { full_name: opts.fullName, phone: opts.phone } : undefined,
+            // `intent` reaches the Magic Link email template as {{ .Data.intent }} —
+            // Supabase sends the same email for signup and login, so this is the
+            // only way for the template to show different copy for each case
+            // (see supabase/email-templates/magic-link.html).
+            data: {
+              ...(opts?.fullName ? { full_name: opts.fullName, phone: opts.phone } : {}),
+              intent: shouldCreateUser ? "signup" : "login",
+            },
             emailRedirectTo: window.location.origin,
-            shouldCreateUser: opts?.shouldCreateUser ?? true,
+            shouldCreateUser,
           },
         });
         return { error: error ? traduzErroAuth(error.message) : null };

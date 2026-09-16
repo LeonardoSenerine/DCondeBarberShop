@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { useBarbers, useBarberHours, useServices } from "@/hooks/useCatalog";
 import { slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
-import { MONTH_LABELS, WEEKDAY_LABELS, WEEKDAY_SHORT, formatCents, formatDuration } from "@/lib/format";
+import {
+  MONTH_LABELS,
+  WEEKDAY_LABELS,
+  WEEKDAY_SHORT,
+  formatCents,
+  formatDuration,
+} from "@/lib/format";
 import { BarberPhoto } from "@/components/BarberPhoto";
 import { Reveal } from "@/components/Reveal";
 import { Skeleton } from "@/components/Skeleton";
@@ -23,7 +29,8 @@ interface BookingWizardProps {
 }
 
 const STEP_NAMES = ["Profissional", "Serviço", "Dia e horário", "Confirmar"];
-const SILVER_GRADIENT = "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)";
+const SILVER_GRADIENT =
+  "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)";
 
 export function BookingWizard({ onConfirm }: BookingWizardProps) {
   const { data: barbers, loading: barbersLoading } = useBarbers();
@@ -47,7 +54,11 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
   const [time, setTime] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const { bookedByDate, error: bookedSlotsError } = useMonthBookings(barberId, viewYear, viewMonth);
+  const { bookedByDate, error: bookedSlotsError } = useMonthBookings(
+    barberId,
+    viewYear,
+    viewMonth,
+  );
 
   const barber = barbers.find((b) => b.id === barberId) ?? null;
   const service = services.find((s) => s.id === serviceId) ?? null;
@@ -63,7 +74,9 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     const slots = slotsForWeekday(hours, barberId, weekday);
     const booked = (isoDate && bookedByDate[isoDate]) || [];
     const isToday = selectedDate.getTime() === today.getTime();
-    return slots.filter((t) => !booked.includes(t) && (!isToday || t > nowTimeStr));
+    return slots.filter(
+      (t) => !booked.includes(t) && (!isToday || t > nowTimeStr),
+    );
   })();
 
   const dayHasFreeSlot = (d: number): boolean => {
@@ -76,12 +89,15 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const booked = bookedByDate[iso] || [];
     const isToday = date.getTime() === today.getTime();
-    return slots.some((t) => !booked.includes(t) && (!isToday || t > nowTimeStr));
+    return slots.some(
+      (t) => !booked.includes(t) && (!isToday || t > nowTimeStr),
+    );
   };
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
-  const isMinMonth = viewYear === today.getFullYear() && viewMonth <= today.getMonth();
+  const isMinMonth =
+    viewYear === today.getFullYear() && viewMonth <= today.getMonth();
 
   function jumpMonth(delta: number) {
     let m = viewMonth + delta;
@@ -99,9 +115,20 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     setTime(null);
   }
 
-  const stepDone = [!!barber, !!service, !!(day && time), !!(barber && service && day && time)];
+  const stepDone = [
+    !!barber,
+    !!service,
+    !!(day && time),
+    !!(barber && service && day && time),
+  ];
   const canNext =
-    step === 1 ? !!barber : step === 2 ? !!service : step === 3 ? !!(day && time) : false;
+    step === 1
+      ? !!barber
+      : step === 2
+        ? !!service
+        : step === 3
+          ? !!(day && time)
+          : false;
 
   const dateLabel = selectedDate
     ? `${String(day).padStart(2, "0")}/${String(viewMonth + 1).padStart(2, "0")}/${viewYear}`
@@ -137,7 +164,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             Reserve seu horário
           </h2>
           <p className="m-0 max-w-[38ch] text-[15px] text-muted">
-            Monte o atendimento em quatro passos. A confirmação fica salva na sua conta.
+            Monte o atendimento em quatro passos. A confirmação fica salva na
+            sua conta.
           </p>
         </div>
 
@@ -147,20 +175,32 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             const active = step === n;
             const done = stepDone[i] && !active;
             const reachable = n <= step || stepDone[i];
-            const value = [barber?.name, service?.name, day ? `${dateLabel}${time ? " · " + time : ""}` : "—", service ? formatCents(service.price_cents) : "—"][i] ?? "";
+            const value =
+              [
+                barber?.name,
+                service?.name,
+                day ? `${dateLabel}${time ? " · " + time : ""}` : "—",
+                service ? formatCents(service.price_cents) : "—",
+              ][i] ?? "";
             return (
               <button
                 key={name}
                 disabled={!reachable}
                 onClick={() => reachable && setStep(n)}
                 className="flex min-w-0 cursor-pointer flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition hover:brightness-125 disabled:cursor-not-allowed disabled:hover:brightness-100 sm:flex-1 sm:basis-[180px] sm:flex-row sm:items-center sm:gap-3 sm:px-2.5 sm:text-left"
-                style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent" }}
+                style={{
+                  background: active ? "rgba(255,255,255,0.06)" : "transparent",
+                }}
               >
                 <span
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-heading text-xs font-semibold sm:h-8.5 sm:w-8.5 sm:text-sm"
                   style={{
                     background: active || done ? SILVER_GRADIENT : "#1A1A1A",
-                    borderColor: active ? "#FFFFFF" : done ? "#E0E0E0" : "#2A2A2A",
+                    borderColor: active
+                      ? "#FFFFFF"
+                      : done
+                        ? "#E0E0E0"
+                        : "#2A2A2A",
                     color: active || done ? "#0A0A0A" : "#9E9E9E",
                   }}
                 >
@@ -187,9 +227,16 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
               Escolha o profissional
             </h3>
-            <p className="mb-4.5 text-sm text-muted-2">A agenda mostrada depois é a dele.</p>
+            <p className="mb-4.5 text-sm text-muted-2">
+              A agenda mostrada depois é a dele.
+            </p>
             <div className="grid grid-cols-2 gap-4">
-              {barbersLoading && <Skeleton count={2} className="aspect-[4/5] w-full rounded-[10px]" />}
+              {barbersLoading && (
+                <Skeleton
+                  count={2}
+                  className="aspect-[4/5] w-full rounded-[10px]"
+                />
+              )}
               {barbers.map((b) => {
                 const on = barberId === b.id;
                 return (
@@ -208,7 +255,11 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                   >
                     <span className="relative block aspect-[4/5] w-full overflow-hidden bg-ink">
                       <BarberPhoto
-                        photos={b.gallery_paths.length ? b.gallery_paths : [b.photo_path]}
+                        photos={
+                          b.gallery_paths.length
+                            ? b.gallery_paths
+                            : [b.photo_path]
+                        }
                         alt=""
                         className="h-full w-full object-cover"
                         style={{ objectPosition: "center 22%" }}
@@ -224,8 +275,16 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                         className="absolute top-3 right-3 flex h-[22px] w-[22px] items-center justify-center rounded-full border text-xs transition-colors"
                         style={
                           on
-                            ? { borderColor: "#fff", background: "var(--color-silver)", color: "#0A0A0A" }
-                            : { borderColor: "rgba(255,255,255,0.55)", background: "rgba(10,10,10,0.35)", color: "transparent" }
+                            ? {
+                                borderColor: "#fff",
+                                background: "var(--color-silver)",
+                                color: "#0A0A0A",
+                              }
+                            : {
+                                borderColor: "rgba(255,255,255,0.55)",
+                                background: "rgba(10,10,10,0.35)",
+                                color: "transparent",
+                              }
                         }
                       >
                         ✓
@@ -234,7 +293,9 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                         <span className="font-heading text-lg tracking-[0.1em] text-white uppercase">
                           {b.name}
                         </span>
-                        <span className="text-xs tracking-[0.18em] text-muted uppercase">{b.role_title}</span>
+                        <span className="text-xs tracking-[0.18em] text-muted uppercase">
+                          {b.role_title}
+                        </span>
                       </span>
                     </span>
                     <span className="flex flex-col gap-2 px-4 pt-3.5 pb-4">
@@ -258,13 +319,17 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               Com {barber?.name ?? "—"}. Dá pra trocar antes de confirmar.
             </p>
             <div className="grid max-h-[420px] grid-cols-1 gap-2.5 overflow-y-auto pr-1.5 md:grid-cols-2">
-              {servicesLoading && <Skeleton count={6} className="h-[68px] w-full rounded-lg" />}
+              {servicesLoading && (
+                <Skeleton count={6} className="h-[68px] w-full rounded-lg" />
+              )}
               {services.map((s) => {
                 const on = serviceId === s.id;
                 return (
                   <button
                     key={s.id}
-                    onClick={() => setServiceId((prev) => (prev === s.id ? null : s.id))}
+                    onClick={() =>
+                      setServiceId((prev) => (prev === s.id ? null : s.id))
+                    }
                     className="flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition hover:brightness-125"
                     style={{
                       background: on ? "rgba(255,255,255,0.07)" : "#1A1A1A",
@@ -272,14 +337,20 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                     }}
                   >
                     <span className="flex min-w-0 flex-col gap-0.5">
-                      <span className="font-heading text-sm tracking-[0.08em] text-white uppercase">{s.name}</span>
+                      <span className="font-heading text-sm tracking-[0.08em] text-white uppercase">
+                        {s.name}
+                      </span>
                       <span className="text-[13px] text-muted">
-                        {formatDuration(s.duration_minutes)} · a partir de {formatCents(s.price_cents)}
+                        {formatDuration(s.duration_minutes)} · a partir de{" "}
+                        {formatCents(s.price_cents)}
                       </span>
                     </span>
                     <span
                       className="h-[18px] w-[18px] flex-shrink-0 rounded-full border"
-                      style={{ background: on ? "#E0E0E0" : "transparent", borderColor: on ? "#FFFFFF" : "#3A3A3A" }}
+                      style={{
+                        background: on ? "#E0E0E0" : "transparent",
+                        borderColor: on ? "#FFFFFF" : "#3A3A3A",
+                      }}
                     />
                   </button>
                 );
@@ -324,7 +395,10 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 </div>
                 <div className="mb-2 grid grid-cols-7 gap-1">
                   {WEEKDAY_SHORT.map((w, i) => (
-                    <span key={i} className="text-center text-[10px] tracking-[0.08em] text-muted-2">
+                    <span
+                      key={i}
+                      className="text-center text-[10px] tracking-[0.08em] text-muted-2"
+                    >
                       {w}
                     </span>
                   ))}
@@ -350,10 +424,18 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                         }}
                         className="flex aspect-square min-h-[30px] cursor-pointer items-center justify-center rounded-md text-xs transition hover:brightness-125 disabled:cursor-not-allowed disabled:hover:brightness-100"
                         style={{
-                          background: on ? "#E0E0E0" : off ? "transparent" : "#0A0A0A",
+                          background: on
+                            ? "#E0E0E0"
+                            : off
+                              ? "transparent"
+                              : "#0A0A0A",
                           color: on ? "#0A0A0A" : off ? "#3A3A3A" : "#FFFFFF",
                           borderWidth: 1,
-                          borderColor: on ? "#FFFFFF" : off ? "#1F1F1F" : "#2A2A2A",
+                          borderColor: on
+                            ? "#FFFFFF"
+                            : off
+                              ? "#1F1F1F"
+                              : "#2A2A2A",
                         }}
                       >
                         {d}
@@ -364,13 +446,17 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 <div className="mt-3.5 flex flex-col gap-1 border-t border-border pt-3">
                   <span className="text-[13px] text-silver">{dateLong}</span>
                   <span className="text-xs text-faint">
-                    {barberId ? `Dias em destaque têm horário livre com ${barber?.name ?? ""}.` : "Escolha um barbeiro."}
+                    {barberId
+                      ? `Dias em destaque têm horário livre com ${barber?.name ?? ""}.`
+                      : "Escolha um barbeiro."}
                   </span>
                 </div>
               </div>
 
               <div className="rounded-lg border border-border bg-surface-alt p-3.5">
-                <span className="text-xs tracking-[0.18em] text-muted-2 uppercase">Horários livres</span>
+                <span className="text-xs tracking-[0.18em] text-muted-2 uppercase">
+                  Horários livres
+                </span>
                 <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
                   {freeTimes.map((t) => {
                     const on = time === t;
@@ -392,12 +478,14 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 </div>
                 {bookedSlotsError && (
                   <p className="mt-2.5 text-[13px] text-red-400">
-                    Não foi possível carregar os horários. Tente novamente em instantes.
+                    Não foi possível carregar os horários. Tente novamente em
+                    instantes.
                   </p>
                 )}
                 {!bookedSlotsError && day && freeTimes.length === 0 && (
                   <p className="mt-2.5 text-[13px] text-muted">
-                    {barber?.name} não atende ou está sem vaga nessa data. Selecione outro dia.
+                    {barber?.name} não atende ou está sem vaga nessa data.
+                    Selecione outro dia.
                   </p>
                 )}
               </div>
@@ -411,7 +499,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               Confirme os dados
             </h3>
             <p className="mb-6 text-base text-muted-2">
-              Após confirmar, aguarde o barbeiro aceitar — ele confirma pelo WhatsApp.
+              Após confirmar, aguarde o barbeiro aceitar — ele confirma pelo
+              WhatsApp.
             </p>
             <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface-alt p-6 sm:p-8 md:p-12">
               {[
@@ -419,10 +508,18 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 { k: "Barbeiro", v: barber?.name ?? "Selecione" },
                 { k: "Data", v: dateLabel },
                 { k: "Horário", v: time ?? "—" },
-                { k: "Duração", v: service ? formatDuration(service.duration_minutes) : "—" },
+                {
+                  k: "Duração",
+                  v: service ? formatDuration(service.duration_minutes) : "—",
+                },
               ].map((row) => (
-                <div key={row.k} className="flex items-start justify-between gap-3">
-                  <span className="shrink-0 text-sm text-muted sm:text-base">{row.k}</span>
+                <div
+                  key={row.k}
+                  className="flex items-start justify-between gap-3"
+                >
+                  <span className="shrink-0 text-sm text-muted sm:text-base">
+                    {row.k}
+                  </span>
                   <span className="text-right font-heading text-base tracking-[0.04em] text-white sm:text-xl sm:tracking-[0.06em]">
                     {row.v}
                   </span>
@@ -431,7 +528,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               <div className="my-1.5 h-px bg-border" />
               <div className="flex items-center justify-between gap-3">
                 <span className="shrink-0 font-heading text-sm tracking-[0.15em] text-white uppercase sm:text-base sm:tracking-[0.2em]">
-                  Total
+                  Apartir de
                 </span>
                 <span className="whitespace-nowrap font-heading text-3xl font-semibold text-white sm:text-5xl">
                   {service ? formatCents(service.price_cents) : "—"}
@@ -440,12 +537,13 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={!barber || !service || !day || !time}
-                className="bg-silver-gradient mt-2 flex min-h-[72px] w-full cursor-pointer items-center justify-center rounded-lg font-heading text-base font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                className="bg-silver-gradient mt-2 flex min-h-[72px] w-full cursor-pointer items-center justify-center rounded-lg font-heading text-base font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 pl-0.5 pr-0.5"
               >
                 Confirmar agendamento
               </button>
               <span className="text-center text-sm text-muted-2">
-                Você recebe a confirmação pelo WhatsApp assim que o barbeiro aceitar.
+                Você recebe a confirmação pelo WhatsApp assim que o barbeiro
+                aceitar.
               </span>
             </div>
           </div>
@@ -491,7 +589,13 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
               className="relative w-full max-w-[420px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
             >
               <span className="bg-silver-gradient flex h-14 w-14 items-center justify-center rounded-full">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0A0A0A" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  fill="#0A0A0A"
+                  aria-hidden="true"
+                >
                   <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z" />
                 </svg>
               </span>
@@ -499,7 +603,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 Confirmar agendamento?
               </h3>
               <p className="m-0 mt-2 text-base text-muted">
-                {barber?.name} vai receber sua solicitação e confirma pelo WhatsApp assim que aceitar.
+                {barber?.name} vai receber sua solicitação e confirma pelo
+                WhatsApp assim que aceitar.
               </p>
 
               <div className="mt-5 flex flex-col gap-2.5 rounded-lg border border-border bg-surface-alt p-4">
@@ -507,11 +612,19 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                   { k: "Serviço", v: service?.name ?? "—" },
                   { k: "Barbeiro", v: barber?.name ?? "—" },
                   { k: "Data", v: `${dateLabel} · ${time ?? "—"}` },
-                  { k: "Total", v: service ? formatCents(service.price_cents) : "—" },
+                  {
+                    k: "Total",
+                    v: service ? formatCents(service.price_cents) : "—",
+                  },
                 ].map((row) => (
-                  <div key={row.k} className="flex items-baseline justify-between gap-3">
+                  <div
+                    key={row.k}
+                    className="flex items-baseline justify-between gap-3"
+                  >
                     <span className="text-sm text-muted-2">{row.k}</span>
-                    <span className="font-heading text-sm tracking-[0.04em] text-white">{row.v}</span>
+                    <span className="font-heading text-sm tracking-[0.04em] text-white">
+                      {row.v}
+                    </span>
                   </div>
                 ))}
               </div>

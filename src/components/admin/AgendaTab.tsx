@@ -192,7 +192,7 @@ interface AgendaActionHandlers {
   onRemind?: () => void;
 }
 
-interface AgendaListProps extends Pick<AgendaRowProps, "showDate" | "acting"> {
+interface AgendaListProps extends Pick<AgendaRowProps, "showDate"> {
   items: BookingWithDetails[];
   loading: boolean;
   skeletonCount: number;

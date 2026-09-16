@@ -7,11 +7,8 @@ import { Skeleton } from "@/components/Skeleton";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 
 const PERIODS: { id: FinancePeriod; label: string }[] = [
-  { id: "today", label: "Hoje" },
   { id: "7d", label: "7 dias" },
-  { id: "month", label: "Este mês" },
   { id: "30d", label: "30 dias" },
-  { id: "prev_month", label: "Mês passado" },
   { id: "custom", label: "Personalizado" },
 ];
 
@@ -24,7 +21,7 @@ function shortMoney(cents: number) {
 }
 
 export function FinanceTab() {
-  const [period, setPeriod] = useState<FinancePeriod>("month");
+  const [period, setPeriod] = useState<FinancePeriod>("30d");
   const today = useMemo(() => dateKey(new Date()), []);
   const monthStart = useMemo(() => {
     const d = new Date();
@@ -47,7 +44,6 @@ export function FinanceTab() {
     avgTicket,
     serviceCount,
     chart,
-    chartUnit,
     byMethod,
     transactions,
   } = useFinance(period, custom, barberId);
@@ -76,6 +72,19 @@ export function FinanceTab() {
   const linePath = chart.map((b, i) => `${i === 0 ? "M" : "L"} ${xPct(i)} ${yPct(b.value)}`).join(" ");
   const areaPath = n > 0 ? `${linePath} L ${xPct(n - 1)} 100 L ${xPct(0)} 100 Z` : "";
   const gridLines = [25, 50, 75];
+  // Thins out x-axis labels so they don't collide — fewer fit on mobile
+  // than on desktop. Indices are spread evenly from 0 to n-1 (always
+  // including both ends) rather than every Kth one, so the last pick can't
+  // land awkwardly close to the final label. Each visible label still sits
+  // at its exact xPct(i), so it always lines up with the point above it.
+  function evenIndices(total: number, want: number): Set<number> {
+    if (total <= want) return new Set(Array.from({ length: total }, (_, i) => i));
+    const picked = new Set<number>();
+    for (let k = 0; k < want; k++) picked.add(Math.round((k * (total - 1)) / (want - 1)));
+    return picked;
+  }
+  const mobileLabels = evenIndices(n, 5);
+  const desktopLabels = evenIndices(n, 10);
 
   const stats = [
     { label: "Ticket médio", value: formatCents(avgTicket), note: `${serviceCount} atendimentos` },
@@ -209,7 +218,7 @@ export function FinanceTab() {
             {peak && (
               <>
                 <br />
-                Pico {chartUnit === "hora" ? peak.label : `dia ${peak.label}`}:{" "}
+                Pico dia {peak.label}:{" "}
                 <span className="text-white tabular-nums">{formatCents(peak.value)}</span>
               </>
             )}
@@ -233,7 +242,7 @@ export function FinanceTab() {
       <div className="rounded-2xl border border-border bg-surface p-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
-            Faturamento por {chartUnit}
+            Faturamento por dia
           </span>
           <span className="text-lg text-muted">
             Total <span className="text-white tabular-nums">{formatCents(revenue)}</span>
@@ -330,7 +339,7 @@ export function FinanceTab() {
                     }}
                   >
                     <span className="font-heading text-sm tracking-[0.14em] text-muted-2 uppercase">
-                      {chartUnit === "hora" ? chart[hover].label : `Dia ${chart[hover].label}`}
+                      {`Dia ${chart[hover].label}`}
                     </span>
                     <span className="font-heading text-xl text-white tabular-nums">
                       {formatCents(chart[hover].value)}
@@ -343,12 +352,25 @@ export function FinanceTab() {
 
           <div className="mt-2.5 flex gap-2">
             <span className="w-16 flex-shrink-0" aria-hidden />
-            <div className="flex flex-1 text-center text-sm text-muted-2 tabular-nums">
-              {chart.map((b, i) => (
-                <span key={b.key} className="flex-1 truncate">
-                  {n > 16 && i % 3 !== 0 ? "" : b.label}
-                </span>
-              ))}
+            <div className="relative min-w-0 flex-1 text-sm text-muted-2 tabular-nums" style={{ height: 18 }}>
+              {chart.map((b, i) => {
+                const edge = i === 0 ? "start" : i === n - 1 ? "end" : "middle";
+                const showMobile = mobileLabels.has(i);
+                const showDesktop = desktopLabels.has(i);
+                return (
+                  <span
+                    key={b.key}
+                    className={`absolute top-0 max-w-16 truncate ${showMobile ? "block" : "hidden"} ${showDesktop ? "sm:block" : "sm:hidden"}`}
+                    style={{
+                      left: `${xPct(i)}%`,
+                      transform: edge === "start" ? "none" : edge === "end" ? "translateX(-100%)" : "translateX(-50%)",
+                      textAlign: edge === "start" ? "left" : edge === "end" ? "right" : "center",
+                    }}
+                  >
+                    {b.label}
+                  </span>
+                );
+              })}
             </div>
           </div>
           </>

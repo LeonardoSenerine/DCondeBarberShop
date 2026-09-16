@@ -225,7 +225,7 @@ export function useClients({ query, from, to }: ClientFilters) {
   return { clients: filtered, loading };
 }
 
-export type FinancePeriod = "today" | "7d" | "month" | "30d" | "prev_month" | "custom";
+export type FinancePeriod = "7d" | "30d" | "custom";
 
 export interface FinanceRange {
   from: string;
@@ -239,19 +239,9 @@ function financeRange(period: FinancePeriod, custom?: { from: string; to: string
   const start = new Date(today);
 
   switch (period) {
-    case "today":
-      return { from: dateKey(today), to: dateKey(today), label: "Hoje" };
     case "7d":
       start.setDate(today.getDate() - 6);
       return { from: dateKey(start), to: dateKey(today), label: "Últimos 7 dias" };
-    case "30d":
-      start.setDate(today.getDate() - 29);
-      return { from: dateKey(start), to: dateKey(today), label: "Últimos 30 dias" };
-    case "prev_month": {
-      const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const last = new Date(today.getFullYear(), today.getMonth(), 0);
-      return { from: dateKey(first), to: dateKey(last), label: "Mês passado" };
-    }
     case "custom": {
       if (custom?.from && custom?.to) {
         const a = custom.from <= custom.to ? custom.from : custom.to;
@@ -261,11 +251,10 @@ function financeRange(period: FinancePeriod, custom?: { from: string; to: string
       const first = new Date(today.getFullYear(), today.getMonth(), 1);
       return { from: dateKey(first), to: dateKey(today), label: "Personalizado" };
     }
-    case "month":
-    default: {
-      const first = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { from: dateKey(first), to: dateKey(today), label: "Este mês" };
-    }
+    case "30d":
+    default:
+      start.setDate(today.getDate() - 29);
+      return { from: dateKey(start), to: dateKey(today), label: "Últimos 30 dias" };
   }
 }
 
@@ -612,7 +601,7 @@ export interface FinanceBar {
 }
 
 export function useFinance(
-  period: FinancePeriod = "month",
+  period: FinancePeriod = "30d",
   custom?: { from: string; to: string },
   barberId: string = "all",
 ) {
@@ -661,29 +650,11 @@ export function useFinance(
   const productRevenue = transactions.filter((t) => t.order_id).reduce((s, t) => s + t.amount_cents, 0);
   const avgTicket = serviceCount > 0 ? Math.round(serviceRevenue / serviceCount) : 0;
 
-  // "Hoje" plots by hour of the day; every other range plots by day.
-  const chartUnit: "hora" | "dia" = period === "today" ? "hora" : "dia";
-  let chart: FinanceBar[];
-
-  if (chartUnit === "hora") {
-    const buckets = new Map<number, number>();
-    for (let h = OPEN_HOUR; h <= CLOSE_HOUR; h++) buckets.set(h, 0);
-    transactions.forEach((t) => {
-      const h = new Date(t.created_at).getHours();
-      if (buckets.has(h)) buckets.set(h, (buckets.get(h) ?? 0) + t.amount_cents);
-    });
-    chart = Array.from(buckets.entries()).map(([h, value]) => ({
-      key: String(h),
-      label: `${String(h).padStart(2, "0")}h`,
-      value,
-    }));
-  } else {
-    const byDayMap = new Map<string, number>();
-    transactions.forEach((t) => byDayMap.set(t.occurred_on, (byDayMap.get(t.occurred_on) ?? 0) + t.amount_cents));
-    chart = Array.from(byDayMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, value]) => ({ key: date, label: date.slice(8, 10), value }));
-  }
+  const byDayMap = new Map<string, number>();
+  transactions.forEach((t) => byDayMap.set(t.occurred_on, (byDayMap.get(t.occurred_on) ?? 0) + t.amount_cents));
+  const chart: FinanceBar[] = Array.from(byDayMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, value]) => ({ key: date, label: date.slice(8, 10), value }));
 
   const byMethod: FinanceMethodSlice[] = SAMPLE_METHODS.map((method) => {
     const value = transactions.filter((t) => t.payment_method === method).reduce((s, t) => s + t.amount_cents, 0);
@@ -700,7 +671,6 @@ export function useFinance(
     avgTicket,
     serviceCount,
     chart,
-    chartUnit,
     byMethod,
   };
 }

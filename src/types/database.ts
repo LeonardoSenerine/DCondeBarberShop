@@ -64,6 +64,8 @@ type BookingsRow = {
   price_cents: number;
   customer_name: string;
   customer_phone: string;
+  customer_email: string | null;
+  reminder_sent_at: string | null;
   created_at: string;
 };
 
@@ -152,7 +154,12 @@ export interface Database {
       };
       bookings: {
         Row: BookingsRow;
-        Insert: Omit<BookingsRow, "id" | "created_at"> & { id?: string; created_at?: string };
+        Insert: Omit<BookingsRow, "id" | "created_at" | "customer_email" | "reminder_sent_at"> & {
+          id?: string;
+          created_at?: string;
+          customer_email?: string | null;
+          reminder_sent_at?: string | null;
+        };
         Update: Partial<BookingsRow>;
         Relationships: [];
       };

@@ -5,9 +5,10 @@ import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking } from "
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
-import { dateKey, formatCents, formatDateBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
+import { dateKey, formatCents, formatDateBR, formatPhoneBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
+import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
 const PRODUCT_COLS = "88px minmax(0,1fr) 64px 100px";
@@ -22,6 +23,7 @@ export function AccountPage() {
   const [phone, setPhone] = useState(profile?.phone ?? (import.meta.env.DEV ? "(18) 99863-4127" : ""));
   const [savingProfile, setSavingProfile] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
+  const { message: profileError, fail: failProfile, clear: clearProfileError, clearField: clearProfileField, fieldProps: profileFieldProps } = useFormErrors();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancellingBusy, setCancellingBusy] = useState(false);
@@ -55,6 +57,9 @@ export function AccountPage() {
   }
 
   async function handleSaveProfile() {
+    if (!name.trim()) return failProfile("Digite seu nome.", ["name"]);
+    if (phone.replace(/\D/g, "").length < 10) return failProfile("Digite um celular válido com DDD.", ["phone"]);
+    clearProfileError();
     setSavingProfile(true);
     await updateProfile({ full_name: name.trim(), phone: phone.trim() });
     setSavingProfile(false);
@@ -64,6 +69,7 @@ export function AccountPage() {
   function handleCancelEditProfile() {
     setName(profile?.full_name ?? "");
     setPhone(profile?.phone ?? "");
+    clearProfileError();
     setEditingProfile(false);
   }
 
@@ -79,6 +85,7 @@ export function AccountPage() {
         price_cents: draft.priceCents,
         customer_name: profile?.full_name || name,
         customer_phone: profile?.phone || phone,
+        customer_email: profile?.email ?? session.user.email ?? null,
       });
       reload();
     }
@@ -312,20 +319,30 @@ export function AccountPage() {
             <>
               <div className="mt-4.5 grid gap-3.5 sm:grid-cols-2">
                 <label className="flex flex-col gap-2">
-                  <span className="text-[13px] text-muted">Nome</span>
+                  <span className="text-[13px] text-muted">Nome *</span>
                   <input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      clearProfileField("name");
+                    }}
+                    required
+                    className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(profileFieldProps("name"))}`}
                   />
                 </label>
                 <label className="flex flex-col gap-2">
-                  <span className="text-[13px] text-muted">Celular</span>
+                  <span className="text-[13px] text-muted">Celular *</span>
                   <input
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="(18) 99730-7852"
-                    className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+                    onChange={(e) => {
+                      setPhone(formatPhoneBR(e.target.value));
+                      clearProfileField("phone");
+                    }}
+                    placeholder="(11) 99999-9999"
+                    inputMode="tel"
+                    maxLength={16}
+                    required
+                    className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(profileFieldProps("phone"))}`}
                   />
                 </label>
                 <label className="flex flex-col gap-2 sm:col-span-2">
@@ -337,6 +354,11 @@ export function AccountPage() {
                   />
                 </label>
               </div>
+              {profileError && (
+                <span className="mt-3.5 block rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
+                  {profileError}
+                </span>
+              )}
               <div className="mt-5 flex gap-2.5">
                 <button
                   onClick={handleSaveProfile}

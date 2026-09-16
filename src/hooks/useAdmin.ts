@@ -420,6 +420,8 @@ function sampleAgenda(key: string): BookingWithDetails[] {
       price_cents: priceCents,
       customer_name: client,
       customer_phone: `(18) 9${String(90000000 + Math.floor(rnd() * 9999999)).slice(0, 8)}`,
+      customer_email: null,
+      reminder_sent_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: barber.name },
       services: { name: serviceName, duration_minutes: 30 },

@@ -60,6 +60,7 @@ export function SitePage() {
       price_cents: stored.draft.priceCents,
       customer_name: customerName,
       customer_phone: customerPhone,
+      customer_email: profile?.email ?? session.user.email ?? null,
     }).then(({ error }) => {
       setAuthOpen(false);
       setPendingBooking(null);
@@ -90,6 +91,7 @@ export function SitePage() {
         price_cents: draft.priceCents,
         customer_name: profile?.full_name ?? "",
         customer_phone: profile?.phone ?? "",
+        customer_email: profile?.email ?? session.user.email ?? null,
       });
       if (error) {
         setBookingError(`Não deu pra confirmar seu agendamento: ${error}`);

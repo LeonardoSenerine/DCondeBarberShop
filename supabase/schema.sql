@@ -110,6 +110,11 @@ create table if not exists public.bookings (
   price_cents int not null,
   customer_name text not null,
   customer_phone text not null,
+  customer_email text,
+  -- Set by the send-booking-reminders Edge Function once the "3h antes"
+  -- reminder went out, so the scheduled job never sends it twice for the
+  -- same booking (see supabase/sql/schedule-booking-reminders.sql).
+  reminder_sent_at timestamptz,
   created_at timestamptz not null default now(),
   unique (barber_id, scheduled_date, scheduled_time)
 );

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import type { BookingDraft } from "@/components/BookingWizard";
-import { formatCents } from "@/lib/format";
+import { formatCents, formatPhoneBR } from "@/lib/format";
 import { savePendingBooking } from "@/lib/pendingBooking";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import "@/styles/shake.css";
@@ -122,7 +122,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
           <div className="flex flex-col gap-3.5">
             {mode === "cadastro" && (
               <label className="flex flex-col gap-2">
-                <span className="text-[13px] text-muted">Nome</span>
+                <span className="text-[13px] text-muted">Nome *</span>
                 <input
                   value={name}
                   onChange={(e) => {
@@ -130,12 +130,13 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                     clearField("name");
                   }}
                   placeholder="Seu nome"
+                  required
                   className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("name"))}`}
                 />
               </label>
             )}
             <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">E-mail</span>
+              <span className="text-[13px] text-muted">E-mail *</span>
               <input
                 value={email}
                 onChange={(e) => {
@@ -144,22 +145,26 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 }}
                 placeholder="voce@email.com"
                 type="email"
+                required
                 className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("email"))}`}
               />
             </label>
             {mode === "cadastro" && (
               <label className="flex flex-col gap-2">
-                <span className="text-[13px] text-muted">Celular com DDD</span>
+                <span className="text-[13px] text-muted">Celular com DDD *</span>
                 <input
                   value={phone}
                   onChange={(e) => {
-                    setPhone(e.target.value);
+                    setPhone(formatPhoneBR(e.target.value));
                     clearField("phone");
                   }}
-                  placeholder="(18) 99730-7852"
+                  placeholder="(11) 99999-9999"
+                  inputMode="tel"
+                  maxLength={16}
+                  required
                   className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("phone"))}`}
                 />
-                <span className="text-xs text-muted-2">É pra gente confirmar seu horário, não é usado no login.</span>
+                <span className="text-xs text-muted-2">É pra gente confirmar seu horário e mandar lembrete, não é usado no login.</span>
               </label>
             )}
             {error && (

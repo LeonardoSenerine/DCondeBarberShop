@@ -9,7 +9,7 @@ import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
 import { BookingStatusBadge } from "@/components/StatusBadge";
 
-const AGENDA_COLS = "92px minmax(0,1fr) 130px 180px 230px 110px";
+const AGENDA_COLS = "92px minmax(0,1fr) 130px 180px 290px 110px";
 
 /** "Hoje" / "Amanhã" for the next couple of days, otherwise dd/mm. */
 function shortDateLabel(iso: string): string {
@@ -52,6 +52,12 @@ export function AgendaTab() {
     window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
   }
 
+  function handleRemind(booking: BookingWithDetails) {
+    if (!booking.customer_phone) return;
+    const message = `Olá, ${booking.customer_name}! Passando pra lembrar do seu horário hoje às ${formatTimeShort(booking.scheduled_time)} na D'Conde Barbearia (${booking.services?.name ?? "atendimento"}). Te esperamos!`;
+    window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
+  }
+
   async function handleConfirmCancel() {
     if (!cancelling) return;
     setActing(cancelling.id);
@@ -77,7 +83,7 @@ export function AgendaTab() {
         </div>
         {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
         {(agenda.length > 0 || (loading && agenda.length === 0)) && (
-          <ScrollFadeX minWidth="1040px">
+          <ScrollFadeX minWidth="1100px">
             {agenda.length > 0 && <AgendaHeader />}
             {loading && agenda.length === 0 && <RowSkeletons count={5} />}
             {agenda.map((a) => (
@@ -89,6 +95,7 @@ export function AgendaTab() {
                 onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
                 onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
                 onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
+                onRemind={a.status === "confirmed" ? () => handleRemind(a) : undefined}
               />
             ))}
           </ScrollFadeX>
@@ -117,7 +124,7 @@ export function AgendaTab() {
             <p className="text-muted">Nenhum agendamento pendente de aceite.</p>
           )}
           {(pending.length > 0 || (totalsLoading && pending.length === 0)) && (
-            <ScrollFadeX minWidth="1040px">
+            <ScrollFadeX minWidth="1100px">
               {pending.length > 0 && <AgendaHeader />}
               {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
               {pending.map((a) => (
@@ -148,7 +155,7 @@ export function AgendaTab() {
             <p className="text-muted">Nenhum agendamento confirmado aguardando conclusão.</p>
           )}
           {(confirmed.length > 0 || (totalsLoading && confirmed.length === 0)) && (
-            <ScrollFadeX minWidth="1040px">
+            <ScrollFadeX minWidth="1100px">
               {confirmed.length > 0 && <AgendaHeader />}
               {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
               {confirmed.map((a) => (
@@ -159,6 +166,7 @@ export function AgendaTab() {
                   acting={acting === a.id}
                   onComplete={() => setCompleting(a)}
                   onCancel={() => setCancelling(a)}
+                  onRemind={() => handleRemind(a)}
                 />
               ))}
             </ScrollFadeX>
@@ -243,9 +251,10 @@ interface AgendaRowProps {
   onDecline?: () => void;
   onComplete?: () => void;
   onCancel?: () => void;
+  onRemind?: () => void;
 }
 
-function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel }: AgendaRowProps) {
+function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind }: AgendaRowProps) {
   return (
     <div
       className="grid items-center gap-6 border-t border-border px-3 py-5 first:border-t-0"
@@ -288,6 +297,18 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
         )}
         {onComplete && onCancel && (
           <>
+            {onRemind && (
+              <button
+                onClick={onRemind}
+                aria-label="Enviar lembrete no WhatsApp"
+                title="Enviar lembrete no WhatsApp"
+                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={onComplete}
               className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110"

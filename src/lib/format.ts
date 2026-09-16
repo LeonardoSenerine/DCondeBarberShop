@@ -61,6 +61,18 @@ export function normalizeDigits(value: string): string {
   return value.replace(/\D/g, "");
 }
 
+/** Masks digits as the user types into Brazilian phone format: "(XX) XXXXX-XXXX" (mobile) or "(XX) XXXX-XXXX" (landline). */
+export function formatPhoneBR(value: string): string {
+  const digits = normalizeDigits(value).slice(0, 11);
+  const ddd = digits.slice(0, 2);
+  const rest = digits.slice(2);
+  if (digits.length <= 2) return ddd ? `(${ddd}` : "";
+  if (digits.length <= 10) {
+    return rest.length <= 4 ? `(${ddd}) ${rest}` : `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
+  }
+  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
+}
+
 export function whatsAppLink(phoneE164NoPlus: string, message: string): string {
   return `https://wa.me/${phoneE164NoPlus}?text=${encodeURIComponent(message)}`;
 }

@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import { isViewingSiteAsAdmin } from "@/lib/adminSiteView";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
 const PRODUCT_COLS = "88px minmax(0,1fr) 64px 100px";
@@ -41,8 +42,11 @@ export function AccountPage() {
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
-  // own panel instead of an empty "Meus agendamentos".
-  if (isAdmin) return <Navigate to="/admin" replace />;
+  // own panel instead of an empty "Meus agendamentos". Except while they're
+  // browsing the site via "Ver site" (e.g. booking an appointment for
+  // themselves) — same flag SitePage uses, so landing here right after
+  // that booking shows the confirmation instead of bouncing back.
+  if (isAdmin && !isViewingSiteAsAdmin()) return <Navigate to="/admin" replace />;
   // DEV-only: let the page open on `npm run dev` without a real login so it
   // can be previewed with mock bookings. Never active in a production build.
   if (!import.meta.env.DEV && !session) return <Navigate to="/" replace />;

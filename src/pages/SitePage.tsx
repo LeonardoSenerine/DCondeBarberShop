@@ -21,6 +21,7 @@ import { useCreateBooking } from "@/hooks/useBooking";
 import { useGallery } from "@/hooks/useCatalog";
 import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
 import { friendlyBookingError } from "@/lib/format";
+import { isViewingSiteAsAdmin, markViewingSiteAsAdmin } from "@/lib/adminSiteView";
 
 export function SitePage() {
   const navigate = useNavigate();
@@ -111,12 +112,21 @@ export function SitePage() {
     setAuthOpen(true);
   }
 
-  // Owner/staff have nothing to do on the marketing homepage right after
-  // login — send them straight to their panel instead of the booking
-  // wizard. But "Ver site" in the admin panel deliberately sends them here
-  // (with this state flag) to preview the live site, so don't bounce them
-  // right back in that case.
-  if (isAdmin && !(location.state as { fromAdmin?: boolean } | null)?.fromAdmin) {
+  // Owner/staff land on the marketing homepage right after login with
+  // nothing to do there, so send them straight to their panel by default.
+  // But "Ver site" in the admin panel deliberately sends them here (with
+  // this state flag) to preview the live site — including using the same
+  // booking flow a customer would, e.g. to book an appointment for
+  // themselves — so don't bounce them right back in that case. The flag
+  // alone would only survive this one navigation, so it's also persisted
+  // for the rest of the tab's session (isViewingSiteAsAdmin), letting them
+  // refresh, browse around and go through login/booking without being
+  // redirected mid-flow.
+  const fromAdminNav = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin ?? false;
+  useEffect(() => {
+    if (fromAdminNav) markViewingSiteAsAdmin();
+  }, [fromAdminNav]);
+  if (isAdmin && !fromAdminNav && !isViewingSiteAsAdmin()) {
     return <Navigate to="/admin" replace />;
   }
 

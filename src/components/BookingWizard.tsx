@@ -45,6 +45,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [day, setDay] = useState<number | null>(null);
   const [time, setTime] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { bookedByDate, error: bookedSlotsError } = useMonthBookings(barberId, viewYear, viewMonth);
 
@@ -409,7 +410,9 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             <h3 className="mb-2 font-heading text-sm font-medium tracking-[0.24em] text-white uppercase">
               Confirme os dados
             </h3>
-            <p className="mb-6 text-base text-muted-2">Só falta confirmar por SMS.</p>
+            <p className="mb-6 text-base text-muted-2">
+              Após confirmar, aguarde o barbeiro aceitar — ele confirma pelo WhatsApp.
+            </p>
             <div className="flex flex-col gap-6 rounded-lg border border-border bg-surface-alt p-8 md:p-12">
               {[
                 { k: "Serviço", v: service?.name ?? "Selecione" },
@@ -424,19 +427,24 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 </div>
               ))}
               <div className="my-1.5 h-px bg-border" />
-              <div className="flex items-baseline justify-between">
-                <span className="font-heading text-base tracking-[0.2em] text-white uppercase">A partir de</span>
-                <span className="font-heading text-5xl font-semibold text-white">
+              <div className="flex items-center justify-between gap-3">
+                <span className="shrink-0 font-heading text-sm tracking-[0.15em] text-white uppercase sm:text-base sm:tracking-[0.2em]">
+                  Total
+                </span>
+                <span className="whitespace-nowrap font-heading text-3xl font-semibold text-white sm:text-5xl">
                   {service ? formatCents(service.price_cents) : "—"}
                 </span>
               </div>
               <button
-                onClick={handleConfirm}
-                className="bg-silver-gradient mt-2 flex min-h-[72px] w-full cursor-pointer items-center justify-center rounded-lg font-heading text-base font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
+                onClick={() => setConfirmOpen(true)}
+                disabled={!barber || !service || !day || !time}
+                className="bg-silver-gradient mt-2 flex min-h-[72px] w-full cursor-pointer items-center justify-center rounded-lg font-heading text-base font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Confirmar agendamento
               </button>
-              <span className="text-center text-sm text-muted-2">Confirmação por SMS no seu celular</span>
+              <span className="text-center text-sm text-muted-2">
+                Você recebe a confirmação pelo WhatsApp assim que o barbeiro aceitar.
+              </span>
             </div>
           </div>
         )}
@@ -453,21 +461,80 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
           <span className="flex-1 truncate text-center text-[11px] text-muted-2 sm:text-[13px]">
             Passo {step} de 4
           </span>
-          {step < 4 && (
-            <button
-              onClick={() => canNext && setStep((s) => Math.min(4, s + 1))}
-              disabled={!canNext}
-              className="flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[10px] font-semibold tracking-[0.1em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-8 sm:text-xs sm:tracking-[0.2em]"
-              style={{
-                background: canNext ? SILVER_GRADIENT : "#1F1F1F",
-                color: canNext ? "#0A0A0A" : "#7A7A7A",
-              }}
-            >
-              Continuar ›
-            </button>
-          )}
+          <button
+            onClick={() => canNext && setStep((s) => Math.min(4, s + 1))}
+            disabled={!canNext || step === 4}
+            aria-hidden={step === 4}
+            tabIndex={step === 4 ? -1 : undefined}
+            className={`flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[10px] font-semibold tracking-[0.1em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-8 sm:text-xs sm:tracking-[0.2em] ${step === 4 ? "invisible" : ""}`}
+            style={{
+              background: canNext ? SILVER_GRADIENT : "#1F1F1F",
+              color: canNext ? "#0A0A0A" : "#7A7A7A",
+            }}
+          >
+            Continuar ›
+          </button>
         </div>
       </Reveal>
+
+      {confirmOpen && (
+        <div
+          className="fixed inset-0 z-[130] overflow-y-auto"
+          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div className="flex min-h-full items-center justify-center p-6">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-[420px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+            >
+              <span className="bg-silver-gradient flex h-14 w-14 items-center justify-center rounded-full">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="#0A0A0A" aria-hidden="true">
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z" />
+                </svg>
+              </span>
+              <h3 className="m-0 mt-4 font-heading text-xl font-semibold tracking-[0.05em] text-white uppercase">
+                Confirmar agendamento?
+              </h3>
+              <p className="m-0 mt-2 text-base text-muted">
+                {barber?.name} vai receber sua solicitação e confirma pelo WhatsApp assim que aceitar.
+              </p>
+
+              <div className="mt-5 flex flex-col gap-2.5 rounded-lg border border-border bg-surface-alt p-4">
+                {[
+                  { k: "Serviço", v: service?.name ?? "—" },
+                  { k: "Barbeiro", v: barber?.name ?? "—" },
+                  { k: "Data", v: `${dateLabel} · ${time ?? "—"}` },
+                  { k: "Total", v: service ? formatCents(service.price_cents) : "—" },
+                ].map((row) => (
+                  <div key={row.k} className="flex items-baseline justify-between gap-3">
+                    <span className="text-sm text-muted-2">{row.k}</span>
+                    <span className="font-heading text-sm tracking-[0.04em] text-white">{row.v}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex gap-2.5">
+                <button
+                  onClick={() => setConfirmOpen(false)}
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                >
+                  Revisar
+                </button>
+                <button
+                  onClick={() => {
+                    setConfirmOpen(false);
+                    handleConfirm();
+                  }}
+                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

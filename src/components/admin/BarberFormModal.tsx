@@ -12,7 +12,11 @@ interface BarberFormModalProps {
   onSaved: () => void;
 }
 
-const DEFAULT_SLOTS = ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "18:00", "19:00"];
+// Hourly by default — a service over 60min needs every hour it spans to
+// exist on the grid (see availableStartTimes in useBooking.ts), so any
+// half-hour offset or gap here silently blocks long services from ever
+// fitting anywhere on that day.
+const DEFAULT_SLOTS = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
 
 function slug(s: string) {
   return s

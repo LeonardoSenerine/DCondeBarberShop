@@ -291,16 +291,16 @@ const CLOSE_HOUR = 20;
 
 // ---- DEV-only sample ledger, so the panel shows a populated finance view
 // on `npm run dev` before there is real data / an admin session. ----
-const SAMPLE_SERVICES: [string, number][] = [
-  ["Corte", 4500],
-  ["Corte + sobrancelha", 5000],
-  ["Barba terapia", 5000],
-  ["Corte + barba terapia", 9500],
-  ["Corte infantil", 4500],
-  ["Barba tradicional completa", 4500],
-  ["Platinado", 20000],
-  ["Luzes", 15000],
-  ["Pezinho", 2500],
+const SAMPLE_SERVICES: [string, number, number][] = [
+  ["Corte", 4500, 45],
+  ["Corte + sobrancelha", 5000, 55],
+  ["Barba terapia", 5000, 40],
+  ["Corte + barba terapia", 9500, 80],
+  ["Corte infantil", 4500, 40],
+  ["Barba tradicional completa", 4500, 40],
+  ["Platinado", 20000, 180],
+  ["Luzes", 15000, 240],
+  ["Pezinho", 2500, 20],
 ];
 const SAMPLE_PRODUCTS: [string, number][] = [
   ["Pomada modeladora efeito matte", 4200],
@@ -411,7 +411,7 @@ function sampleAgenda(key: string): BookingWithDetails[] {
   const rows: BookingWithDetails[] = [];
 
   for (let i = 0; i < count; i++) {
-    const [serviceName, priceCents] = SAMPLE_SERVICES[Math.floor(rnd() * SAMPLE_SERVICES.length)];
+    const [serviceName, priceCents, durationMinutes] = SAMPLE_SERVICES[Math.floor(rnd() * SAMPLE_SERVICES.length)];
     const barber = SAMPLE_BARBERS[Math.floor(rnd() * SAMPLE_BARBERS.length)];
     const client = SAMPLE_CLIENTS[Math.floor(rnd() * SAMPLE_CLIENTS.length)];
 
@@ -435,13 +435,14 @@ function sampleAgenda(key: string): BookingWithDetails[] {
       scheduled_time: time,
       status,
       price_cents: priceCents,
+      duration_minutes: durationMinutes,
       customer_name: client,
       customer_phone: `(18) 9${String(90000000 + Math.floor(rnd() * 9999999)).slice(0, 8)}`,
       customer_email: null,
       reminder_sent_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: barber.name },
-      services: { name: serviceName, duration_minutes: 30 },
+      services: { name: serviceName, duration_minutes: durationMinutes },
     });
   }
 

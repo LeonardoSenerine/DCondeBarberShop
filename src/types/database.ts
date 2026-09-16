@@ -62,6 +62,7 @@ type BookingsRow = {
   scheduled_time: string;
   status: BookingStatus;
   price_cents: number;
+  duration_minutes: number;
   customer_name: string;
   customer_phone: string;
   customer_email: string | null;

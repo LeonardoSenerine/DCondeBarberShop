@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useBarbers, useBarberHours, useServices } from "@/hooks/useCatalog";
-import { slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
+import { availableStartTimes, slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
 import {
   MONTH_LABELS,
   WEEKDAY_LABELS,
@@ -18,6 +18,7 @@ export interface BookingDraft {
   serviceId: string;
   serviceName: string;
   serviceDuration: string;
+  durationMinutes: number;
   dateIso: string;
   dateLabel: string;
   time: string;
@@ -68,14 +69,19 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     ? `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
     : null;
 
+  // Services over 60min need more than one back-to-back hourly slot (e.g.
+  // "luzes" at 4h needs 4) — availableStartTimes only returns start times
+  // where every slot the service would occupy is on the grid and free.
+  const durationMinutes = service?.duration_minutes ?? 60;
+
   const freeTimes = (() => {
     if (!barberId || !selectedDate || bookedSlotsError) return [];
     const weekday = selectedDate.getDay();
     const slots = slotsForWeekday(hours, barberId, weekday);
     const booked = (isoDate && bookedByDate[isoDate]) || [];
     const isToday = selectedDate.getTime() === today.getTime();
-    return slots.filter(
-      (t) => !booked.includes(t) && (!isToday || t > nowTimeStr),
+    return availableStartTimes(slots, booked, durationMinutes).filter(
+      (t) => !isToday || t > nowTimeStr,
     );
   })();
 
@@ -89,8 +95,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const booked = bookedByDate[iso] || [];
     const isToday = date.getTime() === today.getTime();
-    return slots.some(
-      (t) => !booked.includes(t) && (!isToday || t > nowTimeStr),
+    return availableStartTimes(slots, booked, durationMinutes).some(
+      (t) => !isToday || t > nowTimeStr,
     );
   };
 
@@ -145,6 +151,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
       serviceId: service.id,
       serviceName: service.name,
       serviceDuration: formatDuration(service.duration_minutes),
+      durationMinutes: service.duration_minutes,
       dateIso: isoDate,
       dateLabel,
       time,
@@ -327,9 +334,14 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 return (
                   <button
                     key={s.id}
-                    onClick={() =>
-                      setServiceId((prev) => (prev === s.id ? null : s.id))
-                    }
+                    onClick={() => {
+                      // A different service can need a different number of
+                      // back-to-back slots, so a previously chosen day/time
+                      // isn't necessarily still valid — make them re-pick it.
+                      setServiceId((prev) => (prev === s.id ? null : s.id));
+                      setDay(null);
+                      setTime(null);
+                    }}
                     className="flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition hover:brightness-125"
                     style={{
                       background: on ? "rgba(255,255,255,0.07)" : "#1A1A1A",

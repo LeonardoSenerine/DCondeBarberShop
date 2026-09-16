@@ -6,7 +6,16 @@ import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
 import { Toast } from "@/components/admin/Toast";
-import { dateKey, formatCents, formatDateBR, formatPhoneBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
+import {
+  dateKey,
+  formatCents,
+  formatDateBR,
+  formatPhoneBR,
+  formatTimeShort,
+  friendlyBookingError,
+  MONTH_LABELS,
+  WEEKDAY_LABELS,
+} from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
@@ -92,12 +101,13 @@ export function AccountPage() {
       scheduled_time: draft.time,
       status: "pending",
       price_cents: draft.priceCents,
+      duration_minutes: draft.durationMinutes,
       customer_name: profile?.full_name || name,
       customer_phone: profile?.phone || phone,
       customer_email: profile?.email ?? session.user.email ?? null,
     });
     if (error) {
-      setActionError(`Não deu pra confirmar seu agendamento: ${error}`);
+      setActionError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
       return;
     }
     setBookingOpen(false);

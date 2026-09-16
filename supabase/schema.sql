@@ -3,6 +3,9 @@
 -- Safe to re-run: every statement is guarded with IF NOT EXISTS / OR REPLACE.
 
 create extension if not exists pgcrypto;
+-- Lets a GiST index enforce equality (barber_id, scheduled_date) alongside a
+-- range overlap check in the same exclusion constraint (see bookings_no_overlap).
+create extension if not exists btree_gist;
 
 -- ---------------------------------------------------------------------------
 -- profiles — one row per auth.users row (customers AND admins).
@@ -108,6 +111,11 @@ create table if not exists public.bookings (
   status text not null default 'pending'
     check (status in ('pending', 'confirmed', 'completed', 'cancelled', 'no_show')),
   price_cents int not null,
+  -- Snapshot of the service's duration at booking time (same idea as
+  -- price_cents above) — how many consecutive hourly slots this booking
+  -- occupies. Drives both slot-availability checks (client) and the
+  -- bookings_no_overlap exclusion constraint below (database).
+  duration_minutes int not null default 60,
   customer_name text not null,
   customer_phone text not null,
   customer_email text,
@@ -115,15 +123,115 @@ create table if not exists public.bookings (
   -- reminder went out, so the scheduled job never sends it twice for the
   -- same booking (see supabase/sql/schedule-booking-reminders.sql).
   reminder_sent_at timestamptz,
-  created_at timestamptz not null default now(),
-  unique (barber_id, scheduled_date, scheduled_time)
+  created_at timestamptz not null default now()
 );
+
+alter table public.bookings add column if not exists duration_minutes int not null default 60;
 
 -- Re-sync the status check for projects created before "pending" (or a
 -- later status) was added to the allowed list.
 alter table public.bookings drop constraint if exists bookings_status_check;
 alter table public.bookings add constraint bookings_status_check
   check (status in ('pending', 'confirmed', 'completed', 'cancelled', 'no_show'));
+
+-- Old "same exact start time" guard, fully superseded by the
+-- bookings_no_overlap exclusion constraint below (any exact-time collision
+-- is trivially an overlap too). Dropped rather than kept alongside it
+-- because, unlike the new constraint, this one ignored status — a
+-- cancelled booking still permanently occupied its slot for anyone else.
+-- Named per Postgres's default naming for an unnamed inline `unique(...)`
+-- table constraint, so this also cleans up projects that ran the table
+-- definition before this column existed.
+alter table public.bookings drop constraint if exists bookings_barber_id_scheduled_date_scheduled_time_key;
+
+-- Belt-and-suspenders for the exclusion constraint below: `time + interval`
+-- wraps at midnight instead of erroring, so without this a booking whose
+-- span would cross into the next day (an extremely late slot combined with
+-- a multi-hour service) produces a range with its end before its start,
+-- which the exclusion constraint rejects with a confusing low-level GiST
+-- error. This turns that into a clear, named constraint violation instead.
+alter table public.bookings drop constraint if exists bookings_duration_fits_in_day;
+alter table public.bookings add constraint bookings_duration_fits_in_day
+  check (extract(epoch from scheduled_time) + duration_minutes * 60 <= 86400);
+
+-- A custom range type over `time` so the exclusion constraint below can use
+-- the standard range-overlap operator (&&) — Postgres has no built-in one.
+do $$ begin
+  if to_regtype('public.timerange') is null then
+    create type public.timerange as range (subtype = time);
+  end if;
+end $$;
+
+-- An index expression must call only IMMUTABLE functions, but a range
+-- type's auto-generated constructor (public.timerange(...) below) is not
+-- marked IMMUTABLE — using it directly in the exclusion constraint fails
+-- with "functions in index expression must be marked IMMUTABLE". Wrapping
+-- it in our own function lets us assert immutability ourselves, which is
+-- safe here: same (start_time, duration_minutes) always produces the same
+-- range, nothing about it depends on other rows or the current time.
+create or replace function public.booking_timerange(start_time time, duration_minutes int)
+returns public.timerange
+language sql
+immutable
+as $$
+  select public.timerange(start_time, start_time + (duration_minutes || ' minutes')::interval, '[)');
+$$;
+
+-- Prevents two bookings from the same barber on the same day from covering
+-- any of the same time, at the database level. A 4h "luzes" starting at
+-- 10:00 now also blocks someone else starting at 11:00, 12:00 or 13:00 for
+-- that barber that day. Unlike a check-then-insert guard (e.g. a trigger
+-- that queries for conflicts), a GiST exclusion constraint is enforced by
+-- the index itself, so two concurrent inserts racing for an overlapping
+-- time can't both slip through — the same class of guarantee a primary key
+-- gives against duplicate ids.
+alter table public.bookings drop constraint if exists bookings_no_overlap;
+alter table public.bookings add constraint bookings_no_overlap
+  exclude using gist (
+    barber_id with =,
+    scheduled_date with =,
+    -- The extra outer parens are required here: an EXCLUDE element that
+    -- isn't a bare column name must be wrapped as `(expression)`, same as
+    -- an expression index.
+    (public.booking_timerange(scheduled_time, duration_minutes)) with &&
+  )
+  where (status <> 'cancelled');
+
+-- Every legitimate UPDATE in this app only ever changes `status` (customer
+-- cancel, admin accept/decline/complete) or `reminder_sent_at` (the
+-- send-booking-reminders Edge Function). Nothing should ever rewrite a
+-- booking's time, barber, price or duration after the fact — the RLS
+-- insert policy validates price_cents/duration_minutes and the exclusion
+-- constraint above only guards against overlaps at insert/update time, so
+-- without this, updating just those two columns on an existing row would
+-- silently dodge both checks (e.g. shrinking duration_minutes to free up
+-- slots the barber is still actually booked for).
+create or replace function public.bookings_restrict_update()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.barber_id is distinct from old.barber_id
+    or new.service_id is distinct from old.service_id
+    or new.scheduled_date is distinct from old.scheduled_date
+    or new.scheduled_time is distinct from old.scheduled_time
+    or new.price_cents is distinct from old.price_cents
+    or new.duration_minutes is distinct from old.duration_minutes
+    or new.customer_id is distinct from old.customer_id
+    or new.customer_name is distinct from old.customer_name
+    or new.customer_phone is distinct from old.customer_phone
+    or new.customer_email is distinct from old.customer_email
+  then
+    raise exception 'bookings_immutable_fields';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists bookings_restrict_update on public.bookings;
+create trigger bookings_restrict_update
+before update on public.bookings
+for each row execute function public.bookings_restrict_update();
 
 create index if not exists bookings_customer_idx on public.bookings (customer_id);
 create index if not exists bookings_barber_date_idx on public.bookings (barber_id, scheduled_date);
@@ -145,22 +253,29 @@ end $$;
 -- someone see their own rows (or admin/owner ones), so that query always
 -- came back empty for a regular customer and let two people double-book
 -- the same slot. This function returns just enough to check availability
--- (which barber/date/time is taken) without leaking whose booking it is.
+-- (which barber/date/time is taken, and for how long) without leaking whose
+-- booking it is. duration_minutes lets the client expand a long booking
+-- (e.g. a 4h "luzes") into every hourly slot it occupies, not just its
+-- start time — see slotTimesForBooking() in useBooking.ts.
 -- It's SECURITY DEFINER (with search_path pinned) so it bypasses bookings'
--- RLS for exactly these three columns — nothing else is exposed. A plain
+-- RLS for exactly these four columns — nothing else is exposed. A plain
 -- view with the same effect trips Supabase's security-definer-view lint,
 -- since a view can't pin search_path and the linter can't distinguish this
 -- intentional, narrow bypass from an accidental one — a function can.
 drop view if exists public.booked_slots;
+-- CREATE OR REPLACE can't change a function's OUT-parameter row type (the
+-- new duration_minutes column), so projects that ran this file before that
+-- column existed need the old signature dropped first.
+drop function if exists public.booked_slots();
 
 create or replace function public.booked_slots()
-returns table (barber_id text, scheduled_date date, scheduled_time time)
+returns table (barber_id text, scheduled_date date, scheduled_time time, duration_minutes int)
 language sql
 security definer
 set search_path = public
 stable
 as $$
-  select barber_id, scheduled_date, scheduled_time
+  select barber_id, scheduled_date, scheduled_time, duration_minutes
   from public.bookings
   where status <> 'cancelled';
 $$;
@@ -455,13 +570,16 @@ create policy "bookings_select_own_or_admin" on public.bookings for select
     or (public.is_admin() and barber_id = public.my_barber_id())
   );
 
--- price_cents must match the service's current price — otherwise a client
--- could insert a booking with an arbitrary, self-chosen price.
+-- price_cents and duration_minutes must match the service's current values
+-- — otherwise a client could insert a booking with a self-chosen price, or
+-- a short duration_minutes that dodges the bookings_no_overlap protection
+-- for a service that actually needs more than one slot.
 drop policy if exists "bookings_insert_own" on public.bookings;
 create policy "bookings_insert_own" on public.bookings for insert
   with check (
     (customer_id = auth.uid() or public.is_admin())
     and price_cents = (select price_cents from public.services where id = service_id)
+    and duration_minutes = (select duration_minutes from public.services where id = service_id)
   );
 
 drop policy if exists "bookings_update_own_or_admin" on public.bookings;

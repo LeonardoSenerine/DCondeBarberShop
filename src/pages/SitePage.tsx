@@ -20,6 +20,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCreateBooking } from "@/hooks/useBooking";
 import { useGallery } from "@/hooks/useCatalog";
 import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
+import { friendlyBookingError } from "@/lib/format";
 
 export function SitePage() {
   const navigate = useNavigate();
@@ -58,6 +59,11 @@ export function SitePage() {
       scheduled_time: stored.draft.time,
       status: "pending",
       price_cents: stored.draft.priceCents,
+      // A draft saved to localStorage before this field existed (e.g. the
+      // magic-link round trip started right as this shipped) won't have it
+      // — fall back to a single slot rather than sending undefined/null,
+      // which the bookings_insert_own RLS check would just reject outright.
+      duration_minutes: stored.draft.durationMinutes ?? 60,
       customer_name: customerName,
       customer_phone: customerPhone,
       customer_email: profile?.email ?? session.user.email ?? null,
@@ -65,7 +71,7 @@ export function SitePage() {
       setAuthOpen(false);
       setPendingBooking(null);
       if (error) {
-        setBookingError(`Não deu pra confirmar seu agendamento: ${error}`);
+        setBookingError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
         return;
       }
       navigate("/conta");
@@ -89,12 +95,13 @@ export function SitePage() {
         scheduled_time: draft.time,
         status: "pending",
         price_cents: draft.priceCents,
+        duration_minutes: draft.durationMinutes,
         customer_name: profile?.full_name ?? "",
         customer_phone: profile?.phone ?? "",
         customer_email: profile?.email ?? session.user.email ?? null,
       });
       if (error) {
-        setBookingError(`Não deu pra confirmar seu agendamento: ${error}`);
+        setBookingError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
         return;
       }
       navigate("/conta");

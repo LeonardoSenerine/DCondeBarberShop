@@ -86,3 +86,17 @@ export function toWhatsAppPhone(raw: string): string {
   // country code and leaving the number one "55" short.
   return digits.length > 11 ? digits : `55${digits}`;
 }
+
+/**
+ * Turns a raw Postgres error from creating a booking into something a
+ * customer can actually act on. The client only pre-filters obviously-taken
+ * times — the database's bookings_no_overlap constraint is what actually
+ * catches a slot someone else grabbed a second earlier, so this is the
+ * expected (not exceptional) way that race ends up surfacing.
+ */
+export function friendlyBookingError(raw: string): string {
+  if (raw.includes("bookings_no_overlap")) {
+    return "esse horário acabou de ser reservado por outra pessoa — escolha outro horário.";
+  }
+  return raw;
+}

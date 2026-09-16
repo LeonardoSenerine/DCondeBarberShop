@@ -80,5 +80,9 @@ export function whatsAppLink(phoneE164NoPlus: string, message: string): string {
 /** Brazilian phone (any formatting) -> digits-only with the 55 country code, for whatsAppLink. */
 export function toWhatsAppPhone(raw: string): string {
   const digits = normalizeDigits(raw);
-  return digits.startsWith("55") ? digits : `55${digits}`;
+  // A local number (DDD + phone, no country code) is always 10 or 11
+  // digits — checking for a "55" prefix instead would misfire for DDD 55
+  // (Rio Grande do Sul), treating its area code as an already-present
+  // country code and leaving the number one "55" short.
+  return digits.length > 11 ? digits : `55${digits}`;
 }

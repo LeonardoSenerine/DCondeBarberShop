@@ -89,6 +89,17 @@ function formatCents(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+// booking.customer_name/customer_phone come straight from the public
+// booking form, so they can't be trusted verbatim inside the HTML e-mail.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -163,10 +174,10 @@ Deno.serve(async (req) => {
         <p style="margin:0 0 4px; font-size:12px; letter-spacing:2px; color:#9e9e9e; text-transform:uppercase;">D&rsquo;Conde Barbearia</p>
         <h1 style="margin:0 0 20px; font-size:20px; color:#ffffff;">Novo agendamento</h1>
         <table role="presentation" style="width:100%; border-collapse:collapse; font-size:14px; color:#e0e0e0;">
-          <tr><td style="padding:6px 0; color:#9e9e9e;">Cliente</td><td style="padding:6px 0; text-align:right;">${booking.customer_name}</td></tr>
-          <tr><td style="padding:6px 0; color:#9e9e9e;">Telefone</td><td style="padding:6px 0; text-align:right;">${booking.customer_phone}</td></tr>
-          <tr><td style="padding:6px 0; color:#9e9e9e;">Serviço</td><td style="padding:6px 0; text-align:right;">${serviceName}</td></tr>
-          <tr><td style="padding:6px 0; color:#9e9e9e;">Barbeiro</td><td style="padding:6px 0; text-align:right;">${barberName}</td></tr>
+          <tr><td style="padding:6px 0; color:#9e9e9e;">Cliente</td><td style="padding:6px 0; text-align:right;">${escapeHtml(booking.customer_name)}</td></tr>
+          <tr><td style="padding:6px 0; color:#9e9e9e;">Telefone</td><td style="padding:6px 0; text-align:right;">${escapeHtml(booking.customer_phone)}</td></tr>
+          <tr><td style="padding:6px 0; color:#9e9e9e;">Serviço</td><td style="padding:6px 0; text-align:right;">${escapeHtml(serviceName)}</td></tr>
+          <tr><td style="padding:6px 0; color:#9e9e9e;">Barbeiro</td><td style="padding:6px 0; text-align:right;">${escapeHtml(barberName)}</td></tr>
           <tr><td style="padding:6px 0; color:#9e9e9e;">Data</td><td style="padding:6px 0; text-align:right;">${dateLabel} às ${timeLabel}</td></tr>
           <tr><td style="padding:6px 0; color:#9e9e9e;">Valor</td><td style="padding:6px 0; text-align:right;">${priceLabel}</td></tr>
         </table>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { dateKey, formatTimeShort } from "@/lib/format";
 import type { BookingWithDetails } from "@/hooks/useBooking";
@@ -14,8 +14,14 @@ export function useAgendaForDate(date: Date) {
   const [agenda, setAgenda] = useState<BookingWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const key = dateKey(date);
+  // reload() runs both from the date-change effect below and from callers
+  // reloading after an action — bump this on every call and only apply the
+  // response that's still the latest one requested, so a slower stale
+  // fetch (e.g. from a date switched away from) can't overwrite fresher data.
+  const requestId = useRef(0);
 
   const reload = useCallback(() => {
+    const id = ++requestId.current;
     setLoading(true);
     supabase
       .from("bookings")
@@ -23,6 +29,7 @@ export function useAgendaForDate(date: Date) {
       .eq("scheduled_date", key)
       .order("scheduled_time")
       .then(({ data }) => {
+        if (id !== requestId.current) return;
         const rows = (data ?? []) as unknown as BookingWithDetails[];
         setAgenda(rows.length === 0 && import.meta.env.DEV ? sampleAgenda(key) : rows);
         setLoading(false);
@@ -44,8 +51,11 @@ export function useAgendaTotals() {
   const [pending, setPending] = useState<BookingWithDetails[]>([]);
   const [confirmed, setConfirmed] = useState<BookingWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  // See the matching comment in useAgendaForDate — same stale-response guard.
+  const requestId = useRef(0);
 
   const reload = useCallback(() => {
+    const id = ++requestId.current;
     setLoading(true);
     supabase
       .from("bookings")
@@ -54,6 +64,7 @@ export function useAgendaTotals() {
       .order("scheduled_date")
       .order("scheduled_time")
       .then(({ data }) => {
+        if (id !== requestId.current) return;
         const rows = (data ?? []) as unknown as BookingWithDetails[];
         const source = rows.length === 0 && import.meta.env.DEV ? sampleAgendaTotals() : rows;
         setPending(source.filter((r) => r.status === "pending"));
@@ -97,6 +108,27 @@ export interface CompleteBookingInput {
  * took) into the financial ledger, and takes the products out of stock.
  */
 export async function completeBooking(input: CompleteBookingInput) {
+  // Reserve all the stock first, atomically and all-or-nothing (see
+  // adjust_product_stock_batch in schema.sql). Doing this before any other
+  // write means that if it fails — e.g. losing a race for the last unit of
+  // a product — nothing below has been written yet, so simply retrying is
+  // safe instead of a second attempt duplicating the revenue/order rows a
+  // partially-completed first attempt already inserted.
+  if (input.products.length > 0) {
+    const { error: stockErr } = (await (supabase.rpc as any)("adjust_product_stock_batch", {
+      deltas: input.products.map((p) => ({ id: p.productId, delta: -p.qty })),
+    })) as { error: { message: string } | null };
+    if (stockErr) {
+      if (stockErr.message === "insufficient_stock") {
+        return { error: "Estoque insuficiente para um dos produtos selecionados." };
+      }
+      if (stockErr.message === "product_not_found") {
+        return { error: "Um dos produtos selecionados não foi encontrado." };
+      }
+      return { error: stockErr.message };
+    }
+  }
+
   const { error: bookingErr } = await supabase
     .from("bookings")
     .update({ status: "completed" })
@@ -150,10 +182,6 @@ export async function completeBooking(input: CompleteBookingInput) {
       barber_id: input.barberId,
     });
     if (productTxErr) return { error: productTxErr.message };
-
-    for (const p of input.products) {
-      await adjustProductStock(p.productId, -p.qty);
-    }
   }
 
   return { error: null };
@@ -615,16 +643,15 @@ export function useFinance(
     setLoading(true);
     supabase
       .from("transactions")
-      .select("*, bookings(barber_id, customer_name)")
+      .select("*, bookings(customer_name)")
       .gte("occurred_on", range.from)
       .lte("occurred_on", range.to)
       .order("occurred_on", { ascending: false })
       .then(({ data }) => {
         if (!active) return;
-        const raw = (data ?? []) as (Transaction & { bookings: { barber_id: string; customer_name: string } | null })[];
+        const raw = (data ?? []) as (Transaction & { bookings: { customer_name: string } | null })[];
         const rows: FinanceTx[] = raw.map(({ bookings, ...t }) => ({
           ...t,
-          barber_id: bookings?.barber_id ?? null,
           customer_name: bookings?.customer_name ?? null,
         }));
         if (rows.length === 0 && import.meta.env.DEV) {
@@ -675,12 +702,19 @@ export function useFinance(
   };
 }
 
+// Goes through the adjust_product_stock() Postgres function (a single
+// atomic UPDATE) instead of a JS read-then-write, so two concurrent callers
+// decrementing the same product's last unit can't both succeed — see the
+// function's definition in schema.sql for why.
 export async function adjustProductStock(id: string, delta: number) {
-  const { data: product } = await supabase.from("products").select("stock").eq("id", id).single();
-  if (!product) return { error: "Produto não encontrado." };
-  const stock = Math.max(0, product.stock + delta);
-  const { error } = await supabase.from("products").update({ stock }).eq("id", id);
-  return { error: error?.message ?? null };
+  const { error } = (await (supabase.rpc as any)("adjust_product_stock", {
+    p_product_id: id,
+    p_delta: delta,
+  })) as { data: number | null; error: { message: string } | null };
+  if (!error) return { error: null };
+  if (error.message === "insufficient_stock") return { error: "Estoque insuficiente para essa operação." };
+  if (error.message === "product_not_found") return { error: "Produto não encontrado." };
+  return { error: error.message };
 }
 
 export interface ProductInput {
@@ -705,9 +739,16 @@ export async function uploadProductPhoto(file: File) {
 }
 
 export async function saveProduct(input: ProductInput, id?: string) {
-  const { error } = id
-    ? await supabase.from("products").update(input).eq("id", id)
-    : await supabase.from("products").insert({ ...input, active: true });
+  if (id) {
+    // Stock is excluded here on purpose: this form captures it once when it
+    // opens, so writing it back would stomp any sale/restock that went
+    // through adjust_product_stock() while the form was open. Stock only
+    // ever changes through that atomic path — see ProductsTab's +/- stepper.
+    const { stock: _stock, ...fields } = input;
+    const { error } = await supabase.from("products").update(fields).eq("id", id);
+    return { error: error?.message ?? null };
+  }
+  const { error } = await supabase.from("products").insert({ ...input, active: true });
   return { error: error?.message ?? null };
 }
 

@@ -236,7 +236,8 @@ export function AdminPage() {
             {dateLabel}
           </p>
         </header>
-        <div className="mx-auto max-w-[1180px] px-6 py-9 pb-24 lg:px-10">
+        <div className={`mx-auto px-6 py-9 pb-24 lg:px-10 ${tab === "agenda" || tab === "fin" ? "max-w-375" : "max-w-295"}`}>
+
           {tab === "agenda" && <AgendaTab />}
           {tab === "fin" && <FinanceTab />}
           {tab === "clientes" && <ClientsTab />}

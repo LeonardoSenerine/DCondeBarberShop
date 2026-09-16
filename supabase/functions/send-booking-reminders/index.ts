@@ -27,11 +27,13 @@
 //
 // 4) COMO A JANELA DE 3H FUNCIONA
 //
-//    A cada execução, a função calcula "agora + 3h" até "agora + 3h15" (o
-//    próximo ciclo do cron) em horário de Brasília e busca agendamentos
-//    confirmados cujo horário caia nessa janela e que ainda não tenham
-//    `reminder_sent_at`. Isso garante que cada agendamento seja pego uma
-//    vez só, mesmo que o cron atrase um pouco.
+//    A cada execução, a função calcula o alvo "agora + 3h" em horário de
+//    Brasília e busca agendamentos confirmados cujo horário caia até 15min
+//    antes ou depois desse alvo (uma janela de 30min) e que ainda não
+//    tenham `reminder_sent_at`. A metade "antes" existe só pra dar uma
+//    segunda chance: se o envio de um agendamento falhar (SMTP fora do ar,
+//    por exemplo), ele não é marcado como enviado e continua aparecendo
+//    nessa janela até o próximo ciclo do cron conseguir tentar de novo.
 // ─────────────────────────────────────────────────────────────────────────
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -59,6 +61,17 @@ function formatDateBR(isoDate: string): string {
 
 function formatTimeShort(time: string): string {
   return time.slice(0, 5);
+}
+
+// booking.customer_name comes straight from the public booking form, so it
+// can't be trusted verbatim inside the HTML e-mail.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /** {date: "YYYY-MM-DD", time: "HH:MM"} for a UTC instant, read as wall-clock time in `BARBERSHOP_TZ`. */
@@ -97,8 +110,13 @@ Deno.serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   const now = new Date();
-  const windowStart = new Date(now.getTime() + WINDOW_HOURS_AHEAD * 3600_000);
-  const windowEnd = new Date(windowStart.getTime() + WINDOW_SPAN_MINUTES * 60_000);
+  const targetInstant = new Date(now.getTime() + WINDOW_HOURS_AHEAD * 3600_000);
+  // Looks one extra cron cycle further back than the exact 3h target, so a
+  // booking whose e-mail failed to send (transient SMTP error) is still
+  // `reminder_sent_at is null` and gets picked up again on the next run,
+  // instead of its window passing and it being silently dropped forever.
+  const windowStart = new Date(targetInstant.getTime() - WINDOW_SPAN_MINUTES * 60_000);
+  const windowEnd = new Date(targetInstant.getTime() + WINDOW_SPAN_MINUTES * 60_000);
   const start = localParts(windowStart);
   const end = localParts(windowEnd);
 
@@ -169,10 +187,10 @@ Deno.serve(async (req) => {
           <div style="max-width:440px; margin:0 auto; background:#141414; border:1px solid #2a2a2a; border-radius:16px; padding:32px;">
             <p style="margin:0 0 4px; font-size:12px; letter-spacing:2px; color:#9e9e9e; text-transform:uppercase;">D&rsquo;Conde Barbearia</p>
             <h1 style="margin:0 0 20px; font-size:20px; color:#ffffff;">Lembrete do seu horário</h1>
-            <p style="margin:0 0 20px; font-size:14px; color:#e0e0e0;">Olá, ${booking.customer_name}! Passando pra lembrar do seu horário hoje.</p>
+            <p style="margin:0 0 20px; font-size:14px; color:#e0e0e0;">Olá, ${escapeHtml(booking.customer_name)}! Passando pra lembrar do seu horário hoje.</p>
             <table role="presentation" style="width:100%; border-collapse:collapse; font-size:14px; color:#e0e0e0;">
-              <tr><td style="padding:6px 0; color:#9e9e9e;">Serviço</td><td style="padding:6px 0; text-align:right;">${serviceName}</td></tr>
-              <tr><td style="padding:6px 0; color:#9e9e9e;">Barbeiro</td><td style="padding:6px 0; text-align:right;">${barberName}</td></tr>
+              <tr><td style="padding:6px 0; color:#9e9e9e;">Serviço</td><td style="padding:6px 0; text-align:right;">${escapeHtml(serviceName)}</td></tr>
+              <tr><td style="padding:6px 0; color:#9e9e9e;">Barbeiro</td><td style="padding:6px 0; text-align:right;">${escapeHtml(barberName)}</td></tr>
               <tr><td style="padding:6px 0; color:#9e9e9e;">Data</td><td style="padding:6px 0; text-align:right;">${dateLabel} às ${timeLabel}</td></tr>
             </table>
             <p style="margin:20px 0 0; font-size:13px; color:#a3a3a3;">Te esperamos!</p>
@@ -184,14 +202,18 @@ Deno.serve(async (req) => {
         await transporter.sendMail({ from: smtpFrom, to: booking.customer_email, subject, text, html });
         sent++;
       } catch (err) {
+        // Leave reminder_sent_at unset so the widened lookback window above
+        // gives this booking one more chance to send on the next cron run,
+        // instead of the reminder being lost silently.
         console.error(`send-booking-reminders: failed to email booking ${booking.id}`, err);
+        continue;
       }
     } else {
       skipped++;
     }
 
-    // Marked as handled either way — an e-mail-less booking would just be
-    // picked up again forever otherwise, once the time window ever matched it.
+    // Marked as handled — a sent e-mail or an e-mail-less booking (nothing
+    // to retry) would otherwise keep matching this query on future runs.
     const { error: updateError } = await supabase
       .from("bookings")
       .update({ reminder_sent_at: new Date().toISOString() })

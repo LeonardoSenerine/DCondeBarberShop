@@ -205,6 +205,89 @@ create table if not exists public.order_items (
   unit_price_cents int not null
 );
 
+-- Applies a stock delta atomically (a single UPDATE, not a JS read-then-write)
+-- so two staff completing checkouts with the last unit of a product at the
+-- same time can't both succeed: the update's own WHERE clause re-checks
+-- "enough stock left" against the current row, so the second call always
+-- sees the first call's decrement and fails instead of overselling.
+create or replace function public.adjust_product_stock(p_product_id uuid, p_delta int)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_stock int;
+begin
+  if not public.is_admin() then
+    raise exception 'not_authorized';
+  end if;
+
+  if not exists (select 1 from public.products where id = p_product_id) then
+    raise exception 'product_not_found';
+  end if;
+
+  update public.products
+  set stock = stock + p_delta
+  where id = p_product_id and stock + p_delta >= 0
+  returning stock into new_stock;
+
+  if new_stock is null then
+    raise exception 'insufficient_stock';
+  end if;
+
+  return new_stock;
+end;
+$$;
+
+grant execute on function public.adjust_product_stock(uuid, int) to authenticated;
+
+-- Same guarantee as adjust_product_stock(), but for every product in a
+-- checkout at once: a PL/pgSQL function body is one transaction, so if any
+-- item in the batch fails (not found / insufficient stock), every update
+-- already made earlier in the same call is rolled back too. completeBooking()
+-- calls this — and only after it succeeds does it write the order/ledger
+-- rows — so a failed checkout never partially decrements stock and never
+-- leaves a retry to duplicate the products that already went through.
+create or replace function public.adjust_product_stock_batch(deltas jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  item jsonb;
+  p_id uuid;
+  p_delta int;
+  new_stock int;
+begin
+  if not public.is_admin() then
+    raise exception 'not_authorized';
+  end if;
+
+  for item in select * from jsonb_array_elements(deltas)
+  loop
+    p_id := (item->>'id')::uuid;
+    p_delta := (item->>'delta')::int;
+
+    if not exists (select 1 from public.products where id = p_id) then
+      raise exception 'product_not_found';
+    end if;
+
+    update public.products
+    set stock = stock + p_delta
+    where id = p_id and stock + p_delta >= 0
+    returning stock into new_stock;
+
+    if new_stock is null then
+      raise exception 'insufficient_stock';
+    end if;
+  end loop;
+end;
+$$;
+
+grant execute on function public.adjust_product_stock_batch(jsonb) to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- gallery
 -- ---------------------------------------------------------------------------
@@ -372,9 +455,14 @@ create policy "bookings_select_own_or_admin" on public.bookings for select
     or (public.is_admin() and barber_id = public.my_barber_id())
   );
 
+-- price_cents must match the service's current price — otherwise a client
+-- could insert a booking with an arbitrary, self-chosen price.
 drop policy if exists "bookings_insert_own" on public.bookings;
 create policy "bookings_insert_own" on public.bookings for insert
-  with check (customer_id = auth.uid() or public.is_admin());
+  with check (
+    (customer_id = auth.uid() or public.is_admin())
+    and price_cents = (select price_cents from public.services where id = service_id)
+  );
 
 drop policy if exists "bookings_update_own_or_admin" on public.bookings;
 create policy "bookings_update_own_or_admin" on public.bookings for update

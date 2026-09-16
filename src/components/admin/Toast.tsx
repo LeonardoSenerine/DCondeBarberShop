@@ -1,13 +1,14 @@
 import { useEffect } from "react";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
 
 interface ToastProps {
   message: string;
   onDismiss: () => void;
   duration?: number;
+  variant?: "success" | "error";
 }
 
-export function Toast({ message, onDismiss, duration = 3200 }: ToastProps) {
+export function Toast({ message, onDismiss, duration = 3200, variant = "success" }: ToastProps) {
   useEffect(() => {
     const t = window.setTimeout(onDismiss, duration);
     return () => window.clearTimeout(t);
@@ -18,7 +19,11 @@ export function Toast({ message, onDismiss, duration = 3200 }: ToastProps) {
       role="status"
       className="fixed bottom-6 left-1/2 z-[140] flex -translate-x-1/2 items-center gap-3 rounded-lg border border-border bg-surface px-5 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.7)] animate-[dc-up_400ms_ease_both]"
     >
-      <CheckCircle size={24} weight="fill" className="flex-shrink-0 text-silver" />
+      {variant === "error" ? (
+        <WarningCircle size={24} weight="fill" className="flex-shrink-0" style={{ color: "#e5484d" }} />
+      ) : (
+        <CheckCircle size={24} weight="fill" className="flex-shrink-0 text-silver" />
+      )}
       <span className="text-base text-white">{message}</span>
     </div>
   );

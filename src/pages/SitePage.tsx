@@ -158,7 +158,9 @@ export function SitePage() {
         />
       )}
 
-      {bookingError && <Toast message={bookingError} onDismiss={() => setBookingError(null)} duration={6000} />}
+      {bookingError && (
+        <Toast message={bookingError} onDismiss={() => setBookingError(null)} duration={6000} variant="error" />
+      )}
     </div>
   );
 }

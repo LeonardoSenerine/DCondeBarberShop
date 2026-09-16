@@ -5,6 +5,7 @@ import { formatCents, formatDateBR } from "@/lib/format";
 import { effectivePriceCents, isOnSale } from "@/lib/product";
 import { ProductFormModal } from "@/components/admin/ProductFormModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { Toast } from "@/components/admin/Toast";
 import { Skeleton } from "@/components/Skeleton";
 
 export function ProductsTab() {
@@ -12,9 +13,14 @@ export function ProductsTab() {
   const [editing, setEditing] = useState<{ product: Product | null } | null>(null);
   const [removing, setRemoving] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   async function handleAdjust(id: string, delta: number) {
-    await adjustProductStock(id, delta);
+    const { error } = await adjustProductStock(id, delta);
+    if (error) {
+      setToast(error);
+      return;
+    }
     reload();
   }
 
@@ -108,7 +114,8 @@ export function ProductsTab() {
                 <span className="flex items-center gap-2">
                   <button
                     onClick={() => handleAdjust(p.id, -1)}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border text-lg text-white transition-colors hover:border-silver sm:h-11 sm:w-11 sm:text-xl"
+                    disabled={p.stock === 0}
+                    className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-border text-lg text-white transition-colors hover:border-silver disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:w-11 sm:text-xl"
                   >
                     −
                   </button>
@@ -154,6 +161,8 @@ export function ProductsTab() {
           onClose={() => setRemoving(null)}
         />
       )}
+
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} variant="error" />}
     </div>
   );
 }

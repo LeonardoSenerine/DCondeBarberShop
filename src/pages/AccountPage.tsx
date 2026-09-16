@@ -5,6 +5,7 @@ import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking } from "
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
+import { Toast } from "@/components/admin/Toast";
 import { dateKey, formatCents, formatDateBR, formatPhoneBR, formatTimeShort, MONTH_LABELS, WEEKDAY_LABELS } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
@@ -27,6 +28,7 @@ export function AccountPage() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancellingBusy, setCancellingBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -50,9 +52,13 @@ export function AccountPage() {
   async function handleConfirmCancel() {
     if (!upcoming) return;
     setCancellingBusy(true);
-    await cancelBooking(upcoming.id);
+    const { error } = await cancelBooking(upcoming.id);
     setCancellingBusy(false);
     setCancelling(false);
+    if (error) {
+      setActionError(`Não deu pra cancelar o agendamento: ${error}`);
+      return;
+    }
     reload();
   }
 
@@ -74,22 +80,28 @@ export function AccountPage() {
   }
 
   async function handleNewBooking(draft: BookingDraft) {
-    if (session?.user) {
-      await createBooking({
-        customer_id: session.user.id,
-        barber_id: draft.barberId,
-        service_id: draft.serviceId,
-        scheduled_date: draft.dateIso,
-        scheduled_time: draft.time,
-        status: "pending",
-        price_cents: draft.priceCents,
-        customer_name: profile?.full_name || name,
-        customer_phone: profile?.phone || phone,
-        customer_email: profile?.email ?? session.user.email ?? null,
-      });
-      reload();
+    if (!session?.user) {
+      setBookingOpen(false);
+      return;
+    }
+    const { error } = await createBooking({
+      customer_id: session.user.id,
+      barber_id: draft.barberId,
+      service_id: draft.serviceId,
+      scheduled_date: draft.dateIso,
+      scheduled_time: draft.time,
+      status: "pending",
+      price_cents: draft.priceCents,
+      customer_name: profile?.full_name || name,
+      customer_phone: profile?.phone || phone,
+      customer_email: profile?.email ?? session.user.email ?? null,
+    });
+    if (error) {
+      setActionError(`Não deu pra confirmar seu agendamento: ${error}`);
+      return;
     }
     setBookingOpen(false);
+    reload();
   }
 
   return (
@@ -426,6 +438,10 @@ export function AccountPage() {
           onConfirm={handleConfirmCancel}
           onClose={() => setCancelling(false)}
         />
+      )}
+
+      {actionError && (
+        <Toast message={actionError} onDismiss={() => setActionError(null)} duration={6000} variant="error" />
       )}
     </div>
   );

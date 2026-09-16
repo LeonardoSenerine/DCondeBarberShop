@@ -148,13 +148,20 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
               />
             </Field>
             <Field label="Quantidade">
-              <input
-                type="number"
-                min={0}
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
-              />
+              {isNew ? (
+                <input
+                  type="number"
+                  min={0}
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+                />
+              ) : (
+                <div className="flex min-h-12 flex-col justify-center rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-muted">
+                  <span className="text-white">{stock}</span>
+                  <span className="text-xs text-muted">Ajuste o estoque na lista de produtos</span>
+                </div>
+              )}
             </Field>
           </div>
 

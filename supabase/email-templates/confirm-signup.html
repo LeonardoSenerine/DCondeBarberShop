@@ -1,0 +1,155 @@
+<!--
+  D'Conde Barbearia — template do e-mail de cadastro (Confirm signup)
+
+  Este arquivo não é lido pelo app nem pelo Supabase automaticamente — é só
+  uma referência para colar no painel.
+
+  POR QUE ESTE TEMPLATE EXISTE (separado do magic-link.html)
+  O app usa supabase.auth.signInWithOtp() tanto para "Cadastro" quanto para
+  "Entrar" (ver src/context/AuthContext.tsx e src/components/AuthModal.tsx).
+  Só que o Supabase escolhe o template do e-mail com base em se o usuário já
+  existe:
+    - Cliente que já tem conta (modo "Entrar", shouldCreateUser: false)
+      → Supabase manda o template "Magic Link".
+    - Cliente novo (modo "Cadastro", shouldCreateUser: true)
+      → como a conta ainda não existe, o Supabase cria o usuário e manda o
+        template "Confirm signup" — não o "Magic Link".
+  Ou seja: só estilizar o "Magic Link" deixa o e-mail de todo cliente novo
+  (a maioria) caindo no template padrão feio do Supabase. Por isso este
+  arquivo espelha o visual do magic-link.html, mas precisa ser colado
+  SEPARADAMENTE no template "Confirm signup".
+
+  ONDE COLAR
+    Painel do Supabase → Authentication → Emails → Templates → Confirm signup
+
+  1) CAMPO "Subject heading" — cole a linha abaixo:
+
+Confirme seu cadastro — D'Conde Barbearia
+
+  2) CAMPO "Source" / HTML do corpo — copie TUDO a partir da linha
+     "<!doctype html>" logo abaixo (incluindo essas duas tags) até o fim do
+     arquivo. Este bloco de comentário não precisa ir junto.
+
+  VARIÁVEIS DO SUPABASE USADAS AQUI
+    {{ .ConfirmationURL }} — link de confirmação (o botão e o link de texto usam o mesmo)
+    {{ .SiteURL }} — usada só para montar a URL da logo (ver abaixo)
+    Mais variáveis disponíveis: .Token, .TokenHash, .Email
+
+  LOGO
+    {{ .SiteURL }}/img/logo-email.jpg — esse arquivo já está em
+    public/img/logo-email.jpg (recortado e redimensionado a partir de
+    public/img/logo-full.jpg) e é publicado junto com o resto do site, então
+    a URL só funciona depois do deploy E com .SiteURL configurada como o
+    domínio de produção em Authentication → URL Configuration → Site URL.
+
+  SMTP
+    Como já existe um SMTP customizado configurado, o remetente/nome de
+    exibição do e-mail é o que estiver definido em Authentication → Settings
+    → SMTP Settings (não tem relação com este arquivo).
+-->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Confirme seu cadastro — D'Conde Barbearia</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#0a0a0a; width:100%;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+      Toque para confirmar seu cadastro. O link expira em breve, por segurança.
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0a0a;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" style="width:480px; max-width:100%;">
+            <!-- logo -->
+            <tr>
+              <td align="center" style="padding-bottom:28px;">
+                <img
+                  src="{{ .SiteURL }}/img/logo-email.jpg"
+                  width="220"
+                  height="92"
+                  alt="D'Conde Barbearia"
+                  style="display:block; width:220px; height:auto; max-width:100%; border:0; outline:none; text-decoration:none;"
+                />
+              </td>
+            </tr>
+
+            <!-- card -->
+            <tr>
+              <td style="background-color:#141414; border:1px solid #2a2a2a; border-radius:16px; padding:40px 32px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" style="padding-bottom:16px;">
+                      <span style="font-family:'Oswald', Arial, Helvetica, sans-serif; font-size:24px; font-weight:600; letter-spacing:1px; color:#ffffff; text-transform:uppercase;">
+                        Confirmar cadastro
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center" style="padding-bottom:32px;">
+                      <span style="font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#a3a3a3;">
+                        Toque no botão abaixo para confirmar sua conta e acessar seus agendamentos na D&rsquo;Conde Barbearia. Este link é pessoal e válido por um tempo limitado.
+                      </span>
+                    </td>
+                  </tr>
+
+                  <!-- CTA button -->
+                  <tr>
+                    <td align="center" style="padding-bottom:28px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td align="center" bgcolor="#e0e0e0" style="border-radius:10px;">
+                            <a
+                              href="{{ .ConfirmationURL }}"
+                              target="_blank"
+                              style="display:inline-block; padding:16px 36px; font-family:'Oswald', Arial, Helvetica, sans-serif; font-size:13px; font-weight:600; letter-spacing:2px; color:#0a0a0a; text-decoration:none; text-transform:uppercase;"
+                            >
+                              Confirmar cadastro
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td align="center" style="padding-bottom:8px;">
+                      <span style="font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#6b6b6b;">
+                        Ou copie e cole este link no navegador:
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="{{ .ConfirmationURL }}"
+                        target="_blank"
+                        style="font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#c9c9c9; word-break:break-all;"
+                      >
+                        {{ .ConfirmationURL }}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- footer -->
+            <tr>
+              <td align="center" style="padding-top:28px;">
+                <span style="font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.6; color:#6b6b6b;">
+                  Se você não pediu este e-mail, pode ignorá-lo com segurança.
+                  <br />
+                  D&rsquo;Conde Barbearia · Itatiba/SP
+                </span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

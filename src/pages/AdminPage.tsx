@@ -22,7 +22,7 @@ interface IncomingBooking {
 }
 
 const TABS = [
-  { id: "agenda", name: "Agenda do dia", icon: iconCalendar },
+  { id: "agenda", name: "Agendamentos", icon: iconCalendar },
   { id: "fin", name: "Financeiro", icon: iconChart },
   { id: "clientes", name: "Clientes", icon: iconUsers },
   { id: "produtos", name: "Produtos", icon: iconBox },
@@ -70,7 +70,8 @@ export function AdminPage() {
   if (loading) return null;
   // DEV-only: let the panel open on `npm run dev` without an admin login so
   // the layout can be previewed. Never active in a production build.
-  if (!import.meta.env.DEV && (!session || !isAdmin)) return <Navigate to="/" replace />;
+  if (!import.meta.env.DEV && (!session || !isAdmin))
+    return <Navigate to="/" replace />;
 
   const active = TABS.find((t) => t.id === tab)!;
   const now = new Date();
@@ -87,9 +88,14 @@ export function AdminPage() {
             src="/img/monogram.jpg"
             alt=""
             className="h-10 w-11 object-contain"
-            style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
+            style={{
+              filter: "brightness(1.25) contrast(3.4)",
+              mixBlendMode: "screen",
+            }}
           />
-          <span className="font-heading text-base tracking-[0.2em] text-white uppercase">Painel</span>
+          <span className="font-heading text-base tracking-[0.2em] text-white uppercase">
+            Painel
+          </span>
         </div>
         <button
           onClick={() => setNavOpen(true)}
@@ -119,9 +125,14 @@ export function AdminPage() {
               src="/img/monogram.jpg"
               alt=""
               className="h-10 w-11 object-contain"
-              style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
+              style={{
+                filter: "brightness(1.25) contrast(3.4)",
+                mixBlendMode: "screen",
+              }}
             />
-            <span className="font-heading text-base tracking-[0.2em] text-white uppercase">Painel</span>
+            <span className="font-heading text-base tracking-[0.2em] text-white uppercase">
+              Painel
+            </span>
           </div>
           <button
             onClick={() => setNavOpen(false)}
@@ -161,16 +172,24 @@ export function AdminPage() {
           <div className="flex items-center gap-3 border-t border-border p-4">
             <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-base text-silver">
               {myBarber?.photo_path ? (
-                <img src={myBarber.photo_path} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={myBarber.photo_path}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                (profile.full_name || profile.email || "?").charAt(0).toUpperCase()
+                (profile.full_name || profile.email || "?")
+                  .charAt(0)
+                  .toUpperCase()
               )}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-heading text-base text-white">
                 {profile.full_name || profile.email}
               </span>
-              <span className="block text-xs tracking-[0.12em] text-muted-2 uppercase">{roleLabel}</span>
+              <span className="block text-xs tracking-[0.12em] text-muted-2 uppercase">
+                {roleLabel}
+              </span>
             </span>
           </div>
         )}
@@ -213,7 +232,9 @@ export function AdminPage() {
           <h1 className="m-0 font-heading text-[34px] font-semibold tracking-[0.05em] text-white uppercase">
             {active.name}
           </h1>
-          <p className="mt-1.5 text-lg text-muted first-letter:uppercase">{dateLabel}</p>
+          <p className="mt-1.5 text-lg text-muted first-letter:uppercase">
+            {dateLabel}
+          </p>
         </header>
         <div className="mx-auto max-w-[1180px] px-6 py-9 pb-24 lg:px-10">
           {tab === "agenda" && <AgendaTab />}
@@ -245,7 +266,14 @@ export function AdminPage() {
 // --- icons (16px, inherit currentColor) ---
 function svg(children: ReactNode) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" className="h-full w-full">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      className="h-full w-full"
+    >
       {children}
     </svg>
   );

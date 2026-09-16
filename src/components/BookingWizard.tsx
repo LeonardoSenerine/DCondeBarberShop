@@ -413,7 +413,7 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
             <p className="mb-6 text-base text-muted-2">
               Após confirmar, aguarde o barbeiro aceitar — ele confirma pelo WhatsApp.
             </p>
-            <div className="flex flex-col gap-6 rounded-lg border border-border bg-surface-alt p-8 md:p-12">
+            <div className="flex flex-col gap-4 rounded-lg border border-border bg-surface-alt p-6 sm:p-8 md:p-12">
               {[
                 { k: "Serviço", v: service?.name ?? "Selecione" },
                 { k: "Barbeiro", v: barber?.name ?? "Selecione" },
@@ -421,9 +421,11 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                 { k: "Horário", v: time ?? "—" },
                 { k: "Duração", v: service ? formatDuration(service.duration_minutes) : "—" },
               ].map((row) => (
-                <div key={row.k} className="flex items-baseline justify-between gap-3">
-                  <span className="text-base text-muted">{row.k}</span>
-                  <span className="font-heading text-xl tracking-[0.06em] text-white">{row.v}</span>
+                <div key={row.k} className="flex items-start justify-between gap-3">
+                  <span className="shrink-0 text-sm text-muted sm:text-base">{row.k}</span>
+                  <span className="text-right font-heading text-base tracking-[0.04em] text-white sm:text-xl sm:tracking-[0.06em]">
+                    {row.v}
+                  </span>
                 </div>
               ))}
               <div className="my-1.5 h-px bg-border" />

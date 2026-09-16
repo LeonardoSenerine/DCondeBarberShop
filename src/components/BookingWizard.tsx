@@ -34,17 +34,19 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
   const [barberId, setBarberId] = useState<string | null>(null);
   const [serviceId, setServiceId] = useState<string | null>(null);
 
+  const now = useMemo(() => new Date(), []);
   const today = useMemo(() => {
-    const d = new Date();
+    const d = new Date(now);
     d.setHours(0, 0, 0, 0);
     return d;
-  }, []);
+  }, [now]);
+  const nowTimeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [day, setDay] = useState<number | null>(null);
   const [time, setTime] = useState<string | null>(null);
 
-  const { bookedByDate } = useMonthBookings(barberId, viewYear, viewMonth);
+  const { bookedByDate, error: bookedSlotsError } = useMonthBookings(barberId, viewYear, viewMonth);
 
   const barber = barbers.find((b) => b.id === barberId) ?? null;
   const service = services.find((s) => s.id === serviceId) ?? null;
@@ -55,15 +57,16 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     : null;
 
   const freeTimes = (() => {
-    if (!barberId || !selectedDate) return [];
+    if (!barberId || !selectedDate || bookedSlotsError) return [];
     const weekday = selectedDate.getDay();
     const slots = slotsForWeekday(hours, barberId, weekday);
     const booked = (isoDate && bookedByDate[isoDate]) || [];
-    return slots.filter((t) => !booked.includes(t));
+    const isToday = selectedDate.getTime() === today.getTime();
+    return slots.filter((t) => !booked.includes(t) && (!isToday || t > nowTimeStr));
   })();
 
   const dayHasFreeSlot = (d: number): boolean => {
-    if (!barberId) return false;
+    if (!barberId || bookedSlotsError) return false;
     const date = new Date(viewYear, viewMonth, d);
     if (date < today) return false;
     const weekday = date.getDay();
@@ -71,7 +74,8 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
     if (slots.length === 0) return false;
     const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const booked = bookedByDate[iso] || [];
-    return slots.some((t) => !booked.includes(t));
+    const isToday = date.getTime() === today.getTime();
+    return slots.some((t) => !booked.includes(t) && (!isToday || t > nowTimeStr));
   };
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -385,7 +389,12 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
                     );
                   })}
                 </div>
-                {day && freeTimes.length === 0 && (
+                {bookedSlotsError && (
+                  <p className="mt-2.5 text-[13px] text-red-400">
+                    Não foi possível carregar os horários. Tente novamente em instantes.
+                  </p>
+                )}
+                {!bookedSlotsError && day && freeTimes.length === 0 && (
                   <p className="mt-2.5 text-[13px] text-muted">
                     {barber?.name} não atende ou está sem vaga nessa data. Selecione outro dia.
                   </p>

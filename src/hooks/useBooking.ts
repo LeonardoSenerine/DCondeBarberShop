@@ -32,15 +32,18 @@ export function isBarberOpenOnWeekday(hours: BarberHours[], barberId: string, we
 export function useMonthBookings(barberId: string | null, year: number, month: number) {
   const [byDate, setByDate] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!barberId) {
       setByDate({});
+      setError(null);
       setLoading(false);
       return;
     }
     let active = true;
     setLoading(true);
+    setError(null);
     const from = `${year}-${String(month + 1).padStart(2, "0")}-01`;
     const lastDay = new Date(year, month + 1, 0).getDate();
     const to = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
@@ -50,24 +53,41 @@ export function useMonthBookings(barberId: string | null, year: number, month: n
       .eq("barber_id", barberId)
       .gte("scheduled_date", from)
       .lte("scheduled_date", to)
-      .then(({ data }: { data: Pick<BookedSlotRow, "scheduled_date" | "scheduled_time">[] | null }) => {
-        if (!active) return;
-        const map: Record<string, string[]> = {};
-        (data ?? []).forEach((row) => {
-          const key = row.scheduled_date;
-          const time = formatTimeShort(row.scheduled_time);
-          map[key] = map[key] ? [...map[key], time] : [time];
-        });
-        setByDate(map);
-        setLoading(false);
-      });
+      .then(
+        ({
+          data,
+          error: rpcError,
+        }: {
+          data: Pick<BookedSlotRow, "scheduled_date" | "scheduled_time">[] | null;
+          error: { message: string } | null;
+        }) => {
+          if (!active) return;
+          if (rpcError) {
+            // Never fall back to "no bookings" here — that would silently show every
+            // slot as free and allow double-booking. Surface the failure instead.
+            console.error("booked_slots RPC failed", rpcError);
+            setByDate({});
+            setError(rpcError.message);
+            setLoading(false);
+            return;
+          }
+          const map: Record<string, string[]> = {};
+          (data ?? []).forEach((row) => {
+            const key = row.scheduled_date;
+            const time = formatTimeShort(row.scheduled_time);
+            map[key] = map[key] ? [...map[key], time] : [time];
+          });
+          setByDate(map);
+          setLoading(false);
+        },
+      );
 
     return () => {
       active = false;
     };
   }, [barberId, year, month]);
 
-  return { bookedByDate: byDate, loading };
+  return { bookedByDate: byDate, loading, error };
 }
 
 export function useCreateBooking() {

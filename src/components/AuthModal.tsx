@@ -164,7 +164,6 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                   required
                   className={`min-h-[52px] rounded-lg border border-border bg-surface-alt px-3.5 text-base text-white outline-none focus:border-silver ${fieldClass(fieldProps("phone"))}`}
                 />
-                <span className="text-xs text-muted-2">É pra gente confirmar seu horário e mandar lembrete, não é usado no login.</span>
               </label>
             )}
             {error && (

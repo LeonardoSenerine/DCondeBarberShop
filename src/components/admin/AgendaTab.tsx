@@ -81,25 +81,20 @@ export function AgendaTab() {
             {dateLabel} · {agenda.length} atendimentos
           </span>
         </div>
-        {!loading && agenda.length === 0 && <p className="text-muted">Nenhum agendamento para hoje.</p>}
-        {(agenda.length > 0 || (loading && agenda.length === 0)) && (
-          <ScrollFadeX minWidth="1100px">
-            {agenda.length > 0 && <AgendaHeader />}
-            {loading && agenda.length === 0 && <RowSkeletons count={5} />}
-            {agenda.map((a) => (
-              <AgendaRow
-                key={a.id}
-                booking={a}
-                acting={acting === a.id}
-                onAccept={a.status === "pending" ? () => handleAccept(a) : undefined}
-                onDecline={a.status === "pending" ? () => decide(a.id, "cancelled") : undefined}
-                onComplete={a.status === "confirmed" ? () => setCompleting(a) : undefined}
-                onCancel={a.status === "confirmed" ? () => setCancelling(a) : undefined}
-                onRemind={a.status === "confirmed" ? () => handleRemind(a) : undefined}
-              />
-            ))}
-          </ScrollFadeX>
-        )}
+        <AgendaList
+          items={agenda}
+          loading={loading}
+          skeletonCount={5}
+          acting={acting}
+          emptyMessage="Nenhum agendamento para hoje."
+          getHandlers={(a) => ({
+            onAccept: a.status === "pending" ? () => handleAccept(a) : undefined,
+            onDecline: a.status === "pending" ? () => decide(a.id, "cancelled") : undefined,
+            onComplete: a.status === "confirmed" ? () => setCompleting(a) : undefined,
+            onCancel: a.status === "confirmed" ? () => setCancelling(a) : undefined,
+            onRemind: a.status === "confirmed" ? () => handleRemind(a) : undefined,
+          })}
+        />
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-7">
@@ -120,25 +115,18 @@ export function AgendaTab() {
               {pending.length}
             </span>
           </div>
-          {!totalsLoading && pending.length === 0 && (
-            <p className="text-muted">Nenhum agendamento pendente de aceite.</p>
-          )}
-          {(pending.length > 0 || (totalsLoading && pending.length === 0)) && (
-            <ScrollFadeX minWidth="1100px">
-              {pending.length > 0 && <AgendaHeader />}
-              {totalsLoading && pending.length === 0 && <RowSkeletons count={2} />}
-              {pending.map((a) => (
-                <AgendaRow
-                  key={a.id}
-                  booking={a}
-                  showDate
-                  acting={acting === a.id}
-                  onAccept={() => handleAccept(a)}
-                  onDecline={() => decide(a.id, "cancelled")}
-                />
-              ))}
-            </ScrollFadeX>
-          )}
+          <AgendaList
+            items={pending}
+            loading={totalsLoading}
+            skeletonCount={2}
+            showDate
+            acting={acting}
+            emptyMessage="Nenhum agendamento pendente de aceite."
+            getHandlers={(a) => ({
+              onAccept: () => handleAccept(a),
+              onDecline: () => decide(a.id, "cancelled"),
+            })}
+          />
         </div>
 
         <div>
@@ -151,26 +139,19 @@ export function AgendaTab() {
               {confirmed.length}
             </span>
           </div>
-          {!totalsLoading && confirmed.length === 0 && (
-            <p className="text-muted">Nenhum agendamento confirmado aguardando conclusão.</p>
-          )}
-          {(confirmed.length > 0 || (totalsLoading && confirmed.length === 0)) && (
-            <ScrollFadeX minWidth="1100px">
-              {confirmed.length > 0 && <AgendaHeader />}
-              {totalsLoading && confirmed.length === 0 && <RowSkeletons count={2} />}
-              {confirmed.map((a) => (
-                <AgendaRow
-                  key={a.id}
-                  booking={a}
-                  showDate
-                  acting={acting === a.id}
-                  onComplete={() => setCompleting(a)}
-                  onCancel={() => setCancelling(a)}
-                  onRemind={() => handleRemind(a)}
-                />
-              ))}
-            </ScrollFadeX>
-          )}
+          <AgendaList
+            items={confirmed}
+            loading={totalsLoading}
+            skeletonCount={2}
+            showDate
+            acting={acting}
+            emptyMessage="Nenhum agendamento confirmado aguardando conclusão."
+            getHandlers={(a) => ({
+              onComplete: () => setCompleting(a),
+              onCancel: () => setCancelling(a),
+              onRemind: () => handleRemind(a),
+            })}
+          />
         </div>
       </div>
 
@@ -200,6 +181,49 @@ export function AgendaTab() {
 
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </div>
+  );
+}
+
+interface AgendaActionHandlers {
+  onAccept?: () => void;
+  onDecline?: () => void;
+  onComplete?: () => void;
+  onCancel?: () => void;
+  onRemind?: () => void;
+}
+
+interface AgendaListProps extends Pick<AgendaRowProps, "showDate" | "acting"> {
+  items: BookingWithDetails[];
+  loading: boolean;
+  skeletonCount: number;
+  acting: string | null;
+  emptyMessage: string;
+  getHandlers: (booking: BookingWithDetails) => AgendaActionHandlers;
+}
+
+/** Table on desktop (columns need horizontal room), stacked cards on mobile. */
+function AgendaList({ items, loading, skeletonCount, showDate, emptyMessage, getHandlers, acting }: AgendaListProps) {
+  if (!loading && items.length === 0) {
+    return <p className="text-muted">{emptyMessage}</p>;
+  }
+  return (
+    <>
+      <div className="hidden md:block">
+        <ScrollFadeX minWidth="1100px">
+          {items.length > 0 && <AgendaHeader />}
+          {loading && items.length === 0 && <RowSkeletons count={skeletonCount} />}
+          {items.map((a) => (
+            <AgendaRow key={a.id} booking={a} showDate={showDate} acting={acting === a.id} {...getHandlers(a)} />
+          ))}
+        </ScrollFadeX>
+      </div>
+      <div className="flex flex-col md:hidden">
+        {loading && items.length === 0 && <CardSkeletons count={skeletonCount} />}
+        {items.map((a) => (
+          <AgendaCard key={a.id} booking={a} showDate={showDate} acting={acting === a.id} {...getHandlers(a)} />
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -243,15 +267,33 @@ function RowSkeletons({ count }: { count: number }) {
   );
 }
 
-interface AgendaRowProps {
+function CardSkeletons({ count }: { count: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-7 w-16" />
+            <Skeleton className="h-7 w-24 rounded-full" />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="flex min-w-0 flex-col gap-2">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-4 w-28" />
+            </span>
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <Skeleton className="h-11 w-full rounded-lg" />
+        </div>
+      ))}
+    </>
+  );
+}
+
+interface AgendaRowProps extends AgendaActionHandlers {
   booking: BookingWithDetails;
   showDate?: boolean;
   acting: boolean;
-  onAccept?: () => void;
-  onDecline?: () => void;
-  onComplete?: () => void;
-  onCancel?: () => void;
-  onRemind?: () => void;
 }
 
 function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind }: AgendaRowProps) {
@@ -277,54 +319,115 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
         <BookingStatusBadge status={a.status} />
       </span>
       <span className="flex gap-2.5">
-        {onAccept && onDecline && (
-          <>
-            <button
-              onClick={onAccept}
-              disabled={acting}
-              className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60"
-            >
-              Aceitar
-            </button>
-            <button
-              onClick={onDecline}
-              disabled={acting}
-              className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60"
-            >
-              Recusar
-            </button>
-          </>
-        )}
-        {onComplete && onCancel && (
-          <>
-            {onRemind && (
-              <button
-                onClick={onRemind}
-                aria-label="Enviar lembrete no WhatsApp"
-                title="Enviar lembrete no WhatsApp"
-                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z" />
-                </svg>
-              </button>
-            )}
-            <button
-              onClick={onComplete}
-              className="bg-silver-gradient flex min-h-11 cursor-pointer items-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110"
-            >
-              Concluir
-            </button>
-            <button
-              onClick={onCancel}
-              className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-            >
-              Cancelar
-            </button>
-          </>
-        )}
+        <AgendaActions
+          onAccept={onAccept}
+          onDecline={onDecline}
+          onComplete={onComplete}
+          onCancel={onCancel}
+          onRemind={onRemind}
+          acting={acting}
+        />
       </span>
       <span className="text-right font-heading text-xl text-white">{formatCents(a.price_cents)}</span>
     </div>
+  );
+}
+
+function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind }: AgendaRowProps) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0">
+      <div className="flex items-start justify-between gap-3">
+        <span>
+          {showDate && (
+            <span className="block font-heading text-[11px] tracking-[0.12em] text-muted-2 uppercase">
+              {shortDateLabel(a.scheduled_date)}
+            </span>
+          )}
+          <span className="font-heading text-xl text-white">{formatTimeShort(a.scheduled_time)}</span>
+        </span>
+        <BookingStatusBadge status={a.status} />
+      </div>
+      <div className="flex items-start justify-between gap-3">
+        <span className="min-w-0">
+          <span className="block truncate text-lg text-white">{a.customer_name}</span>
+          <span className="block truncate text-base text-muted">{a.services?.name}</span>
+          {a.barbers?.name && <span className="block truncate text-sm text-muted-2">{a.barbers.name}</span>}
+        </span>
+        <span className="shrink-0 font-heading text-xl text-white">{formatCents(a.price_cents)}</span>
+      </div>
+      <div className="flex flex-wrap gap-2.5">
+        <AgendaActions
+          onAccept={onAccept}
+          onDecline={onDecline}
+          onComplete={onComplete}
+          onCancel={onCancel}
+          onRemind={onRemind}
+          acting={acting}
+          fullWidth
+        />
+      </div>
+    </div>
+  );
+}
+
+function AgendaActions({
+  onAccept,
+  onDecline,
+  onComplete,
+  onCancel,
+  onRemind,
+  acting,
+  fullWidth,
+}: AgendaActionHandlers & { acting: boolean; fullWidth?: boolean }) {
+  const grow = fullWidth ? "flex-1" : "";
+  return (
+    <>
+      {onAccept && onDecline && (
+        <>
+          <button
+            onClick={onAccept}
+            disabled={acting}
+            className={`bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:opacity-60 ${grow}`}
+          >
+            Aceitar
+          </button>
+          <button
+            onClick={onDecline}
+            disabled={acting}
+            className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:opacity-60 ${grow}`}
+          >
+            Recusar
+          </button>
+        </>
+      )}
+      {onComplete && onCancel && (
+        <>
+          {onRemind && (
+            <button
+              onClick={onRemind}
+              aria-label="Enviar lembrete no WhatsApp"
+              title="Enviar lembrete no WhatsApp"
+              className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.03c-.24.68-1.4 1.3-1.93 1.35-.53.05-1.03.24-3.47-.72-2.94-1.16-4.79-4.2-4.94-4.4-.14-.19-1.16-1.55-1.16-2.96 0-1.4.73-2.09 1-2.38.24-.29.53-.36.72-.36.19 0 .39 0 .55.01.19.01.44-.07.68.53.24.58.82 2 .89 2.14.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.14.14-.29.29-.12.58.17.29.75 1.23 1.6 2 1.11.98 2.03 1.3 2.32 1.45.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.26.09 1.65.78 1.94.92.29.14.48.22.55.34.07.12.07.7-.17 1.38z" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={onComplete}
+            className={`bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 ${grow}`}
+          >
+            Concluir
+          </button>
+          <button
+            onClick={onCancel}
+            className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white ${grow}`}
+          >
+            Cancelar
+          </button>
+        </>
+      )}
+    </>
   );
 }

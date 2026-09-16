@@ -432,21 +432,23 @@ export function BookingWizard({ onConfirm }: BookingWizardProps) {
           </div>
         )}
 
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-3.5 border-t border-border pt-5.5">
+        <div className="mt-7 flex flex-nowrap items-center justify-between gap-1.5 border-t border-border pt-5.5 sm:gap-3.5">
           <button
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="flex min-h-[50px] cursor-pointer items-center gap-2.5 rounded-lg border border-border px-6.5 font-heading text-xs font-medium tracking-[0.2em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed"
+            className="flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg border border-border px-2.5 font-heading text-[10px] font-medium tracking-[0.1em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-6.5 sm:text-xs sm:tracking-[0.2em]"
             style={{ color: step === 1 ? "#3A3A3A" : "#FFFFFF" }}
           >
             ‹ Voltar
           </button>
-          <span className="flex-1 text-center text-[13px] text-muted-2">Passo {step} de 4</span>
+          <span className="flex-1 truncate text-center text-[11px] text-muted-2 sm:text-[13px]">
+            Passo {step} de 4
+          </span>
           {step < 4 && (
             <button
               onClick={() => canNext && setStep((s) => Math.min(4, s + 1))}
               disabled={!canNext}
-              className="flex min-h-[50px] cursor-pointer items-center gap-2.5 rounded-lg px-8 font-heading text-xs font-semibold tracking-[0.2em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed"
+              className="flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[10px] font-semibold tracking-[0.1em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-8 sm:text-xs sm:tracking-[0.2em]"
               style={{
                 background: canNext ? SILVER_GRADIENT : "#1F1F1F",
                 color: canNext ? "#0A0A0A" : "#7A7A7A",

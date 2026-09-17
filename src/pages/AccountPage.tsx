@@ -246,6 +246,7 @@ export function AccountPage() {
               {formatTimeShort(declinedNotice.scheduled_time)}
             </p>
             <p className="m-0 mt-3 rounded-lg border border-border bg-surface-alt p-3.5 text-[15px] text-muted">
+              <span className="font-semibold text-white">Motivo: </span>
               {declinedNotice.decline_reason}
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">

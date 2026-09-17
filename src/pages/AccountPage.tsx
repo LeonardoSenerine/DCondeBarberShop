@@ -244,7 +244,7 @@ export function AccountPage() {
                     Aguardando o barbeiro aceitar a solicitação.
                   </p>
                 )}
-                <div className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+                <div className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2 md:hidden">
                   {[
                     { k: "Barbeiro", v: upcoming.barbers?.name ?? "—" },
                     { k: "Valor", v: formatCents(upcoming.price_cents) },
@@ -254,6 +254,21 @@ export function AccountPage() {
                       <span className="font-heading text-sm tracking-[0.06em] text-white">{row.v}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-4 hidden w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt md:flex">
+                  <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
+                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Barbeiro</span>
+                    <span className="max-w-full truncate font-heading text-2xl leading-tight text-white">
+                      {upcoming.barbers?.name ?? "—"}
+                    </span>
+                  </div>
+                  <div className="w-px flex-shrink-0 bg-border" aria-hidden />
+                  <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
+                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Valor</span>
+                    <span className="font-heading text-2xl leading-tight text-white">
+                      {formatCents(upcoming.price_cents)}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2.5 md:w-[190px] md:flex-col">

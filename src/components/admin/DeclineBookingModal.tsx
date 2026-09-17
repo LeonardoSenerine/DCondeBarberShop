@@ -16,7 +16,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
   async function handleConfirm() {
-    if (!reason.trim()) return fail("Digite o motivo da recusa.", ["reason"]);
+    if (!reason.trim()) return fail("Digite a mensagem pro cliente.", ["reason"]);
     setBusy(true);
     clear();
     const { error: err } = await declineBooking(booking.id, reason);
@@ -24,7 +24,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
     if (err) return fail(err);
 
     if (booking.customer_phone) {
-      const message = `Olá, ${booking.customer_name}! Infelizmente não vai dar pra confirmar seu agendamento (${booking.services?.name ?? "atendimento"}) no dia ${formatDateBR(booking.scheduled_date)} às ${formatTimeShort(booking.scheduled_time)}. Motivo: ${reason.trim()}. Fica à vontade pra escolher outro horário quando quiser!`;
+      const message = `Olá, ${booking.customer_name}! Sobre seu agendamento (${booking.services?.name ?? "atendimento"}) no dia ${formatDateBR(booking.scheduled_date)} às ${formatTimeShort(booking.scheduled_time)}: ${reason.trim()}`;
       window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
     }
     onDeclined();
@@ -58,7 +58,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
           </p>
 
           <label className="flex flex-col gap-2">
-            <span className="text-[13px] text-muted">Motivo da recusa</span>
+            <span className="text-[13px] text-muted">Mensagem para o cliente</span>
             <textarea
               value={reason}
               onChange={(e) => {
@@ -70,7 +70,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
               className={`resize-none rounded-lg border border-border bg-surface-alt px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("reason"))}`}
             />
             <span className="text-xs text-muted-2">
-              A pessoa recebe esse motivo pelo WhatsApp e também vê na conta dela.
+              É exatamente isso que a pessoa recebe pelo WhatsApp e vê na conta dela — escreve como se tivesse falando direto com ela.
             </span>
           </label>
 

@@ -48,10 +48,10 @@ export const AMBIENTE = {
 export const PERKS = [
   {
     title: "Uma cadeira por vez",
-    line: "Você marca a hora e é atendido nela. Não tem fila, não tem senha, não tem esperar o cliente de antes terminar. Se atrasarmos, avisamos antes de você sair de casa.",
+    line: "Você marca a hora e é atendido nela. Não tem fila, não tem senha, não tem que esperar o cliente de antes terminar. Se atrasarmos, avisamos antes de você sair de casa.",
   },
   {
-    title: "Cor a gente leva a sério",
+    title: "Precisão em cada tom.",
     line: "Descoloração e pigmento não saem em quarenta minutos. Luzes é um serviço de quatro horas e a gente bloqueia a agenda inteira para ele. É por isso que sai bom.",
   },
   {

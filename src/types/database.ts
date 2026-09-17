@@ -68,6 +68,8 @@ type BookingsRow = {
   customer_email: string | null;
   reminder_sent_at: string | null;
   review_dismissed_at: string | null;
+  decline_reason: string | null;
+  decline_seen_at: string | null;
   created_at: string;
 };
 
@@ -172,13 +174,21 @@ export interface Database {
         Row: BookingsRow;
         Insert: Omit<
           BookingsRow,
-          "id" | "created_at" | "customer_email" | "reminder_sent_at" | "review_dismissed_at"
+          | "id"
+          | "created_at"
+          | "customer_email"
+          | "reminder_sent_at"
+          | "review_dismissed_at"
+          | "decline_reason"
+          | "decline_seen_at"
         > & {
           id?: string;
           created_at?: string;
           customer_email?: string | null;
           reminder_sent_at?: string | null;
           review_dismissed_at?: string | null;
+          decline_reason?: string | null;
+          decline_seen_at?: string | null;
         };
         Update: Partial<BookingsRow>;
         Relationships: [];

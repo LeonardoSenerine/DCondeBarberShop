@@ -478,6 +478,14 @@ where t.booking_id = b.id and t.barber_id is null;
 -- that trigger's guarded-fields list, same as status/reminder_sent_at.
 alter table public.bookings add column if not exists review_dismissed_at timestamptz;
 
+-- Set by the admin panel's "Recusar agendamento" modal alongside
+-- status = 'cancelled', so the customer sees why instead of just a silent
+-- cancellation. decline_seen_at works like review_dismissed_at above — set
+-- once the customer acknowledges the notice on "Meus agendamentos", so it
+-- doesn't keep reappearing.
+alter table public.bookings add column if not exists decline_reason text;
+alter table public.bookings add column if not exists decline_seen_at timestamptz;
+
 -- ---------------------------------------------------------------------------
 -- customer reviews, left on a completed booking. customer_name/barber_id/
 -- service_id are snapshotted onto the row (like bookings does with its own

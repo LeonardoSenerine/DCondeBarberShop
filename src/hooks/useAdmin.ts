@@ -84,6 +84,15 @@ export async function setBookingStatus(id: string, status: "confirmed" | "cancel
   return { error: error?.message ?? null };
 }
 
+/** Turns down a pending request with a reason, so the customer sees why instead of a silent cancellation. */
+export async function declineBooking(id: string, reason: string) {
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled", decline_reason: reason.trim() })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
 export interface CompleteBookingProduct {
   productId: string;
   name: string;
@@ -441,6 +450,8 @@ function sampleAgenda(key: string): BookingWithDetails[] {
       customer_email: null,
       reminder_sent_at: null,
       review_dismissed_at: null,
+      decline_reason: null,
+      decline_seen_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: barber.name },
       services: { name: serviceName, duration_minutes: durationMinutes },

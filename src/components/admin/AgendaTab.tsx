@@ -5,6 +5,7 @@ import { dateKey, formatCents, formatDateBR, formatTimeShort, toWhatsAppPhone, w
 import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
+import { DeclineBookingModal } from "@/components/admin/DeclineBookingModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
 import { BookingStatusBadge } from "@/components/StatusBadge";
@@ -27,18 +28,12 @@ export function AgendaTab() {
   const [acting, setActing] = useState<string | null>(null);
   const [completing, setCompleting] = useState<BookingWithDetails | null>(null);
   const [cancelling, setCancelling] = useState<BookingWithDetails | null>(null);
+  const [declining, setDeclining] = useState<BookingWithDetails | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   function reloadAll() {
     reload();
     reloadTotals();
-  }
-
-  async function decide(id: string, status: "confirmed" | "cancelled") {
-    setActing(id);
-    await setBookingStatus(id, status);
-    setActing(null);
-    reloadAll();
   }
 
   async function handleAccept(booking: BookingWithDetails) {
@@ -89,7 +84,7 @@ export function AgendaTab() {
           emptyMessage="Nenhum agendamento para hoje."
           getHandlers={(a) => ({
             onAccept: a.status === "pending" ? () => handleAccept(a) : undefined,
-            onDecline: a.status === "pending" ? () => decide(a.id, "cancelled") : undefined,
+            onDecline: a.status === "pending" ? () => setDeclining(a) : undefined,
             onComplete: a.status === "confirmed" ? () => setCompleting(a) : undefined,
             onCancel: a.status === "confirmed" ? () => setCancelling(a) : undefined,
             onRemind: a.status === "confirmed" ? () => handleRemind(a) : undefined,
@@ -124,7 +119,7 @@ export function AgendaTab() {
             emptyMessage="Nenhum agendamento pendente de aceite."
             getHandlers={(a) => ({
               onAccept: () => handleAccept(a),
-              onDecline: () => decide(a.id, "cancelled"),
+              onDecline: () => setDeclining(a),
             })}
           />
         </div>
@@ -176,6 +171,18 @@ export function AgendaTab() {
           busy={acting === cancelling.id}
           onConfirm={handleConfirmCancel}
           onClose={() => setCancelling(null)}
+        />
+      )}
+
+      {declining && (
+        <DeclineBookingModal
+          booking={declining}
+          onClose={() => setDeclining(null)}
+          onDeclined={() => {
+            setDeclining(null);
+            setToast("Agendamento recusado.");
+            reloadAll();
+          }}
         />
       )}
 

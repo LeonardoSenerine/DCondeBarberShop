@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking, type BookingWithDetails } from "@/hooks/useBooking";
+import {
+  useMyBookings,
+  useMyPurchases,
+  useCreateBooking,
+  cancelBooking,
+  markDeclineSeen,
+  type BookingWithDetails,
+} from "@/hooks/useBooking";
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -46,6 +53,7 @@ export function AccountPage() {
   const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
   const [dismissingReviewId, setDismissingReviewId] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [dismissingDecline, setDismissingDecline] = useState(false);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -73,6 +81,18 @@ export function AccountPage() {
   const pendingReviews = bookings
     .filter((b) => b.status === "completed" && !b.review_dismissed_at && !reviewsByBooking[b.id])
     .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
+  // Most recent booking the barber turned down that the customer hasn't acknowledged yet.
+  const declinedNotice = bookings
+    .filter((b) => b.status === "cancelled" && b.decline_reason && !b.decline_seen_at)
+    .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date))[0];
+
+  async function handleDismissDecline() {
+    if (!declinedNotice) return;
+    setDismissingDecline(true);
+    await markDeclineSeen(declinedNotice.id);
+    setDismissingDecline(false);
+    reload();
+  }
 
   function reviewDraft(bookingId: string) {
     return reviewDrafts[bookingId] ?? { rating: 0, comment: "" };
@@ -215,6 +235,36 @@ export function AccountPage() {
             Agendar horário
           </button>
         </div>
+
+        {declinedNotice && (
+          <div className="mb-5 rounded-2xl border p-7 md:p-10" style={{ borderColor: "#e5484d" }}>
+            <span className="font-heading text-xs tracking-[0.24em] uppercase" style={{ color: "#e5484d" }}>
+              Agendamento recusado
+            </span>
+            <p className="m-0 mt-2 text-[15px] text-white">
+              {declinedNotice.services?.name} com {declinedNotice.barbers?.name} · {formatDateBR(declinedNotice.scheduled_date)} às{" "}
+              {formatTimeShort(declinedNotice.scheduled_time)}
+            </p>
+            <p className="m-0 mt-3 rounded-lg border border-border bg-surface-alt p-3.5 text-[15px] text-muted">
+              {declinedNotice.decline_reason}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2.5">
+              <button
+                onClick={() => setBookingOpen(true)}
+                className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
+              >
+                Agendar outro horário
+              </button>
+              <button
+                onClick={handleDismissDecline}
+                disabled={dismissingDecline}
+                className="flex min-h-12 cursor-pointer items-center rounded-lg border border-border px-6.5 font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
           <div className="mb-6 flex items-center justify-between gap-3">

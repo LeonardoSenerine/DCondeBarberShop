@@ -186,6 +186,8 @@ function sampleMyBookings(): BookingWithDetails[] {
       customer_email: null,
       reminder_sent_at: null,
       review_dismissed_at: null,
+      decline_reason: null,
+      decline_seen_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: "Daniel" },
       services: { name: "Corte + barba terapia", duration_minutes: 80 },
@@ -205,6 +207,8 @@ function sampleMyBookings(): BookingWithDetails[] {
       customer_email: null,
       reminder_sent_at: null,
       review_dismissed_at: null,
+      decline_reason: null,
+      decline_seen_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: "João Lima" },
       services: { name: "Corte", duration_minutes: 50 },
@@ -224,9 +228,32 @@ function sampleMyBookings(): BookingWithDetails[] {
       customer_email: null,
       reminder_sent_at: null,
       review_dismissed_at: null,
+      decline_reason: null,
+      decline_seen_at: null,
       created_at: new Date().toISOString(),
       barbers: { name: "Daniel" },
       services: { name: "Barba terapia", duration_minutes: 40 },
+    },
+    {
+      id: "sample-my-booking-declined",
+      customer_id: null,
+      barber_id: "joao",
+      service_id: "sample-service-3",
+      scheduled_date: inDays(1),
+      scheduled_time: "11:00:00",
+      status: "cancelled",
+      price_cents: 4500,
+      duration_minutes: 50,
+      customer_name: "Rafael Prado",
+      customer_phone: "(18) 99863-4127",
+      customer_email: null,
+      reminder_sent_at: null,
+      review_dismissed_at: null,
+      decline_reason: "Vou estar de folga nesse dia — remarca pra outro horário que eu te atendo com calma.",
+      decline_seen_at: null,
+      created_at: new Date().toISOString(),
+      barbers: { name: "João Lima" },
+      services: { name: "Corte", duration_minutes: 50 },
     },
   ];
 }
@@ -264,6 +291,12 @@ export function useMyBookings(customerId: string | null) {
 
 export async function cancelBooking(id: string) {
   const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+/** Acknowledges the "seu agendamento foi recusado" notice, so it doesn't keep showing on the account page. */
+export async function markDeclineSeen(id: string) {
+  const { error } = await supabase.from("bookings").update({ decline_seen_at: new Date().toISOString() }).eq("id", id);
   return { error: error?.message ?? null };
 }
 

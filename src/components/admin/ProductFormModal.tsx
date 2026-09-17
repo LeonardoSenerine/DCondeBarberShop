@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { saveProduct, uploadProductPhoto, type ProductInput } from "@/hooks/useAdmin";
+import { saveProduct, adjustProductStock, uploadProductPhoto, type ProductInput } from "@/hooks/useAdmin";
 import type { Product } from "@/hooks/useCatalog";
 import { formatCents } from "@/lib/format";
 import { effectivePriceCents } from "@/lib/product";
@@ -55,6 +55,8 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
     if (priceCents <= 0) return fail("Digite um preço válido.", ["price"]);
     if (onSale && pct <= 0) return fail("Informe o percentual da promoção.", ["salePercent"]);
 
+    const newStock = Math.max(0, Math.round(Number(stock) || 0));
+
     setSaving(true);
     clear();
     const input: ProductInput = {
@@ -62,15 +64,31 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
       description: description.trim() || null,
       category,
       price_cents: priceCents,
-      stock: Math.max(0, Math.round(Number(stock) || 0)),
+      stock: newStock,
       image_path: imagePath || null,
       sale_percent: pct,
       sale_from: onSale && saleFrom ? saleFrom : null,
       sale_until: onSale && saleUntil ? saleUntil : null,
     };
     const { error: err } = await saveProduct(input, product?.id);
+    if (err) {
+      setSaving(false);
+      return fail(err);
+    }
+
+    // Editing an existing product: saveProduct() deliberately skips `stock`
+    // (see its comment) so it can't stomp a concurrent sale/restock — apply
+    // any change here instead, as a delta through the same atomic RPC the
+    // list view's +/- stepper uses.
+    if (product && newStock !== product.stock) {
+      const { error: stockErr } = await adjustProductStock(product.id, newStock - product.stock);
+      if (stockErr) {
+        setSaving(false);
+        return fail(`Produto salvo, mas não deu pra atualizar o estoque: ${stockErr}`);
+      }
+    }
+
     setSaving(false);
-    if (err) return fail(err);
     onSaved();
     onClose();
   }
@@ -148,20 +166,13 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
               />
             </Field>
             <Field label="Quantidade">
-              {isNew ? (
-                <input
-                  type="number"
-                  min={0}
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
-                />
-              ) : (
-                <div className="flex min-h-12 flex-col justify-center rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-muted">
-                  <span className="text-white">{stock}</span>
-                  <span className="text-xs text-muted">Ajuste o estoque na lista de produtos</span>
-                </div>
-              )}
+              <input
+                type="number"
+                min={0}
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                className="min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver"
+              />
             </Field>
           </div>
 

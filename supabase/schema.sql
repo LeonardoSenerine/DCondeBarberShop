@@ -309,7 +309,18 @@ create table if not exists public.products (
   active boolean not null default true
 );
 
+-- migration safety net for projects whose products table predates these
+-- columns — id/name/category/price_cents are assumed to already exist
+-- everywhere since the shop can't list a product at all without them.
+alter table public.products add column if not exists description text;
+alter table public.products add column if not exists stock int not null default 0;
+alter table public.products add column if not exists image_path text;
+alter table public.products add column if not exists sale_percent int not null default 0;
+alter table public.products drop constraint if exists products_sale_percent_check;
+alter table public.products add constraint products_sale_percent_check check (sale_percent between 0 and 100);
 alter table public.products add column if not exists sale_from date;
+alter table public.products add column if not exists sale_until date;
+alter table public.products add column if not exists active boolean not null default true;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),

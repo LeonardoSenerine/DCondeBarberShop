@@ -944,3 +944,65 @@ export async function deleteBarber(id: string) {
   const { error } = await supabase.from("barbers").delete().eq("id", id);
   return { error: error?.message ?? null };
 }
+
+// ---------------------------------------------------------------------------
+// Staff accounts: linking an existing login (someone who already signed up
+// on the site, as a plain customer) to a barber, promoting them to `staff`
+// so they can log into /admin scoped to that barber's own agenda/financeiro/
+// clientes. Only an owner can actually make this change — the
+// prevent_role_escalation trigger in schema.sql silently blocks a staff
+// account from granting itself or anyone else more access, even though the
+// RLS UPDATE policy lets the request through.
+// ---------------------------------------------------------------------------
+export interface StaffProfile {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  role: "customer" | "staff" | "owner";
+  barber_id: string | null;
+}
+
+/** Every profile currently promoted to staff/owner, so BarbersTab can show who's linked to which barber without a query per card. */
+export function useStaffProfiles() {
+  const [profiles, setProfiles] = useState<StaffProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, phone, role, barber_id")
+      .in("role", ["staff", "owner"])
+      .then(({ data }) => {
+        setProfiles((data ?? []) as StaffProfile[]);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => reload(), [reload]);
+
+  return { profiles, loading, reload };
+}
+
+/** Looks up an existing account by e-mail, to link as a barber's staff login — the person has to have signed up on the site at least once already. */
+export async function searchProfileByEmail(email: string) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone, role, barber_id")
+    .ilike("email", email.trim())
+    .limit(1)
+    .maybeSingle();
+  return { data: data as StaffProfile | null, error: error?.message ?? null };
+}
+
+export async function linkBarberAccount(profileId: string, barberId: string) {
+  const { error } = await supabase.from("profiles").update({ role: "staff", barber_id: barberId }).eq("id", profileId);
+  return { error: error?.message ?? null };
+}
+
+/** Revokes admin access, back to a plain customer account. */
+export async function unlinkBarberAccount(profileId: string) {
+  const { error } = await supabase.from("profiles").update({ role: "customer", barber_id: null }).eq("id", profileId);
+  return { error: error?.message ?? null };
+}

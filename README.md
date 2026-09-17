@@ -66,10 +66,17 @@ supabase/
 ### Criando o usuário administrador
 
 Qualquer pessoa que faz login pelo site vira `role = 'customer'` automaticamente.
-Para acessar `/admin`, promova um usuário depois do primeiro login dele:
+
+Pra promover barbeiros depois do dono já ter acesso, use o painel: aba
+**Barbeiros**, "Vincular conta" no card do barbeiro (a pessoa precisa ter
+feito login no site pelo menos uma vez antes). Isso já cuida de setar
+`role = 'staff'` e vincular o `barber_id` corretamente — sem precisar de SQL.
+
+O primeiro dono, porém, precisa ser promovido manualmente (ainda não existe
+ninguém no painel pra fazer isso por você):
 
 ```sql
-update public.profiles set role = 'admin' where id = '<uuid-do-usuário>';
+update public.profiles set role = 'owner' where id = '<uuid-do-usuário>';
 ```
 
 O `uuid` aparece em **Authentication → Users** no painel do Supabase.

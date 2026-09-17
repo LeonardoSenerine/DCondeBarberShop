@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useBarbers, useBarberHours, type Barber } from "@/hooks/useCatalog";
-import { toggleBarberHour, deleteBarber } from "@/hooks/useAdmin";
+import { toggleBarberHour, deleteBarber, useStaffProfiles, unlinkBarberAccount, type StaffProfile } from "@/hooks/useAdmin";
+import { useAuth } from "@/context/AuthContext";
 import { WEEKDAY_LABELS } from "@/lib/format";
 import { BarberFormModal } from "@/components/admin/BarberFormModal";
+import { StaffLinkModal } from "@/components/admin/StaffLinkModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Skeleton } from "@/components/Skeleton";
 
@@ -12,11 +14,29 @@ const DEFAULT_SATURDAY_SLOTS = ["08:00", "09:00", "10:00", "11:00", "13:30", "14
 type Editing = { barber: Barber | null } | null;
 
 export function BarbersTab() {
+  const { isOwner } = useAuth();
   const { data: barbers, loading: barbersLoading, reload: reloadBarbers } = useBarbers();
   const { data: hours, loading: hoursLoading, error, reload: reloadHours } = useBarberHours();
+  const { profiles: staffProfiles, reload: reloadStaff } = useStaffProfiles();
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<Barber | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [linkingBarber, setLinkingBarber] = useState<Barber | null>(null);
+  const [unlinking, setUnlinking] = useState<StaffProfile | null>(null);
+  const [unlinkBusy, setUnlinkBusy] = useState(false);
+
+  function linkedAccountFor(barberId: string) {
+    return staffProfiles.find((p) => p.barber_id === barberId) ?? null;
+  }
+
+  async function handleConfirmUnlink() {
+    if (!unlinking) return;
+    setUnlinkBusy(true);
+    await unlinkBarberAccount(unlinking.id);
+    setUnlinkBusy(false);
+    setUnlinking(null);
+    reloadStaff();
+  }
 
   async function handleToggle(hourId: number) {
     const row = hours.find((h) => h.id === hourId);
@@ -119,6 +139,38 @@ export function BarbersTab() {
                   Remover
                 </button>
               </div>
+
+              {isOwner && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-border bg-surface-alt px-4 py-3 sm:mt-5">
+                  {linkedAccountFor(b.id) ? (
+                    <>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm text-white">
+                          {linkedAccountFor(b.id)!.full_name || linkedAccountFor(b.id)!.email}
+                        </span>
+                        <span className="block text-xs text-muted">Acesso ao painel vinculado</span>
+                      </span>
+                      <button
+                        onClick={() => setUnlinking(linkedAccountFor(b.id))}
+                        className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                      >
+                        Remover acesso
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm text-muted">Nenhuma conta vinculada</span>
+                      <button
+                        onClick={() => setLinkingBarber(b)}
+                        className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
+                      >
+                        Vincular conta
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
               <div className="mt-5 flex flex-col sm:mt-6">
                 {barberHours.map((h) => (
                   <div key={h.id} className="flex items-center justify-between gap-2 border-t border-border py-3 sm:gap-3 sm:py-4">
@@ -160,6 +212,29 @@ export function BarbersTab() {
           busy={deleting}
           onConfirm={handleConfirmDelete}
           onClose={() => setRemoving(null)}
+        />
+      )}
+
+      {linkingBarber && (
+        <StaffLinkModal
+          barber={linkingBarber}
+          onClose={() => setLinkingBarber(null)}
+          onLinked={() => {
+            setLinkingBarber(null);
+            reloadStaff();
+          }}
+        />
+      )}
+
+      {unlinking && (
+        <ConfirmModal
+          title="Remover acesso ao painel?"
+          message={`Tem certeza que deseja remover o acesso de ${unlinking.full_name || unlinking.email}? A conta volta a ser um cliente comum.`}
+          confirmLabel="Remover acesso"
+          cancelLabel="Voltar"
+          busy={unlinkBusy}
+          onConfirm={handleConfirmUnlink}
+          onClose={() => setUnlinking(null)}
         />
       )}
     </div>

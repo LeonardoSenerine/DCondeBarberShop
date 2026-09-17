@@ -27,20 +27,24 @@ export interface BookingDraft {
 
 interface BookingWizardProps {
   onConfirm: (draft: BookingDraft) => void;
+  /** Pre-fill barber/service (e.g. "Remarcar") and jump straight to the day/time step. */
+  initialBarberId?: string;
+  initialServiceId?: string;
+  initialStep?: number;
 }
 
 const STEP_NAMES = ["Profissional", "Serviço", "Dia e horário", "Confirmar"];
 const SILVER_GRADIENT =
   "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)";
 
-export function BookingWizard({ onConfirm }: BookingWizardProps) {
+export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, initialStep }: BookingWizardProps) {
   const { data: barbers, loading: barbersLoading } = useBarbers();
   const { data: services, loading: servicesLoading } = useServices();
   const { data: hours } = useBarberHours();
 
-  const [step, setStep] = useState(1);
-  const [barberId, setBarberId] = useState<string | null>(null);
-  const [serviceId, setServiceId] = useState<string | null>(null);
+  const [step, setStep] = useState(initialStep ?? 1);
+  const [barberId, setBarberId] = useState<string | null>(initialBarberId ?? null);
+  const [serviceId, setServiceId] = useState<string | null>(initialServiceId ?? null);
 
   const now = useMemo(() => new Date(), []);
   const today = useMemo(() => {

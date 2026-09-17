@@ -214,7 +214,9 @@ export function AccountPage() {
               </div>
               <div className="flex gap-2.5 md:w-[190px] md:flex-col">
                 <button
-                  onClick={() => setBookingOpen(true)}
+                  onClick={() =>
+                    navigate("/", { state: { rebook: { barberId: upcoming.barber_id, serviceId: upcoming.service_id } } })
+                  }
                   className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
                 >
                   Remarcar
@@ -257,35 +259,58 @@ export function AccountPage() {
                 <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
               )}
               {history.length > 0 && (
-                <ScrollFadeX minWidth="680px">
-                  <div
-                    className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
-                    style={{ gridTemplateColumns: HISTORY_COLS }}
-                  >
-                    <span>Data</span>
-                    <span>Tipo de corte</span>
-                    <span>Barbeiro</span>
-                    <span>Status</span>
-                    <span className="text-right">Total</span>
+                <>
+                  <div className="hidden md:block">
+                    <ScrollFadeX minWidth="680px">
+                      <div
+                        className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                        style={{ gridTemplateColumns: HISTORY_COLS }}
+                      >
+                        <span>Data</span>
+                        <span>Tipo de corte</span>
+                        <span>Barbeiro</span>
+                        <span>Status</span>
+                        <span className="text-right">Total</span>
+                      </div>
+                      {history.map((h) => (
+                        <div
+                          key={h.id}
+                          className="grid items-center gap-4 border-t border-border py-4"
+                          style={{ gridTemplateColumns: HISTORY_COLS }}
+                        >
+                          <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
+                          <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
+                          <span>
+                            <BookingStatusBadge status={h.status} />
+                          </span>
+                          <span className="text-right font-heading text-[15px] text-white">
+                            {formatCents(h.price_cents)}
+                          </span>
+                        </div>
+                      ))}
+                    </ScrollFadeX>
                   </div>
-                  {history.map((h) => (
-                    <div
-                      key={h.id}
-                      className="grid items-center gap-4 border-t border-border py-4"
-                      style={{ gridTemplateColumns: HISTORY_COLS }}
-                    >
-                      <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
-                      <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
-                      <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
-                      <span>
-                        <BookingStatusBadge status={h.status} />
-                      </span>
-                      <span className="text-right font-heading text-[15px] text-white">
-                        {formatCents(h.price_cents)}
-                      </span>
-                    </div>
-                  ))}
-                </ScrollFadeX>
+                  <div className="flex flex-col md:hidden">
+                    {history.map((h) => (
+                      <div key={h.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <BookingStatusBadge status={h.status} />
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="min-w-0">
+                            <span className="block truncate text-[15px] text-white">{h.services?.name}</span>
+                            <span className="block truncate text-sm text-muted">{h.barbers?.name}</span>
+                          </span>
+                          <span className="shrink-0 font-heading text-[15px] text-white">
+                            {formatCents(h.price_cents)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -298,31 +323,53 @@ export function AccountPage() {
                 <p className="py-3 text-[15px] text-muted">Nenhuma compra de produto.</p>
               )}
               {purchases.length > 0 && (
-                <ScrollFadeX minWidth="520px">
-                  <div
-                    className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
-                    style={{ gridTemplateColumns: PRODUCT_COLS }}
-                  >
-                    <span>Data</span>
-                    <span>Produto</span>
-                    <span>Qtd.</span>
-                    <span className="text-right">Total</span>
+                <>
+                  <div className="hidden md:block">
+                    <ScrollFadeX minWidth="520px">
+                      <div
+                        className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                        style={{ gridTemplateColumns: PRODUCT_COLS }}
+                      >
+                        <span>Data</span>
+                        <span>Produto</span>
+                        <span>Qtd.</span>
+                        <span className="text-right">Total</span>
+                      </div>
+                      {purchases.map((p) => (
+                        <div
+                          key={p.id}
+                          className="grid items-center gap-4 border-t border-border py-4"
+                          style={{ gridTemplateColumns: PRODUCT_COLS }}
+                        >
+                          <span className="text-sm text-muted">{formatDateBR(p.date)}</span>
+                          <span className="min-w-0 truncate text-[15px] text-white">{p.product}</span>
+                          <span className="text-sm text-muted">x{p.qty}</span>
+                          <span className="text-right font-heading text-[15px] text-white">
+                            {formatCents(p.priceCents)}
+                          </span>
+                        </div>
+                      ))}
+                    </ScrollFadeX>
                   </div>
-                  {purchases.map((p) => (
-                    <div
-                      key={p.id}
-                      className="grid items-center gap-4 border-t border-border py-4"
-                      style={{ gridTemplateColumns: PRODUCT_COLS }}
-                    >
-                      <span className="text-sm text-muted">{formatDateBR(p.date)}</span>
-                      <span className="min-w-0 truncate text-[15px] text-white">{p.product}</span>
-                      <span className="text-sm text-muted">x{p.qty}</span>
-                      <span className="text-right font-heading text-[15px] text-white">
-                        {formatCents(p.priceCents)}
-                      </span>
-                    </div>
-                  ))}
-                </ScrollFadeX>
+                  <div className="flex flex-col md:hidden">
+                    {purchases.map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between gap-3 border-t border-border py-4 first:border-t-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-[15px] text-white">{p.product}</span>
+                          <span className="block text-sm text-muted">
+                            {formatDateBR(p.date)} · x{p.qty}
+                          </span>
+                        </span>
+                        <span className="shrink-0 font-heading text-[15px] text-white">
+                          {formatCents(p.priceCents)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>

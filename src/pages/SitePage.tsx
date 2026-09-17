@@ -35,6 +35,15 @@ export function SitePage() {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
+  // "Remarcar" in "Meus agendamentos" sends the customer here instead of
+  // opening the booking modal, with the same barber/service already picked
+  // so they only need to pick a new day and time.
+  const rebook = (location.state as { rebook?: { barberId: string; serviceId: string } } | null)?.rebook;
+  useEffect(() => {
+    if (!rebook) return;
+    document.getElementById("agendar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [rebook]);
+
   // Completes a booking left pending across the magic-link email round
   // trip: once the session shows up (same tab after the redirect, or
   // another tab picking up the synced session), finish the booking the
@@ -143,7 +152,12 @@ export function SitePage() {
     <div style={{ overflowX: "hidden" }}>
       <Header onOpenAuth={() => setAuthOpen(true)} />
       <Hero />
-      <BookingWizard onConfirm={handleConfirmBooking} />
+      <BookingWizard
+        onConfirm={handleConfirmBooking}
+        initialBarberId={rebook?.barberId}
+        initialServiceId={rebook?.serviceId}
+        initialStep={rebook ? 3 : undefined}
+      />
       <ServicesCarousel />
       <Ambiente onOpenLightbox={setLightbox} />
       <Gallery onOpenLightbox={setLightbox} />

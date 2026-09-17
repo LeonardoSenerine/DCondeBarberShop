@@ -10,7 +10,7 @@ interface HeaderProps {
 export function Header({ onOpenAuth }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { session, profile, signOut } = useAuth();
+  const { session, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   function handleSignOut() {
@@ -59,6 +59,14 @@ export function Header({ onOpenAuth }: HeaderProps) {
                 {link.label}
               </a>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="font-heading text-[13px] tracking-[0.18em] text-white uppercase transition-colors hover:text-muted-2"
+              >
+                Painel da barbearia
+              </Link>
+            )}
             {accountHref ? (
               <Link
                 to={accountHref}
@@ -131,6 +139,15 @@ export function Header({ onOpenAuth }: HeaderProps) {
               {link.label}
             </a>
           ))}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="border-b border-white/5 py-3.5 font-heading text-[15px] tracking-[0.18em] text-white uppercase"
+            >
+              Painel da barbearia
+            </Link>
+          )}
           {accountHref ? (
             <Link
               to={accountHref}

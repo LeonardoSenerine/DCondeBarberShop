@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
+import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking, type BookingWithDetails } from "@/hooks/useBooking";
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -42,10 +42,9 @@ export function AccountPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancellingBusy, setCancellingBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState("");
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [dismissingReview, setDismissingReview] = useState(false);
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
+  const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
+  const [dismissingReviewId, setDismissingReviewId] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   if (loading) return null;
@@ -69,40 +68,55 @@ export function AccountPage() {
   const servicesTotalCents = history.reduce((sum, h) => sum + h.price_cents, 0);
   const productsTotalCents = purchases.reduce((sum, p) => sum + p.priceCents, 0);
   const grandTotalCents = servicesTotalCents + productsTotalCents;
-  // Most recent completed booking still missing a review, unless the
-  // customer already dismissed the prompt for it.
-  const pendingReview = bookings
+  // Every completed booking still missing a review, unless the customer
+  // already dismissed the prompt for it — newest first.
+  const pendingReviews = bookings
     .filter((b) => b.status === "completed" && !b.review_dismissed_at && !reviewsByBooking[b.id])
-    .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date))[0];
+    .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
 
-  async function handleSubmitReview() {
-    if (!pendingReview || !session?.user || reviewRating === 0) return;
-    setSubmittingReview(true);
+  function reviewDraft(bookingId: string) {
+    return reviewDrafts[bookingId] ?? { rating: 0, comment: "" };
+  }
+
+  function setReviewDraftRating(bookingId: string, rating: number) {
+    setReviewDrafts((d) => ({ ...d, [bookingId]: { ...reviewDraft(bookingId), rating } }));
+  }
+
+  function setReviewDraftComment(bookingId: string, comment: string) {
+    setReviewDrafts((d) => ({ ...d, [bookingId]: { ...reviewDraft(bookingId), comment } }));
+  }
+
+  async function handleSubmitReview(booking: BookingWithDetails) {
+    if (!session?.user) return;
+    const draft = reviewDraft(booking.id);
+    if (draft.rating === 0) return;
+    setSubmittingReviewId(booking.id);
     setReviewError(null);
     const { error } = await submitReview({
-      bookingId: pendingReview.id,
+      bookingId: booking.id,
       customerId: session.user.id,
       customerName: profile?.full_name || name,
-      barberId: pendingReview.barber_id,
-      serviceId: pendingReview.service_id,
-      rating: reviewRating,
-      comment: reviewComment.trim() || null,
+      barberId: booking.barber_id,
+      serviceId: booking.service_id,
+      rating: draft.rating,
+      comment: draft.comment.trim() || null,
     });
-    setSubmittingReview(false);
+    setSubmittingReviewId(null);
     if (error) {
       setReviewError("Não deu pra enviar sua avaliação. Tenta de novo.");
       return;
     }
-    setReviewRating(0);
-    setReviewComment("");
+    setReviewDrafts((d) => {
+      const { [booking.id]: _discard, ...rest } = d;
+      return rest;
+    });
     reloadReviews();
   }
 
-  async function handleDismissReview() {
-    if (!pendingReview) return;
-    setDismissingReview(true);
-    await dismissReviewPrompt(pendingReview.id);
-    setDismissingReview(false);
+  async function handleDismissReview(booking: BookingWithDetails) {
+    setDismissingReviewId(booking.id);
+    await dismissReviewPrompt(booking.id);
+    setDismissingReviewId(null);
     reload();
   }
 
@@ -301,51 +315,77 @@ export function AccountPage() {
           )}
         </div>
 
-        {pendingReview && (
+        {pendingReviews.length > 0 && (
           <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
-            <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Avalie seu atendimento</span>
-            <p className="m-0 mt-2 text-[15px] text-muted">
-              {pendingReview.services?.name} com {pendingReview.barbers?.name} · {formatDateBR(pendingReview.scheduled_date)}
-            </p>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Agendamentos a avaliar</span>
+              <span
+                className="flex h-6 min-w-6 items-center justify-center rounded-full px-2 font-heading text-xs font-semibold tabular-nums"
+                style={{ background: "rgba(224,179,65,0.16)", color: "#E0B341" }}
+              >
+                {pendingReviews.length}
+              </span>
+            </div>
 
-            <div className="mt-5 flex flex-col gap-4 md:max-w-130">
-              <div>
-                <span className="mb-2 block text-[13px] text-muted">
-                  Nota{reviewRating > 0 ? ` (${reviewRating}/5)` : ""}
-                </span>
-                <StarRating value={reviewRating} onChange={setReviewRating} size={30} />
-              </div>
-              <label className="flex flex-col gap-2">
-                <span className="text-[13px] text-muted">Comentário (opcional)</span>
-                <textarea
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  rows={3}
-                  placeholder="Conte como foi seu atendimento…"
-                  className="resize-none rounded-lg border border-border bg-surface-alt px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver"
-                />
-              </label>
-              {reviewError && (
-                <span className="rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
-                  {reviewError}
-                </span>
-              )}
-              <div className="flex gap-2.5">
-                <button
-                  onClick={handleDismissReview}
-                  disabled={dismissingReview || submittingReview}
-                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Agora não
-                </button>
-                <button
-                  onClick={handleSubmitReview}
-                  disabled={reviewRating === 0 || submittingReview || dismissingReview}
-                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submittingReview ? "Enviando…" : "Enviar avaliação"}
-                </button>
-              </div>
+            {reviewError && (
+              <span className="mb-5 block rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
+                {reviewError}
+              </span>
+            )}
+
+            <div className="flex flex-col gap-5 md:grid md:grid-cols-2 md:gap-6">
+              {pendingReviews.map((b) => {
+                const draft = reviewDraft(b.id);
+                const busy = submittingReviewId === b.id || dismissingReviewId === b.id;
+                return (
+                  <div key={b.id} className="rounded-xl border border-border bg-surface-alt p-5 md:p-7">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <span className="font-heading text-lg text-white md:text-xl">{b.services?.name}</span>
+                      <span className="font-heading text-lg text-white md:text-xl">{formatCents(b.price_cents)}</span>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted md:text-sm">
+                      <span>{b.barbers?.name}</span>
+                      <span aria-hidden>·</span>
+                      <span>{formatDateBR(b.scheduled_date)}</span>
+                      <span aria-hidden>·</span>
+                      <span>{formatTimeShort(b.scheduled_time)}</span>
+                    </div>
+
+                    <div className="mt-4.5">
+                      <span className="mb-2 block text-[13px] text-muted">
+                        Nota{draft.rating > 0 ? ` (${draft.rating}/5)` : ""}
+                      </span>
+                      <StarRating value={draft.rating} onChange={(v) => setReviewDraftRating(b.id, v)} size={28} />
+                    </div>
+                    <label className="mt-3.5 flex flex-col gap-2">
+                      <span className="text-[13px] text-muted">Comentário (opcional)</span>
+                      <textarea
+                        value={draft.comment}
+                        onChange={(e) => setReviewDraftComment(b.id, e.target.value)}
+                        rows={3}
+                        placeholder="Conte como foi seu atendimento…"
+                        className="resize-none rounded-lg border border-border bg-surface px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver"
+                      />
+                    </label>
+                    <div className="mt-4 flex gap-2.5">
+                      <button
+                        onClick={() => handleDismissReview(b)}
+                        disabled={busy}
+                        className="flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Agora não
+                      </button>
+                      <button
+                        onClick={() => handleSubmitReview(b)}
+                        disabled={draft.rating === 0 || busy}
+                        className="bg-silver-gradient flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.16em] text-ink uppercase disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {submittingReviewId === b.id ? "Enviando…" : "Enviar"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

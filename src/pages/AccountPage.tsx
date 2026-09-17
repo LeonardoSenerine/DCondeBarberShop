@@ -300,11 +300,15 @@ export function AccountPage() {
                         </div>
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0">
+                            <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Serviço</span>
                             <span className="block truncate text-[15px] text-white">{h.services?.name}</span>
-                            <span className="block truncate text-sm text-muted">{h.barbers?.name}</span>
+                            <span className="mt-1 block truncate text-sm text-muted">{h.barbers?.name}</span>
                           </span>
-                          <span className="shrink-0 font-heading text-[15px] text-white">
-                            {formatCents(h.price_cents)}
+                          <span className="shrink-0 text-right">
+                            <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Total</span>
+                            <span className="block font-heading text-[15px] text-white">
+                              {formatCents(h.price_cents)}
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -358,13 +362,17 @@ export function AccountPage() {
                         className="flex items-center justify-between gap-3 border-t border-border py-4 first:border-t-0"
                       >
                         <span className="min-w-0">
+                          <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Produto</span>
                           <span className="block truncate text-[15px] text-white">{p.product}</span>
-                          <span className="block text-sm text-muted">
+                          <span className="mt-1 block text-sm text-muted">
                             {formatDateBR(p.date)} · x{p.qty}
                           </span>
                         </span>
-                        <span className="shrink-0 font-heading text-[15px] text-white">
-                          {formatCents(p.priceCents)}
+                        <span className="shrink-0 text-right">
+                          <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Total</span>
+                          <span className="block font-heading text-[15px] text-white">
+                            {formatCents(p.priceCents)}
+                          </span>
                         </span>
                       </div>
                     ))}

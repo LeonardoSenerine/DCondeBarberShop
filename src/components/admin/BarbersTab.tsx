@@ -21,7 +21,7 @@ export function BarbersTab() {
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<Barber | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [linkingBarber, setLinkingBarber] = useState<Barber | null>(null);
+  const [linking, setLinking] = useState<{ barber: Barber; currentAccount: StaffProfile | null } | null>(null);
   const [unlinking, setUnlinking] = useState<StaffProfile | null>(null);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
 
@@ -151,18 +151,26 @@ export function BarbersTab() {
                         </span>
                         <span className="block text-xs text-muted">Acesso ao painel vinculado</span>
                       </span>
-                      <button
-                        onClick={() => setUnlinking(linkedAccountFor(b.id))}
-                        className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-                      >
-                        Remover acesso
-                      </button>
+                      <span className="flex flex-shrink-0 gap-2">
+                        <button
+                          onClick={() => setLinking({ barber: b, currentAccount: linkedAccountFor(b.id) })}
+                          className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
+                        >
+                          Trocar conta
+                        </button>
+                        <button
+                          onClick={() => setUnlinking(linkedAccountFor(b.id))}
+                          className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                        >
+                          Remover acesso
+                        </button>
+                      </span>
                     </>
                   ) : (
                     <>
                       <span className="text-sm text-muted">Nenhuma conta vinculada</span>
                       <button
-                        onClick={() => setLinkingBarber(b)}
+                        onClick={() => setLinking({ barber: b, currentAccount: null })}
                         className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
                       >
                         Vincular conta
@@ -216,12 +224,13 @@ export function BarbersTab() {
         />
       )}
 
-      {linkingBarber && (
+      {linking && (
         <StaffLinkModal
-          barber={linkingBarber}
-          onClose={() => setLinkingBarber(null)}
+          barber={linking.barber}
+          currentAccount={linking.currentAccount}
+          onClose={() => setLinking(null)}
           onLinked={() => {
-            setLinkingBarber(null);
+            setLinking(null);
             reloadStaff();
           }}
         />

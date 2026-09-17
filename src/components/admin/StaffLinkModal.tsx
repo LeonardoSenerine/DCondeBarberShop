@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { searchProfileByEmail, linkBarberAccount, type StaffProfile } from "@/hooks/useAdmin";
+import { searchProfileByEmail, linkBarberAccount, unlinkBarberAccount, type StaffProfile } from "@/hooks/useAdmin";
 import type { Barber } from "@/hooks/useCatalog";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 
 interface StaffLinkModalProps {
   barber: Barber;
+  /** The account currently linked to this barber, if any — present means this is a swap, not a first link. */
+  currentAccount?: StaffProfile | null;
   onClose: () => void;
   onLinked: () => void;
 }
@@ -15,7 +17,8 @@ const ROLE_LABEL: Record<StaffProfile["role"], string> = {
   owner: "Dono",
 };
 
-export function StaffLinkModal({ barber, onClose, onLinked }: StaffLinkModalProps) {
+export function StaffLinkModal({ barber, currentAccount, onClose, onLinked }: StaffLinkModalProps) {
+  const isSwap = !!currentAccount;
   const [email, setEmail] = useState("");
   const [searching, setSearching] = useState(false);
   const [found, setFound] = useState<StaffProfile | null | undefined>(undefined);
@@ -38,8 +41,20 @@ export function StaffLinkModal({ barber, onClose, onLinked }: StaffLinkModalProp
     setLinking(true);
     clear();
     const { error: err } = await linkBarberAccount(found.id, barber.id);
+    if (err) {
+      setLinking(false);
+      return fail(err);
+    }
+    // Swapping to a different account — release the old one back to a
+    // plain customer so it doesn't keep pointing at this barber too.
+    if (currentAccount && currentAccount.id !== found.id) {
+      const { error: unlinkErr } = await unlinkBarberAccount(currentAccount.id);
+      if (unlinkErr) {
+        setLinking(false);
+        return fail(`Nova conta vinculada, mas não deu pra liberar a antiga: ${unlinkErr}`);
+      }
+    }
     setLinking(false);
-    if (err) return fail(err);
     onLinked();
   }
 
@@ -63,10 +78,12 @@ export function StaffLinkModal({ barber, onClose, onLinked }: StaffLinkModalProp
           </button>
 
           <h3 className="m-0 mb-1 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
-            Vincular conta de acesso
+            {isSwap ? "Trocar conta vinculada" : "Vincular conta de acesso"}
           </h3>
           <p className="m-0 mb-6 text-[14px] text-muted">
-            Dá acesso ao painel pra {barber.name}. A pessoa precisa já ter feito login pelo menos uma vez no site.
+            {isSwap
+              ? `Substitui quem tem acesso ao painel como ${barber.name}. A conta atual (${currentAccount!.full_name || currentAccount!.email}) volta a ser um cliente comum.`
+              : `Dá acesso ao painel pra ${barber.name}. A pessoa precisa já ter feito login pelo menos uma vez no site.`}
           </p>
 
           <label className="flex flex-col gap-2">
@@ -137,7 +154,7 @@ export function StaffLinkModal({ barber, onClose, onLinked }: StaffLinkModalProp
               disabled={!found || linking}
               className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {linking ? "Vinculando…" : "Vincular"}
+              {linking ? (isSwap ? "Trocando…" : "Vinculando…") : isSwap ? "Trocar" : "Vincular"}
             </button>
           </div>
         </div>

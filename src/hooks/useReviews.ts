@@ -28,7 +28,7 @@ export function useMyReviews(customerId: string | null) {
       .then(({ data }) => {
         const map: Record<string, ReviewRow> = {};
         (data ?? []).forEach((r) => {
-          map[r.booking_id] = r as ReviewRow;
+          if (r.booking_id) map[r.booking_id] = r as ReviewRow;
         });
         setReviewsByBooking(map);
         setLoading(false);

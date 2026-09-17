@@ -454,10 +454,15 @@ alter table public.bookings add column if not exists review_dismissed_at timesta
 -- service_id are snapshotted onto the row (like bookings does with its own
 -- customer_name/phone) so the public "published" testimonials on the site
 -- can be read without needing looser RLS on bookings/profiles.
+-- booking_id is nullable so an admin can also curate a standalone
+-- testimonial (e.g. copied over from Google/WhatsApp) that never went
+-- through the in-app "avalie seu atendimento" flow — see reviews_insert_own
+-- below. A unique column allows any number of nulls, so this doesn't weaken
+-- the "one review per booking" guarantee for the normal customer flow.
 -- ---------------------------------------------------------------------------
 create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),
-  booking_id uuid not null unique references public.bookings (id) on delete cascade,
+  booking_id uuid unique references public.bookings (id) on delete cascade,
   customer_id uuid references public.profiles (id) on delete set null,
   customer_name text not null,
   barber_id text not null references public.barbers (id),
@@ -469,6 +474,10 @@ create table if not exists public.reviews (
   published boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- migration safety net for projects that ran an earlier version of this
+-- table with booking_id not null
+alter table public.reviews alter column booking_id drop not null;
 
 create index if not exists reviews_customer_idx on public.reviews (customer_id);
 create index if not exists reviews_barber_idx on public.reviews (barber_id);
@@ -643,14 +652,21 @@ create policy "reviews_select_own_or_admin_or_published" on public.reviews for s
 -- service — unlike that one, a mismatch here is purely cosmetic (what
 -- shows on a testimonial card), not something that lets anyone dodge a
 -- charge or a slot conflict, so it isn't worth a correlated subquery.
+-- Two ways in: a customer reviewing their own completed booking, or an
+-- admin curating a standalone testimonial (booking_id left null) that
+-- never went through the in-app flow.
 drop policy if exists "reviews_insert_own" on public.reviews;
 create policy "reviews_insert_own" on public.reviews for insert
   with check (
-    customer_id = auth.uid()
-    and exists (
-      select 1 from public.bookings b
-      where b.id = booking_id and b.customer_id = auth.uid() and b.status = 'completed'
+    (
+      customer_id = auth.uid()
+      and booking_id is not null
+      and exists (
+        select 1 from public.bookings b
+        where b.id = booking_id and b.customer_id = auth.uid() and b.status = 'completed'
+      )
     )
+    or (public.is_admin() and booking_id is null)
   );
 
 drop policy if exists "reviews_update_admin" on public.reviews;

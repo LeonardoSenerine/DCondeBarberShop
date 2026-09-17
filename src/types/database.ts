@@ -128,7 +128,8 @@ type TransactionsRow = {
 
 type ReviewsRow = {
   id: string;
-  booking_id: string;
+  /** Null for a standalone testimonial an admin curated outside the in-app "avalie seu atendimento" flow. */
+  booking_id: string | null;
   customer_id: string | null;
   customer_name: string;
   barber_id: string;

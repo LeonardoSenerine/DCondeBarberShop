@@ -35,7 +35,7 @@ export function Testimonials() {
       <div className="relative mx-auto max-w-[1240px] px-6">
         <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Avaliações</span>
+            <span className="font-heading text-sm tracking-[0.3em] text-muted-2 uppercase">Avaliações</span>
             <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
               O que dizem nossos clientes
             </h2>
@@ -107,13 +107,13 @@ function TestimonialCard({ review: r, className = "" }: { review: ReviewWithDeta
     >
       <StarRating value={r.rating} size={16} />
       {r.comment ? (
-        <p className="m-0 flex-1 font-serif text-[15px] leading-relaxed text-silver-dim">“{r.comment}”</p>
+        <p className="m-0 flex-1 font-serif text-[17px] leading-relaxed text-silver-dim">“{r.comment}”</p>
       ) : (
         <div className="flex-1" />
       )}
       <div className="flex flex-col gap-0.5 border-t border-border pt-4">
-        <span className="font-heading text-sm tracking-[0.08em] text-white uppercase">{r.customer_name}</span>
-        <span className="text-[13px] text-muted">
+        <span className="font-heading text-base tracking-[0.07em] text-white uppercase">{r.customer_name}</span>
+        <span className="text-sm text-muted">
           {r.services?.name}
           {r.barbers?.name ? ` · ${r.barbers.name}` : ""}
         </span>

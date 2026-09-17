@@ -6,7 +6,7 @@ export function About() {
     <section id="sobre" className="relative overflow-hidden bg-surface px-6 py-28">
       <div className="mx-auto grid max-w-[1240px] items-center gap-10 md:grid-cols-2 md:gap-20">
         <Reveal>
-          <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Sobre</span>
+          <span className="font-heading text-sm tracking-[0.3em] text-muted-2 uppercase">Sobre</span>
           <h2 className="m-0 mt-3 mb-7 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             Desde {ABOUT.stats[0].value}
           </h2>
@@ -25,7 +25,7 @@ export function About() {
             {ABOUT.stats.map((s) => (
               <div key={s.label}>
                 <div className="font-heading text-4xl leading-none font-semibold text-white">{s.value}</div>
-                <div className="mt-1.5 text-xs tracking-[0.16em] text-muted-2 uppercase">{s.label}</div>
+                <div className="mt-1.5 text-sm tracking-[0.12em] text-muted-2 uppercase">{s.label}</div>
               </div>
             ))}
           </div>
@@ -56,7 +56,7 @@ export function About() {
             <span className="block font-heading text-lg tracking-[0.12em] text-white uppercase">
               {ABOUT.founder.name}
             </span>
-            <span className="mt-1 block text-[13px] tracking-[0.18em] text-muted uppercase">
+            <span className="mt-1 block text-sm tracking-[0.14em] text-muted uppercase">
               {ABOUT.founder.role}
             </span>
           </div>
@@ -75,8 +75,8 @@ export function About() {
       >
         {ABOUT.facts.map((f) => (
           <div key={f.k} className="flex flex-col gap-2 bg-ink px-6 py-7">
-            <span className="font-heading text-[11px] tracking-[0.24em] text-muted-2 uppercase">{f.k}</span>
-            <span className="text-[15px] leading-relaxed text-white">{f.v}</span>
+            <span className="font-heading text-[13px] tracking-[0.2em] text-muted-2 uppercase">{f.k}</span>
+            <span className="text-[17px] leading-relaxed text-white">{f.v}</span>
           </div>
         ))}
       </Reveal>

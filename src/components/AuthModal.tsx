@@ -74,13 +74,13 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
         >
           ×
         </button>
-        <span className="font-heading text-xs tracking-[0.3em] text-muted-2 uppercase">{eyebrow}</span>
+        <span className="font-heading text-[13px] tracking-[0.24em] text-muted-2 uppercase">{eyebrow}</span>
 
         {phase === "dados" && (
           <div className="mt-4 mb-5 flex gap-2">
             <button
               onClick={() => switchMode("cadastro")}
-              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-[13px] font-semibold tracking-[0.12em] uppercase transition-colors"
               style={{
                 borderColor: mode === "cadastro" ? "#E0E0E0" : "#2A2A2A",
                 color: mode === "cadastro" ? "#FFFFFF" : "#9E9E9E",
@@ -91,7 +91,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
             </button>
             <button
               onClick={() => switchMode("login")}
-              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-xs font-semibold tracking-[0.14em] uppercase transition-colors"
+              className="flex-1 cursor-pointer rounded-lg border py-2.5 font-heading text-[13px] font-semibold tracking-[0.12em] uppercase transition-colors"
               style={{
                 borderColor: mode === "login" ? "#E0E0E0" : "#2A2A2A",
                 color: mode === "login" ? "#FFFFFF" : "#9E9E9E",
@@ -106,11 +106,11 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
         <h3 className="m-0 mt-3 mb-2 font-heading text-2xl font-semibold tracking-[0.04em] text-white uppercase">
           {title}
         </h3>
-        <p className="m-0 mb-6 text-[15px] text-muted">{lead}</p>
+        <p className="m-0 mb-6 text-base leading-relaxed text-muted">{lead}</p>
 
         {pendingBooking && (
-          <div className="mb-5 flex flex-col gap-1 rounded-lg border border-border bg-surface-alt p-3.5 text-[13px] text-muted">
-            <span className="text-white">{pendingBooking.serviceName}</span>
+          <div className="mb-5 flex flex-col gap-1 rounded-lg border border-border bg-surface-alt p-3.5 text-sm text-muted">
+            <span className="text-base font-medium text-white">{pendingBooking.serviceName}</span>
             <span>
               {pendingBooking.barberName} · {pendingBooking.dateLabel} · {pendingBooking.time} ·{" "}
               {formatCents(pendingBooking.priceCents)}
@@ -122,7 +122,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
           <div className="flex flex-col gap-3.5">
             {mode === "cadastro" && (
               <label className="flex flex-col gap-2">
-                <span className="text-[13px] text-muted">Nome *</span>
+                <span className="text-sm text-muted">Nome *</span>
                 <input
                   value={name}
                   onChange={(e) => {
@@ -136,7 +136,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
               </label>
             )}
             <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">E-mail *</span>
+              <span className="text-sm text-muted">E-mail *</span>
               <input
                 value={email}
                 onChange={(e) => {
@@ -151,7 +151,7 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
             </label>
             {mode === "cadastro" && (
               <label className="flex flex-col gap-2">
-                <span className="text-[13px] text-muted">Celular com DDD *</span>
+                <span className="text-sm text-muted">Celular com DDD *</span>
                 <input
                   value={phone}
                   onChange={(e) => {

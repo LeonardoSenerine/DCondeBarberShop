@@ -22,7 +22,8 @@ export function Contact() {
     <section id="contato" className="bg-ink px-6 py-28">
       <div className="mx-auto max-w-[1240px]">
         <Reveal className="mb-14">
-          <h2 className="m-0 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
+          <span className="font-heading text-sm tracking-[0.3em] text-muted-2 uppercase">Contato</span>
+          <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
             Onde estamos
           </h2>
         </Reveal>
@@ -41,8 +42,8 @@ export function Contact() {
               style={{ background: "rgba(10,10,10,0.9)" }}
             >
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">{BRAND.name}</span>
-                <span className="text-sm text-white">
+                <span className="font-heading text-sm tracking-[0.18em] text-muted-2 uppercase">{BRAND.name}</span>
+                <span className="text-base text-white">
                   {BRAND.addressLine} · {BRAND.city}/SP
                 </span>
               </span>
@@ -61,7 +62,7 @@ export function Contact() {
             <div className="flex flex-col gap-4.5 rounded-lg border border-border bg-surface-alt p-6.5">
               {CONTACTS.map((c) => (
                 <div key={c.k} className="flex flex-col gap-1">
-                  <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">{c.k}</span>
+                  <span className="font-heading text-sm tracking-[0.18em] text-muted-2 uppercase">{c.k}</span>
                   <a
                     href={c.href}
                     target={c.href.startsWith("#") ? undefined : "_blank"}
@@ -74,12 +75,12 @@ export function Contact() {
               ))}
             </div>
             <div className="rounded-lg border border-border bg-surface-alt p-6.5">
-              <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Horário</span>
+              <span className="font-heading text-sm tracking-[0.18em] text-muted-2 uppercase">Horário</span>
               <div className="mt-3.5 flex flex-col">
                 {CONTACT_HOURS.map((h) => (
                   <div key={h.day} className="flex items-center justify-between gap-3 border-t border-border py-2.5">
-                    <span className="text-[15px] text-white">{h.day}</span>
-                    <span className="text-[15px] text-muted">{h.time}</span>
+                    <span className="text-base text-white">{h.day}</span>
+                    <span className="text-base text-muted">{h.time}</span>
                   </div>
                 ))}
               </div>

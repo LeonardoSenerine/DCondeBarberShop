@@ -195,7 +195,7 @@ export function AccountPage() {
         <div className="mx-auto flex max-w-[1080px] items-center justify-between gap-4 px-6 py-4">
           <div className="flex min-w-0 items-center gap-3.5">
             <img src="/img/monogram.jpg" alt="" className="h-10 w-11 object-contain" style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }} />
-            <span className="font-heading text-[13px] tracking-[0.22em] text-white uppercase">Meus agendamentos</span>
+            <span className="font-heading text-[15px] tracking-[0.2em] text-white uppercase">Meus agendamentos</span>
           </div>
           <div className="flex items-center gap-2.5">
             <Link to="/" className="flex min-h-11 items-center rounded-lg border border-border px-4.5 font-heading text-xs tracking-[0.18em] text-white uppercase transition-colors hover:border-silver">
@@ -262,7 +262,7 @@ export function AccountPage() {
 
         <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
           <div className="mb-6 flex items-center justify-between gap-3">
-            <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Próximo agendamento</span>
+            <span className="font-heading text-sm font-medium tracking-[0.2em] text-silver uppercase">Próximo agendamento</span>
             {upcoming && <BookingStatusBadge status={upcoming.status} />}
           </div>
           {bookingsLoading ? (
@@ -348,7 +348,7 @@ export function AccountPage() {
             </div>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <p className="m-0 text-[15px] text-muted">Você não tem nenhum agendamento ativo.</p>
+              <p className="m-0 text-[17px] leading-relaxed text-silver-dim">Você não tem nenhum agendamento ativo.</p>
               <button
                 onClick={() => setBookingOpen(true)}
                 className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
@@ -434,8 +434,8 @@ export function AccountPage() {
           </div>
         )}
 
-        <div className="mb-5 rounded-lg border border-border bg-surface p-7">
-          <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Histórico</span>
+        <div className="mb-5 rounded-lg border border-border bg-surface p-7 md:p-8">
+          <span className="font-heading text-base font-medium tracking-[0.18em] text-silver uppercase">Histórico</span>
 
           <div className="mt-4.5 grid gap-3.5 sm:grid-cols-3">
             <HistoryStat label="Atendimentos" value={String(history.length)} />
@@ -444,7 +444,7 @@ export function AccountPage() {
           </div>
 
           <div className="mt-7">
-            <span className="font-heading text-[11px] tracking-[0.18em] text-muted-2 uppercase">Serviços</span>
+            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Serviços</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
               {!historyLoading && history.length === 0 && (
@@ -455,7 +455,7 @@ export function AccountPage() {
                   <div className="hidden md:block">
                     <ScrollFadeX minWidth="680px">
                       <div
-                        className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-[13px] whitespace-nowrap tracking-[0.14em] text-muted-2 uppercase"
                         style={{ gridTemplateColumns: HISTORY_COLS }}
                       >
                         <span>Data</span>
@@ -470,13 +470,13 @@ export function AccountPage() {
                           className="grid items-center gap-4 border-t border-border py-4"
                           style={{ gridTemplateColumns: HISTORY_COLS }}
                         >
-                          <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
-                          <span className="min-w-0 truncate text-[15px] text-white">{h.services?.name}</span>
-                          <span className="truncate text-sm text-muted">{h.barbers?.name}</span>
+                          <span className="text-[15px] text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <span className="min-w-0 truncate text-[17px] font-medium text-white">{h.services?.name}</span>
+                          <span className="truncate text-[15px] text-muted">{h.barbers?.name}</span>
                           <span>
                             <BookingStatusBadge status={h.status} />
                           </span>
-                          <span className="text-right font-heading text-[15px] text-white">
+                          <span className="text-right font-heading text-[17px] text-white">
                             {formatCents(h.price_cents)}
                           </span>
                         </div>
@@ -487,19 +487,19 @@ export function AccountPage() {
                     {history.map((h) => (
                       <div key={h.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-sm text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <span className="text-[15px] text-muted">{formatDateBR(h.scheduled_date)}</span>
                           <BookingStatusBadge status={h.status} />
                         </div>
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0">
-                            <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Serviço</span>
-                            <span className="block truncate text-[15px] text-white">{h.services?.name}</span>
-                            <span className="mt-2 block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Barbeiro</span>
-                            <span className="block truncate text-sm text-muted">{h.barbers?.name}</span>
+                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Serviço</span>
+                            <span className="block truncate text-[17px] font-medium text-white">{h.services?.name}</span>
+                            <span className="mt-2 block text-xs tracking-[0.1em] text-muted-2 uppercase">Barbeiro</span>
+                            <span className="block truncate text-[15px] text-muted">{h.barbers?.name}</span>
                           </span>
                           <span className="shrink-0 text-right">
-                            <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Total</span>
-                            <span className="block font-heading text-[15px] text-white">
+                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
+                            <span className="block font-heading text-[17px] text-white">
                               {formatCents(h.price_cents)}
                             </span>
                           </span>
@@ -513,7 +513,7 @@ export function AccountPage() {
           </div>
 
           <div className="mt-7">
-            <span className="font-heading text-[11px] tracking-[0.18em] text-muted-2 uppercase">Produtos</span>
+            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Produtos</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={2} className="my-2 h-6 w-full" />}
               {!historyLoading && purchases.length === 0 && (
@@ -524,7 +524,7 @@ export function AccountPage() {
                   <div className="hidden md:block">
                     <ScrollFadeX minWidth="520px">
                       <div
-                        className="grid items-center gap-4 border-t border-border py-3 font-heading text-xs whitespace-nowrap tracking-widest text-muted-2 uppercase"
+                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-[13px] whitespace-nowrap tracking-[0.14em] text-muted-2 uppercase"
                         style={{ gridTemplateColumns: PRODUCT_COLS }}
                       >
                         <span>Data</span>
@@ -538,10 +538,10 @@ export function AccountPage() {
                           className="grid items-center gap-4 border-t border-border py-4"
                           style={{ gridTemplateColumns: PRODUCT_COLS }}
                         >
-                          <span className="text-sm text-muted">{formatDateBR(p.date)}</span>
-                          <span className="min-w-0 truncate text-[15px] text-white">{p.product}</span>
-                          <span className="text-sm text-muted">x{p.qty}</span>
-                          <span className="text-right font-heading text-[15px] text-white">
+                          <span className="text-[15px] text-muted">{formatDateBR(p.date)}</span>
+                          <span className="min-w-0 truncate text-[17px] font-medium text-white">{p.product}</span>
+                          <span className="text-[15px] text-muted">x{p.qty}</span>
+                          <span className="text-right font-heading text-[17px] text-white">
                             {formatCents(p.priceCents)}
                           </span>
                         </div>
@@ -555,15 +555,15 @@ export function AccountPage() {
                         className="flex items-center justify-between gap-3 border-t border-border py-4 first:border-t-0"
                       >
                         <span className="min-w-0">
-                          <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Produto</span>
-                          <span className="block truncate text-[15px] text-white">{p.product}</span>
-                          <span className="mt-1 block text-sm text-muted">
+                          <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Produto</span>
+                          <span className="block truncate text-[17px] font-medium text-white">{p.product}</span>
+                          <span className="mt-1 block text-[15px] text-muted">
                             {formatDateBR(p.date)} · x{p.qty}
                           </span>
                         </span>
                         <span className="shrink-0 text-right">
-                          <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Total</span>
-                          <span className="block font-heading text-[15px] text-white">
+                          <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
+                          <span className="block font-heading text-[17px] text-white">
                             {formatCents(p.priceCents)}
                           </span>
                         </span>
@@ -576,9 +576,9 @@ export function AccountPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-7">
+        <div className="rounded-lg border border-border bg-surface p-7 md:p-8">
           <div className="flex items-center justify-between gap-3">
-            <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Meus dados</span>
+            <span className="font-heading text-base font-medium tracking-[0.18em] text-silver uppercase">Meus dados</span>
             {!editingProfile && (
               <button
                 onClick={() => setEditingProfile(true)}
@@ -658,8 +658,8 @@ export function AccountPage() {
                 { k: "E-mail (login)", v: profile?.email ?? (import.meta.env.DEV ? "rafael.prado@email.com" : "—") },
               ].map((row) => (
                 <div key={row.k} className="flex flex-col gap-2">
-                  <span className="text-[13px] text-muted">{row.k}</span>
-                  <span className="text-[15px] text-white">{row.v}</span>
+                  <span className="text-sm text-muted">{row.k}</span>
+                  <span className="text-[17px] font-medium text-white">{row.v}</span>
                 </div>
               ))}
             </div>
@@ -710,9 +710,9 @@ export function AccountPage() {
 
 function HistoryStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface-alt px-4.5 py-3.5">
-      <span className="block text-[11px] tracking-[0.1em] text-muted uppercase">{label}</span>
-      <span className="block font-heading text-lg text-white">{value}</span>
+    <div className="rounded-lg border border-border bg-surface-alt px-5 py-4">
+      <span className="block text-xs tracking-[0.12em] text-muted uppercase">{label}</span>
+      <span className="mt-1 block font-heading text-2xl leading-none text-white">{value}</span>
     </div>
   );
 }

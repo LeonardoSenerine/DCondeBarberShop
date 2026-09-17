@@ -174,7 +174,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
           <h2 className="m-0 font-heading text-[clamp(28px,3.4vw,42px)] font-semibold tracking-[0.04em] text-white uppercase">
             Reserve seu horário
           </h2>
-          <p className="m-0 max-w-[38ch] text-[15px] text-muted">
+          <p className="m-0 max-w-[38ch] text-base leading-relaxed text-muted">
             Monte o atendimento em quatro passos. A confirmação fica salva na
             sua conta.
           </p>
@@ -219,7 +219,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                 </span>
                 <span className="flex min-w-0 flex-col items-center gap-0.5 sm:items-start">
                   <span
-                    className="font-heading text-[10px] tracking-[0.1em] uppercase sm:text-[13px] sm:tracking-[0.16em]"
+                    className="font-heading text-[11px] tracking-[0.08em] uppercase sm:text-sm sm:tracking-[0.14em]"
                     style={{ color: active || done ? "#FFFFFF" : "#9E9E9E" }}
                   >
                     {name}
@@ -235,10 +235,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
 
         {step === 1 && (
           <div className="max-w-full md:max-w-[820px]">
-            <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
+            <h3 className="mb-1.5 font-heading text-[15px] font-medium tracking-[0.18em] text-white uppercase">
               Escolha o profissional
             </h3>
-            <p className="mb-4.5 text-sm text-muted-2">
+            <p className="mb-4.5 text-[15px] text-muted-2">
               A agenda mostrada depois é a dele.
             </p>
             <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))" }}>
@@ -304,13 +304,13 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                         <span className="font-heading text-lg tracking-[0.1em] text-white uppercase">
                           {b.name}
                         </span>
-                        <span className="text-xs tracking-[0.18em] text-muted uppercase">
+                        <span className="text-[13px] tracking-[0.14em] text-muted uppercase">
                           {b.role_title}
                         </span>
                       </span>
                     </span>
                     <span className="flex flex-col gap-2 px-4 pt-3.5 pb-4">
-                      <span className="block truncate border-t border-border pt-2.5 text-[13px] text-silver transition-colors group-hover:text-white">
+                      <span className="block truncate border-t border-border pt-2.5 text-sm text-silver transition-colors group-hover:text-white">
                         {b.instagram ?? "—"}
                       </span>
                     </span>
@@ -323,10 +323,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
 
         {step === 2 && (
           <div>
-            <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
+            <h3 className="mb-1.5 font-heading text-[15px] font-medium tracking-[0.18em] text-white uppercase">
               Escolha o serviço
             </h3>
-            <p className="mb-4.5 text-sm text-muted-2">
+            <p className="mb-4.5 text-[15px] text-muted-2">
               Com {barber?.name ?? "—"}. É possível alterar antes de confirmar.
             </p>
             <div className="grid max-h-[420px] grid-cols-1 gap-2.5 overflow-y-auto pr-1.5 md:grid-cols-2">
@@ -353,10 +353,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                     }}
                   >
                     <span className="flex min-w-0 flex-col gap-0.5">
-                      <span className="font-heading text-sm tracking-[0.08em] text-white uppercase">
+                      <span className="font-heading text-base tracking-[0.07em] text-white uppercase">
                         {s.name}
                       </span>
-                      <span className="text-[13px] text-muted">
+                      <span className="text-sm text-muted">
                         {formatDuration(s.duration_minutes)} · a partir de{" "}
                         {formatCents(s.price_cents)}
                       </span>
@@ -377,10 +377,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
 
         {step === 3 && (
           <div>
-            <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
+            <h3 className="mb-1.5 font-heading text-[15px] font-medium tracking-[0.18em] text-white uppercase">
               Escolha o dia e o horário
             </h3>
-            <p className="mb-4.5 text-sm text-muted-2">
+            <p className="mb-4.5 text-[15px] text-muted-2">
               Agenda de {barber?.name ?? "—"}. Dias apagados não têm vaga.
             </p>
             <div className="grid gap-5 md:grid-cols-2">
@@ -396,7 +396,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                     ‹
                   </button>
                   <span className="flex items-baseline gap-2">
-                    <span className="font-heading text-[13px] tracking-[0.16em] text-white uppercase">
+                    <span className="font-heading text-sm tracking-[0.14em] text-white uppercase">
                       {MONTH_LABELS[viewMonth]}
                     </span>
                     <span className="text-xs text-muted-2">{viewYear}</span>
@@ -413,7 +413,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                   {WEEKDAY_SHORT.map((w, i) => (
                     <span
                       key={i}
-                      className="text-center text-[10px] tracking-[0.08em] text-muted-2"
+                      className="text-center text-[11px] tracking-[0.06em] text-muted-2"
                     >
                       {w}
                     </span>
@@ -460,8 +460,8 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                   })}
                 </div>
                 <div className="mt-3.5 flex flex-col gap-1 border-t border-border pt-3">
-                  <span className="text-[13px] text-silver">{dateLong}</span>
-                  <span className="text-xs text-faint">
+                  <span className="text-sm text-silver">{dateLong}</span>
+                  <span className="text-[13px] text-faint">
                     {barberId
                       ? `Dias em destaque têm horário livre com ${barber?.name ?? ""}.`
                       : "Escolha um barbeiro."}
@@ -470,7 +470,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
               </div>
 
               <div className="rounded-lg border border-border bg-surface-alt p-3.5">
-                <span className="text-xs tracking-[0.18em] text-muted-2 uppercase">
+                <span className="font-heading text-sm tracking-[0.14em] text-muted-2 uppercase">
                   Horários livres
                 </span>
                 <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4">
@@ -511,7 +511,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
 
         {step === 4 && (
           <div className="max-w-full md:max-w-[840px]">
-            <h3 className="mb-2 font-heading text-sm font-medium tracking-[0.24em] text-white uppercase">
+            <h3 className="mb-2 font-heading text-[15px] font-medium tracking-[0.18em] text-white uppercase">
               Confirme os dados
             </h3>
             <p className="mb-6 text-base text-muted-2">
@@ -533,10 +533,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                   key={row.k}
                   className="flex items-start justify-between gap-3"
                 >
-                  <span className="shrink-0 text-sm text-muted sm:text-base">
+                  <span className="shrink-0 text-[15px] text-muted sm:text-base">
                     {row.k}
                   </span>
-                  <span className="text-right font-heading text-base tracking-[0.04em] text-white sm:text-xl sm:tracking-[0.06em]">
+                  <span className="text-right font-heading text-lg tracking-[0.04em] text-white sm:text-[22px] sm:tracking-[0.05em]">
                     {row.v}
                   </span>
                 </div>
@@ -569,12 +569,12 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
           <button
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg border border-border px-2.5 font-heading text-[10px] font-medium tracking-[0.1em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-6.5 sm:text-xs sm:tracking-[0.2em]"
+                  className="flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg border border-border px-2.5 font-heading text-[11px] font-medium tracking-[0.08em] uppercase transition-colors hover:border-silver disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-6.5 sm:text-[13px] sm:tracking-[0.16em]"
             style={{ color: step === 1 ? "#3A3A3A" : "#FFFFFF" }}
           >
             ‹ Voltar
           </button>
-          <span className="flex-1 truncate text-center text-[11px] text-muted-2 sm:text-[13px]">
+          <span className="flex-1 truncate text-center text-xs text-muted-2 sm:text-sm">
             Passo {step} de 4
           </span>
           <button
@@ -582,7 +582,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
             disabled={!canNext || step === 4}
             aria-hidden={step === 4}
             tabIndex={step === 4 ? -1 : undefined}
-            className={`flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[10px] font-semibold tracking-[0.1em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-8 sm:text-xs sm:tracking-[0.2em] ${step === 4 ? "invisible" : ""}`}
+            className={`flex min-h-[44px] shrink-0 cursor-pointer items-center rounded-lg px-3.5 font-heading text-[11px] font-semibold tracking-[0.08em] uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed sm:min-h-[50px] sm:gap-2.5 sm:px-8 sm:text-[13px] sm:tracking-[0.16em] ${step === 4 ? "invisible" : ""}`}
             style={{
               background: canNext ? SILVER_GRADIENT : "#1F1F1F",
               color: canNext ? "#0A0A0A" : "#7A7A7A",
@@ -637,8 +637,8 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                     key={row.k}
                     className="flex items-baseline justify-between gap-3"
                   >
-                    <span className="text-sm text-muted-2">{row.k}</span>
-                    <span className="font-heading text-sm tracking-[0.04em] text-white">
+                    <span className="text-[15px] text-muted-2">{row.k}</span>
+                    <span className="font-heading text-base tracking-[0.04em] text-white">
                       {row.v}
                     </span>
                   </div>

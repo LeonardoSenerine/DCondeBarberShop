@@ -28,7 +28,7 @@ export function ServicesCarousel() {
       <div className="relative mx-auto max-w-[1240px] px-6">
         <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-5">
           <div>
-            <span className="font-heading text-xs tracking-[0.36em] text-muted-2 uppercase">Serviços</span>
+            <span className="font-heading text-sm tracking-[0.3em] text-muted-2 uppercase">Serviços</span>
             <h2 className="m-0 mt-3 font-heading text-[clamp(30px,4vw,52px)] font-semibold tracking-[0.04em] text-white uppercase">
               Serviços e preços
             </h2>
@@ -74,22 +74,22 @@ export function ServicesCarousel() {
           {services.map((s) => (
             <div
               key={s.id}
-              className="service-card relative flex min-h-[180px] flex-none basis-[280px] flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface-alt p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-silver hover:shadow-[0_26px_60px_rgba(0,0,0,0.6)]"
+              className="service-card relative flex min-h-[200px] flex-none basis-[280px] flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface-alt p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-silver hover:shadow-[0_26px_60px_rgba(0,0,0,0.6)]"
             >
               <span aria-hidden className="pointer-events-none absolute -right-3.5 -bottom-6.5 font-display text-[110px] leading-none text-white opacity-5">
                 D
               </span>
-              <h3 className="relative m-0 font-heading text-[19px] font-medium tracking-[0.08em] text-white uppercase text-balance-safe">
+              <h3 className="relative m-0 font-heading text-[21px] font-medium tracking-[0.07em] text-white uppercase text-balance-safe">
                 {s.name}
               </h3>
-              <p className="service-bio relative m-0 font-serif text-[15px] leading-relaxed text-silver-dim">
+              <p className="service-bio relative m-0 font-serif text-base leading-relaxed text-silver-dim">
                 {s.description}
               </p>
               <div className="relative mt-auto flex items-end justify-between gap-2.5 border-t border-border pt-4.5">
-                <span className="text-[13px] tracking-[0.08em] text-muted">{formatDuration(s.duration_minutes)}</span>
+                <span className="text-sm tracking-[0.06em] text-muted">{formatDuration(s.duration_minutes)}</span>
                 <span className="flex flex-col items-end">
-                  <span className="text-[11px] tracking-[0.14em] text-muted-2 uppercase">a partir de</span>
-                  <span className="font-heading text-[22px] leading-tight font-semibold text-white">
+                  <span className="text-xs tracking-[0.12em] text-muted-2 uppercase">a partir de</span>
+                  <span className="font-heading text-2xl leading-tight font-semibold text-white">
                     {formatCents(s.price_cents)}
                   </span>
                 </span>

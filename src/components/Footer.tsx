@@ -64,7 +64,7 @@ export function Footer({ onOpenAuth }: FooterProps) {
           />
 
           <div>
-            <h4 className="m-0 mb-4 font-heading text-xs font-medium tracking-[0.24em] text-white uppercase">
+            <h4 className="m-0 mb-4 font-heading text-sm font-medium tracking-[0.2em] text-white uppercase">
               Contato
             </h4>
             <div className="flex flex-col gap-2.5">
@@ -72,24 +72,24 @@ export function Footer({ onOpenAuth }: FooterProps) {
                 href={whatsAppLink(BRAND.whatsapp, `Olá, quero agendar um horário na ${BRAND.name}`)}
                 target="_blank"
                 rel="noopener"
-                className="text-[15px] text-muted transition-colors hover:text-white"
+                className="text-base text-muted transition-colors hover:text-white"
               >
                 WhatsApp
               </a>
-              <a href={BRAND.instagram} target="_blank" rel="noopener" className="text-[15px] text-muted transition-colors hover:text-white">
+              <a href={BRAND.instagram} target="_blank" rel="noopener" className="text-base text-muted transition-colors hover:text-white">
                 Instagram
               </a>
               {session ? (
-                <Link to="/conta" className="text-left text-[15px] text-muted transition-colors hover:text-white">
+                <Link to="/conta" className="text-left text-base text-muted transition-colors hover:text-white">
                   Meus agendamentos
                 </Link>
               ) : (
-                <button onClick={onOpenAuth} className="text-left text-[15px] text-muted transition-colors hover:text-white">
+                <button onClick={onOpenAuth} className="text-left text-base text-muted transition-colors hover:text-white">
                   Meus agendamentos
                 </button>
               )}
               {isAdmin && (
-                <Link to="/admin" className="text-left text-[15px] text-muted transition-colors hover:text-white">
+                <Link to="/admin" className="text-left text-base text-muted transition-colors hover:text-white">
                   Painel da barbearia
                 </Link>
               )}
@@ -114,10 +114,10 @@ export function Footer({ onOpenAuth }: FooterProps) {
 function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
     <div>
-      <h4 className="m-0 mb-4 font-heading text-xs font-medium tracking-[0.24em] text-white uppercase">{title}</h4>
+      <h4 className="m-0 mb-4 font-heading text-sm font-medium tracking-[0.2em] text-white uppercase">{title}</h4>
       <div className="flex flex-col gap-2.5">
         {links.map((l) => (
-          <a key={l.label} href={l.href} className="text-[15px] text-muted transition-colors hover:text-white">
+          <a key={l.label} href={l.href} className="text-base text-muted transition-colors hover:text-white">
             {l.label}
           </a>
         ))}

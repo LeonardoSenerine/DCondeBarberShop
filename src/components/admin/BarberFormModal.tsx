@@ -127,6 +127,9 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
 
   async function handleSave() {
     if (isNew && !linkedProfile) return fail("Busque e encontre a conta da pessoa antes de salvar.", ["link"]);
+    if (isNew && linkedProfile && !linkedProfile.full_name.trim()) {
+      return fail("Essa conta ainda não tem nome cadastrado. Peça para a pessoa completar o cadastro antes de vincular.", ["link"]);
+    }
     if (!isNew && !name.trim()) return fail("Digite o nome.", ["name"]);
     if (!effectiveId) return fail("Defina o identificador.", ["id"]);
     if (!photoPath) return fail("Envie uma foto.", ["photo"]);
@@ -156,7 +159,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
       const { error: linkErr } = await linkBarberAccount(linkedProfile.id, effectiveId);
       if (linkErr) {
         setSaving(false);
-        return fail(`Barbeiro criado, mas não deu pra vincular a conta: ${linkErr}`);
+        return fail(`Barbeiro criado, mas não foi possível vincular a conta: ${linkErr}`);
       }
     }
     setSaving(false);
@@ -239,7 +242,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
 
               {linkedProfile === null && (
                 <p className="m-0 mt-1 text-[13px] text-muted">
-                  Nenhuma conta encontrada com esse e-mail. Peça pra pessoa criar login no site primeiro.
+                  Nenhuma conta encontrada com esse e-mail. Peça à pessoa para criar login no site primeiro.
                 </p>
               )}
 
@@ -249,7 +252,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
                     <span className="block truncate text-[15px] text-white">{linkedProfile.full_name || "—"}</span>
                     <span className="block truncate text-[13px] text-muted">{linkedProfile.email}</span>
                   </span>
-                  {linkedProfile.role !== "customer" && (
+                  {linkedProfile.role !== "customer" && linkedProfile.barber_id && (
                     <span
                       className="flex-shrink-0 rounded-full border px-2.5 py-1 text-[11px] tracking-[0.08em] uppercase"
                       style={{ borderColor: "#E0B341", color: "#E0B341" }}

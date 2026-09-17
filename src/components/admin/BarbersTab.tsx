@@ -25,7 +25,7 @@ export function BarbersTab() {
   const [linking, setLinking] = useState<{ barber: Barber; currentAccount: StaffProfile | null } | null>(null);
   const [unlinking, setUnlinking] = useState<StaffProfile | null>(null);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
 
   function linkedAccountFor(barberId: string) {
     return staffProfiles.find((p) => p.barber_id === barberId) ?? null;
@@ -34,9 +34,14 @@ export function BarbersTab() {
   async function handleConfirmUnlink() {
     if (!unlinking) return;
     setUnlinkBusy(true);
-    await unlinkBarberAccount(unlinking.id);
+    const { error } = await unlinkBarberAccount(unlinking.id);
     setUnlinkBusy(false);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
     setUnlinking(null);
+    setToast({ message: "Acesso removido.", variant: "success" });
     reloadStaff();
   }
 
@@ -54,9 +59,10 @@ export function BarbersTab() {
     const { error } = await deleteBarber(removing.id);
     setDeleting(false);
     if (error) {
-      setToast(error);
+      setToast({ message: error, variant: "error" });
       return;
     }
+    setToast({ message: "Barbeiro removido.", variant: "success" });
     setRemoving(null);
     reloadBarbers();
     reloadHours();
@@ -74,12 +80,14 @@ export function BarbersTab() {
     <div>
       <div className="mb-6 flex items-center justify-between gap-3">
         <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
-        <button
-          onClick={() => setEditing({ barber: null })}
-          className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
-        >
-          + Adicionar barbeiro
-        </button>
+        {isOwner && (
+          <button
+            onClick={() => setEditing({ barber: null })}
+            className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+          >
+            + Adicionar barbeiro
+          </button>
+        )}
       </div>
 
       {busy && barbers.length === 0 && (
@@ -215,7 +223,10 @@ export function BarbersTab() {
           barber={editing.barber}
           hours={editing.barber ? hours.filter((h) => h.barber_id === editing.barber!.id) : []}
           onClose={() => setEditing(null)}
-          onSaved={reloadAll}
+          onSaved={() => {
+            setToast({ message: editing.barber ? "Barbeiro atualizado." : "Barbeiro adicionado.", variant: "success" });
+            reloadAll();
+          }}
         />
       )}
 
@@ -236,6 +247,7 @@ export function BarbersTab() {
           currentAccount={linking.currentAccount}
           onClose={() => setLinking(null)}
           onLinked={() => {
+            setToast({ message: linking.currentAccount ? "Conta trocada." : "Conta vinculada.", variant: "success" });
             setLinking(null);
             reloadStaff();
           }}
@@ -254,7 +266,7 @@ export function BarbersTab() {
         />
       )}
 
-      {toast && <Toast message={toast} onDismiss={() => setToast(null)} variant="error" />}
+      {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
     </div>
   );
 }

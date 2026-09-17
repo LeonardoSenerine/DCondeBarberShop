@@ -42,16 +42,17 @@ export function AgendaTab() {
     setActing(booking.id);
     await setBookingStatus(booking.id, "confirmed");
     setActing(null);
+    setToast("Agendamento aceito.");
     reloadAll();
 
     if (!booking.customer_phone) return;
-    const message = `Olá, ${booking.customer_name}! Seu agendamento (${booking.services?.name ?? "atendimento"}) no dia ${formatDateBR(booking.scheduled_date)} às ${formatTimeShort(booking.scheduled_time)} foi confirmado. Te esperamos na D'Conde Barbearia!`;
+    const message = `Olá, ${booking.customer_name}! Seu agendamento (${booking.services?.name ?? "atendimento"}) no dia ${formatDateBR(booking.scheduled_date)} às ${formatTimeShort(booking.scheduled_time)} foi confirmado. Aguardamos sua visita na D'Conde Barbearia!`;
     window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
   }
 
   function handleRemind(booking: BookingWithDetails) {
     if (!booking.customer_phone) return;
-    const message = `Olá, ${booking.customer_name}! Passando pra lembrar do seu horário hoje às ${formatTimeShort(booking.scheduled_time)} na D'Conde Barbearia (${booking.services?.name ?? "atendimento"}). Te esperamos!`;
+    const message = `Olá, ${booking.customer_name}! Este é um lembrete do seu horário hoje às ${formatTimeShort(booking.scheduled_time)} na D'Conde Barbearia (${booking.services?.name ?? "atendimento"}). Aguardamos sua visita!`;
     window.open(whatsAppLink(toWhatsAppPhone(booking.customer_phone), message), "_blank", "noopener");
   }
 

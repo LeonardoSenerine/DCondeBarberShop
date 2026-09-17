@@ -16,7 +16,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
   async function handleConfirm() {
-    if (!reason.trim()) return fail("Digite a mensagem pro cliente.", ["reason"]);
+    if (!reason.trim()) return fail("Digite a mensagem para o cliente.", ["reason"]);
     setBusy(true);
     clear();
     const { error: err } = await declineBooking(booking.id, reason);
@@ -66,11 +66,11 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
                 clearField("reason");
               }}
               rows={3}
-              placeholder="Explica pro cliente por que não vai dar pra atender…"
+              placeholder="Explique ao cliente o motivo pelo qual não será possível atendê-lo…"
               className={`resize-none rounded-lg border border-border bg-surface-alt px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("reason"))}`}
             />
             <span className="text-xs text-muted-2">
-              É exatamente isso que a pessoa recebe pelo WhatsApp e vê na conta dela — escreve como se tivesse falando direto com ela.
+              Esta é exatamente a mensagem que o cliente recebe pelo WhatsApp e vê em sua conta.
             </span>
           </label>
 

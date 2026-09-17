@@ -25,7 +25,7 @@ export function ReviewsTab() {
   const { reviews, loading, reload } = useAdminReviews();
   const [acting, setActing] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<ReviewWithDetails | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
   const [ratingFilter, setRatingFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("recent");
 
@@ -40,18 +40,27 @@ export function ReviewsTab() {
 
   async function togglePublish(review: ReviewWithDetails) {
     setActing(review.id);
-    await setReviewPublished(review.id, !review.published);
+    const { error } = await setReviewPublished(review.id, !review.published);
     setActing(null);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
+    setToast({ message: review.published ? "Avaliação despublicada." : "Avaliação publicada.", variant: "success" });
     reload();
   }
 
   async function handleConfirmDelete() {
     if (!deleting) return;
     setActing(deleting.id);
-    await deleteReview(deleting.id);
+    const { error } = await deleteReview(deleting.id);
     setActing(null);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
     setDeleting(null);
-    setToast("Avaliação removida.");
+    setToast({ message: "Avaliação removida.", variant: "success" });
     reload();
   }
 
@@ -150,7 +159,7 @@ export function ReviewsTab() {
         />
       )}
 
-      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
     </div>
   );
 }

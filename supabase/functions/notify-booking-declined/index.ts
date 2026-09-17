@@ -122,10 +122,12 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const [{ data: barber }, { data: service }] = await Promise.all([
+  const [{ data: barber, error: barberErr }, { data: service, error: serviceErr }] = await Promise.all([
     supabase.from("barbers").select("name").eq("id", booking.barber_id).maybeSingle(),
     supabase.from("services").select("name").eq("id", booking.service_id).maybeSingle(),
   ]);
+  if (barberErr) console.error("notify-booking-declined: barber lookup failed", barberErr);
+  if (serviceErr) console.error("notify-booking-declined: service lookup failed", serviceErr);
 
   const dateLabel = formatDateBR(booking.scheduled_date);
   const timeLabel = formatTimeShort(booking.scheduled_time);
@@ -143,7 +145,7 @@ Deno.serve(async (req) => {
     ``,
     `Motivo: ${reason}`,
     ``,
-    `Fica à vontade pra escolher outro horário quando quiser.`,
+    `Sinta-se à vontade para escolher outro horário quando desejar.`,
   ].join("\n");
 
   const html = `
@@ -158,7 +160,7 @@ Deno.serve(async (req) => {
           <tr><td style="padding:6px 0; color:#9e9e9e;">Data</td><td style="padding:6px 0; text-align:right;">${dateLabel} às ${timeLabel}</td></tr>
         </table>
         <p style="margin:20px 0 0; padding:14px; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:10px; font-size:14px; color:#e0e0e0;"><strong style="color:#9e9e9e;">Motivo:</strong> ${escapeHtml(reason)}</p>
-        <p style="margin:20px 0 0; font-size:13px; color:#a3a3a3;">Fica à vontade pra escolher outro horário quando quiser.</p>
+        <p style="margin:20px 0 0; font-size:13px; color:#a3a3a3;">Sinta-se à vontade para escolher outro horário quando desejar.</p>
       </div>
     </div>
   `;

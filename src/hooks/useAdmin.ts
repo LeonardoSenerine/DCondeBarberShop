@@ -731,6 +731,17 @@ export async function adjustProductStock(id: string, delta: number) {
   return { error: error.message };
 }
 
+/**
+ * Declares the true stock count (e.g. after a manual inventory count),
+ * unlike adjustProductStock()'s relative delta — a plain overwrite, not
+ * computed from a value the admin saw earlier, so it can't land on the
+ * wrong number if a sale/restock happened while the edit form was open.
+ */
+export async function setProductStock(id: string, stock: number) {
+  const { error } = await supabase.from("products").update({ stock }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
 export interface ProductInput {
   name: string;
   description: string | null;

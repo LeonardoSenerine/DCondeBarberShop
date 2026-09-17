@@ -51,7 +51,7 @@ export function StaffLinkModal({ barber, currentAccount, onClose, onLinked }: St
       const { error: unlinkErr } = await unlinkBarberAccount(currentAccount.id);
       if (unlinkErr) {
         setLinking(false);
-        return fail(`Nova conta vinculada, mas não deu pra liberar a antiga: ${unlinkErr}`);
+        return fail(`Nova conta vinculada, mas não foi possível liberar a antiga: ${unlinkErr}`);
       }
     }
     setLinking(false);
@@ -83,7 +83,7 @@ export function StaffLinkModal({ barber, currentAccount, onClose, onLinked }: St
           <p className="m-0 mb-6 text-[14px] text-muted">
             {isSwap
               ? `Substitui quem tem acesso ao painel como ${barber.name}. A conta atual (${currentAccount!.full_name || currentAccount!.email}) volta a ser um cliente comum.`
-              : `Dá acesso ao painel pra ${barber.name}. A pessoa precisa já ter feito login pelo menos uma vez no site.`}
+              : `Concede acesso ao painel para ${barber.name}. A pessoa precisa já ter feito login pelo menos uma vez no site.`}
           </p>
 
           <label className="flex flex-col gap-2">
@@ -127,9 +127,9 @@ export function StaffLinkModal({ barber, currentAccount, onClose, onLinked }: St
                   {ROLE_LABEL[found.role]}
                 </span>
               </div>
-              {found.role !== "customer" && found.barber_id !== barber.id && (
+              {found.role !== "customer" && found.barber_id && found.barber_id !== barber.id && (
                 <p className="m-0 text-[13px]" style={{ color: "#E0B341" }}>
-                  Essa conta já tem acesso vinculado a outro barbeiro. Vincular agora move o acesso dela pra {barber.name}.
+                  Essa conta já tem acesso vinculado a outro barbeiro. Vincular agora transfere o acesso dela para {barber.name}.
                 </p>
               )}
             </div>

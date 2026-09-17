@@ -69,10 +69,16 @@ begin
 end;
 $$;
 
+-- WHEN skips the pg_net call (and the function invocation it triggers)
+-- for the vast majority of bookings updates that have nothing to do with
+-- a decline — accept/complete/cancel/reminder-sent/review-dismissed etc.
+-- all UPDATE this same row. The function's own guard is enough for
+-- correctness, but filtering here avoids wasting Edge Function invocations.
 drop trigger if exists on_booking_update_notify_declined on public.bookings;
 create trigger on_booking_update_notify_declined
   after update on public.bookings
   for each row
+  when (new.status = 'cancelled' and new.decline_reason is not null and old.status is distinct from new.status)
   execute function public.notify_booking_declined();
 
 -- ─────────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import type { GalleryPhoto } from "@/hooks/useAdmin";
 import { useBarbers, useServices } from "@/hooks/useCatalog";
 import { Skeleton } from "@/components/Skeleton";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { Toast } from "@/components/admin/Toast";
 
 type FormState = { mode: "add"; file: File; previewUrl: string } | { mode: "edit"; photo: GalleryPhoto } | null;
 
@@ -19,6 +20,7 @@ export function GalleryTab() {
   const [description, setDescription] = useState("");
   const [removing, setRemoving] = useState<GalleryPhoto | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function resetForm() {
@@ -49,8 +51,13 @@ export function GalleryTab() {
   async function handleConfirmRemove() {
     if (!removing) return;
     setDeleting(true);
-    await removeGalleryPhoto(removing.id);
+    const { error: err } = await removeGalleryPhoto(removing.id);
     setDeleting(false);
+    if (err) {
+      setToast({ message: err, variant: "error" });
+      return;
+    }
+    setToast({ message: "Foto removida.", variant: "success" });
     setRemoving(null);
     reload();
   }
@@ -59,17 +66,18 @@ export function GalleryTab() {
     if (!form) return;
     setSaving(true);
     setError(null);
+    const isNew = form.mode === "add";
     const meta = {
       barberId: barberId || null,
       serviceLabel: serviceLabel || null,
       clientLabel: description.trim() || null,
     };
-    const { error: err } =
-      form.mode === "add"
-        ? await uploadGalleryPhoto(form.file, photos.length + 1, meta)
-        : await updateGalleryPhoto(form.photo.id, meta);
+    const { error: err } = isNew
+      ? await uploadGalleryPhoto(form.file, photos.length + 1, meta)
+      : await updateGalleryPhoto(form.photo.id, meta);
     setSaving(false);
     if (err) return setError(err);
+    setToast({ message: isNew ? "Foto adicionada." : "Foto atualizada.", variant: "success" });
     resetForm();
     reload();
   }
@@ -209,6 +217,8 @@ export function GalleryTab() {
           onClose={() => setRemoving(null)}
         />
       )}
+
+      {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
     </div>
   );
 }

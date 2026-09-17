@@ -13,12 +13,12 @@ export function ProductsTab() {
   const [editing, setEditing] = useState<{ product: Product | null } | null>(null);
   const [removing, setRemoving] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
 
   async function handleAdjust(id: string, delta: number) {
     const { error } = await adjustProductStock(id, delta);
     if (error) {
-      setToast(error);
+      setToast({ message: error, variant: "error" });
       return;
     }
     reload();
@@ -30,9 +30,10 @@ export function ProductsTab() {
     const { error } = await deleteProduct(removing.id);
     setDeleting(false);
     if (error) {
-      setToast(error);
+      setToast({ message: error, variant: "error" });
       return;
     }
+    setToast({ message: "Produto removido.", variant: "success" });
     setRemoving(null);
     reload();
   }
@@ -154,7 +155,16 @@ export function ProductsTab() {
         );
       })}
 
-      {editing && <ProductFormModal product={editing.product} onClose={() => setEditing(null)} onSaved={reload} />}
+      {editing && (
+        <ProductFormModal
+          product={editing.product}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setToast({ message: editing.product ? "Produto atualizado." : "Produto adicionado.", variant: "success" });
+            reload();
+          }}
+        />
+      )}
 
       {removing && (
         <ConfirmModal
@@ -166,7 +176,7 @@ export function ProductsTab() {
         />
       )}
 
-      {toast && <Toast message={toast} onDismiss={() => setToast(null)} variant="error" />}
+      {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
     </div>
   );
 }

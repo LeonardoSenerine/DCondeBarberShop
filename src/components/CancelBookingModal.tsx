@@ -60,7 +60,7 @@ export function CancelBookingModal({ booking, onClose, onCancelled }: CancelBook
                 clearField("reason");
               }}
               rows={3}
-              placeholder="Conta pro barbeiro por que precisa cancelar…"
+              placeholder="Explique ao barbeiro o motivo do cancelamento…"
               className={`resize-none rounded-lg border border-border bg-surface-alt px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("reason"))}`}
             />
             <span className="text-xs text-muted-2">O barbeiro recebe esse motivo por e-mail.</span>

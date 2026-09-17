@@ -87,8 +87,12 @@ export function AccountPage() {
   async function handleDismissDecline() {
     if (!declinedNotice) return;
     setDismissingDecline(true);
-    await markDeclineSeen(declinedNotice.id);
+    const { error } = await markDeclineSeen(declinedNotice.id);
     setDismissingDecline(false);
+    if (error) {
+      setActionError(`Não foi possível fechar o aviso: ${error}`);
+      return;
+    }
     reload();
   }
 
@@ -121,7 +125,7 @@ export function AccountPage() {
     });
     setSubmittingReviewId(null);
     if (error) {
-      setReviewError("Não deu pra enviar sua avaliação. Tenta de novo.");
+      setReviewError("Não foi possível enviar sua avaliação. Tente novamente.");
       return;
     }
     setReviewDrafts((d) => {
@@ -133,8 +137,12 @@ export function AccountPage() {
 
   async function handleDismissReview(booking: BookingWithDetails) {
     setDismissingReviewId(booking.id);
-    await dismissReviewPrompt(booking.id);
+    const { error } = await dismissReviewPrompt(booking.id);
     setDismissingReviewId(null);
+    if (error) {
+      setReviewError(`Não foi possível dispensar o convite: ${error}`);
+      return;
+    }
     reload();
   }
 
@@ -174,7 +182,7 @@ export function AccountPage() {
       customer_email: profile?.email ?? session.user.email ?? null,
     });
     if (error) {
-      setActionError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
+      setActionError(`Não foi possível confirmar seu agendamento: ${friendlyBookingError(error)}`);
       return;
     }
     setBookingOpen(false);

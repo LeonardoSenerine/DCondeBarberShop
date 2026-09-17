@@ -175,11 +175,11 @@ Deno.serve(async (req) => {
       const text = [
         `Olá, ${booking.customer_name}!`,
         ``,
-        `Passando pra lembrar do seu horário na D'Conde Barbearia:`,
+        `Este é um lembrete do seu horário na D'Conde Barbearia:`,
         `${serviceName} com ${barberName}`,
         `Hoje, ${dateLabel} às ${timeLabel}`,
         ``,
-        `Te esperamos!`,
+        `Aguardamos sua visita!`,
       ].join("\n");
 
       const html = `
@@ -187,13 +187,13 @@ Deno.serve(async (req) => {
           <div style="max-width:440px; margin:0 auto; background:#141414; border:1px solid #2a2a2a; border-radius:16px; padding:32px;">
             <p style="margin:0 0 4px; font-size:12px; letter-spacing:2px; color:#9e9e9e; text-transform:uppercase;">D&rsquo;Conde Barbearia</p>
             <h1 style="margin:0 0 20px; font-size:20px; color:#ffffff;">Lembrete do seu horário</h1>
-            <p style="margin:0 0 20px; font-size:14px; color:#e0e0e0;">Olá, ${escapeHtml(booking.customer_name)}! Passando pra lembrar do seu horário hoje.</p>
+            <p style="margin:0 0 20px; font-size:14px; color:#e0e0e0;">Olá, ${escapeHtml(booking.customer_name)}! Este é um lembrete do seu horário hoje.</p>
             <table role="presentation" style="width:100%; border-collapse:collapse; font-size:14px; color:#e0e0e0;">
               <tr><td style="padding:6px 0; color:#9e9e9e;">Serviço</td><td style="padding:6px 0; text-align:right;">${escapeHtml(serviceName)}</td></tr>
               <tr><td style="padding:6px 0; color:#9e9e9e;">Barbeiro</td><td style="padding:6px 0; text-align:right;">${escapeHtml(barberName)}</td></tr>
               <tr><td style="padding:6px 0; color:#9e9e9e;">Data</td><td style="padding:6px 0; text-align:right;">${dateLabel} às ${timeLabel}</td></tr>
             </table>
-            <p style="margin:20px 0 0; font-size:13px; color:#a3a3a3;">Te esperamos!</p>
+            <p style="margin:20px 0 0; font-size:13px; color:#a3a3a3;">Aguardamos sua visita!</p>
           </div>
         </div>
       `;

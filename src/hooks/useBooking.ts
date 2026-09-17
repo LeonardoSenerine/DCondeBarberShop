@@ -252,7 +252,7 @@ function sampleMyBookings(): BookingWithDetails[] {
       customer_email: null,
       reminder_sent_at: null,
       review_dismissed_at: null,
-      decline_reason: "Vou estar de folga nesse dia — remarca pra outro horário que eu te atendo com calma.",
+      decline_reason: "Estarei de folga nesse dia. Por favor, escolha outro horário para que possamos atendê-lo com calma.",
       decline_seen_at: null,
       cancel_reason: null,
       created_at: new Date().toISOString(),

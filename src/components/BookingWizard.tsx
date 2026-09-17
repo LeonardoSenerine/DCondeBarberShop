@@ -327,7 +327,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
               Escolha o serviço
             </h3>
             <p className="mb-4.5 text-sm text-muted-2">
-              Com {barber?.name ?? "—"}. Dá pra trocar antes de confirmar.
+              Com {barber?.name ?? "—"}. É possível alterar antes de confirmar.
             </p>
             <div className="grid max-h-[420px] grid-cols-1 gap-2.5 overflow-y-auto pr-1.5 md:grid-cols-2">
               {servicesLoading && (
@@ -544,7 +544,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
               <div className="my-1.5 h-px bg-border" />
               <div className="flex items-center justify-between gap-3">
                 <span className="shrink-0 font-heading text-sm tracking-[0.15em] text-white uppercase sm:text-base sm:tracking-[0.2em]">
-                  Apartir de
+                  A partir de
                 </span>
                 <span className="whitespace-nowrap font-heading text-3xl font-semibold text-white sm:text-5xl">
                   {service ? formatCents(service.price_cents) : "—"}

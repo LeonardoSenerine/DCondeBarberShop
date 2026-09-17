@@ -44,16 +44,18 @@
 //
 // 4) QUEM RECEBE O E-MAIL
 //
-//    Primeiro tenta o e-mail cadastrado do barbeiro daquele agendamento
-//    (public.barbers.email). Se ele não tiver e-mail salvo, cai pro mesmo
-//    e-mail fixo que notify-new-booking usa hoje — troque o FALLBACK_EMAIL
-//    abaixo, ou apague esse bloco, se preferir só pular o aviso nesse caso.
+//    O e-mail cadastrado do barbeiro daquele agendamento
+//    (public.barbers.email — pode ser preenchido na aba Barbeiros do
+//    admin). Se ele não tiver e-mail salvo, o aviso é pulado (nada é
+//    enviado) em vez de cair num endereço fixo — encaminhar o motivo do
+//    cancelamento (com nome e telefone do cliente) pra um e-mail que não é
+//    necessariamente o do barbeiro certo seria vazar dado de cliente pro
+//    lugar errado. Se quiser um destinatário de fallback, adicione um aqui
+//    explicitamente.
 // ─────────────────────────────────────────────────────────────────────────
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import nodemailer from "npm:nodemailer@6";
-
-const FALLBACK_EMAIL = "senerineleonardo@gmail.com";
 
 interface BookingRow {
   id: string;
@@ -132,12 +134,21 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const [{ data: barber }, { data: service }] = await Promise.all([
+  const [{ data: barber, error: barberErr }, { data: service, error: serviceErr }] = await Promise.all([
     supabase.from("barbers").select("name, email").eq("id", booking.barber_id).maybeSingle(),
     supabase.from("services").select("name").eq("id", booking.service_id).maybeSingle(),
   ]);
+  if (barberErr) console.error("notify-booking-cancelled-by-customer: barber lookup failed", barberErr);
+  if (serviceErr) console.error("notify-booking-cancelled-by-customer: service lookup failed", serviceErr);
 
-  const recipient = barber?.email || FALLBACK_EMAIL;
+  // No fallback address on purpose — the cancellation reason plus the
+  // customer's name/phone would otherwise go to some other inbox instead
+  // of the barber it's actually about. Fill in barbers.email (admin →
+  // Barbeiros) to receive this.
+  if (!barber?.email) {
+    return new Response(JSON.stringify({ skipped: true, reason: "no_barber_email" }), { status: 200 });
+  }
+  const recipient = barber.email;
   const dateLabel = formatDateBR(booking.scheduled_date);
   const timeLabel = formatTimeShort(booking.scheduled_time);
   const serviceName = service?.name ?? "o atendimento";

@@ -82,7 +82,7 @@ export function SitePage() {
       setAuthOpen(false);
       setPendingBooking(null);
       if (error) {
-        setBookingError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
+        setBookingError(`Não foi possível confirmar seu agendamento: ${friendlyBookingError(error)}`);
         return;
       }
       navigate("/conta");
@@ -112,7 +112,7 @@ export function SitePage() {
         customer_email: profile?.email ?? session.user.email ?? null,
       });
       if (error) {
-        setBookingError(`Não deu pra confirmar seu agendamento: ${friendlyBookingError(error)}`);
+        setBookingError(`Não foi possível confirmar seu agendamento: ${friendlyBookingError(error)}`);
         return;
       }
       navigate("/conta");

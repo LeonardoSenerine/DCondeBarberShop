@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { saveProduct, adjustProductStock, uploadProductPhoto, type ProductInput } from "@/hooks/useAdmin";
+import { saveProduct, setProductStock, uploadProductPhoto, type ProductInput } from "@/hooks/useAdmin";
 import type { Product } from "@/hooks/useCatalog";
 import { formatCents } from "@/lib/format";
 import { effectivePriceCents } from "@/lib/product";
@@ -77,14 +77,17 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
     }
 
     // Editing an existing product: saveProduct() deliberately skips `stock`
-    // (see its comment) so it can't stomp a concurrent sale/restock — apply
-    // any change here instead, as a delta through the same atomic RPC the
-    // list view's +/- stepper uses.
+    // (see its comment) so it can't stomp a concurrent sale/restock — this
+    // field is for declaring the actual count (e.g. after a manual
+    // inventory check), so it overwrites directly instead of going through
+    // adjustProductStock()'s delta: a delta computed from the stale value
+    // the form opened with could land on the wrong number if a sale or the
+    // list view's +/- stepper changed the real stock while this was open.
     if (product && newStock !== product.stock) {
-      const { error: stockErr } = await adjustProductStock(product.id, newStock - product.stock);
+      const { error: stockErr } = await setProductStock(product.id, newStock);
       if (stockErr) {
         setSaving(false);
-        return fail(`Produto salvo, mas não deu pra atualizar o estoque: ${stockErr}`);
+        return fail(`Produto salvo, mas não foi possível atualizar o estoque: ${stockErr}`);
       }
     }
 

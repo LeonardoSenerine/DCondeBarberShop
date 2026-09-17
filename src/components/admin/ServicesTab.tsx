@@ -5,6 +5,7 @@ import { formatCents, formatDuration } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { ServiceFormModal } from "@/components/admin/ServiceFormModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { Toast } from "@/components/admin/Toast";
 
 type Editing = { service: Service | null } | null;
 
@@ -13,12 +14,18 @@ export function ServicesTab() {
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<Service | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
 
   async function handleConfirmDelete() {
     if (!removing) return;
     setDeleting(true);
-    await removeService(removing.id);
+    const { error } = await removeService(removing.id);
     setDeleting(false);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
+    setToast({ message: "Serviço removido.", variant: "success" });
     setRemoving(null);
     reload();
   }
@@ -83,7 +90,10 @@ export function ServicesTab() {
           service={editing.service}
           sortOrder={services.length + 1}
           onClose={() => setEditing(null)}
-          onSaved={reload}
+          onSaved={() => {
+            setToast({ message: editing.service ? "Serviço atualizado." : "Serviço adicionado.", variant: "success" });
+            reload();
+          }}
         />
       )}
 
@@ -96,6 +106,8 @@ export function ServicesTab() {
           onClose={() => setRemoving(null)}
         />
       )}
+
+      {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
     </div>
   );
 }

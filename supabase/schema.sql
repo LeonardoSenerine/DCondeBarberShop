@@ -234,6 +234,23 @@ begin
   then
     raise exception 'bookings_immutable_fields';
   end if;
+
+  -- decline_reason is meant to be the barber's own words (see
+  -- DeclineBookingModal.tsx and notify-booking-declined) — without this, a
+  -- customer could set it on their own booking directly via the client SDK
+  -- (bookings_update_own_or_admin's USING clause only checks customer_id =
+  -- auth.uid(), it doesn't care which columns change) and fabricate a
+  -- "barber declined you" notice/e-mail with attacker-chosen text.
+  -- auth.uid() is null for service-role/backend contexts (Edge Functions,
+  -- the SQL Editor) — already trusted, same reasoning as
+  -- prevent_role_escalation() above.
+  if new.decline_reason is distinct from old.decline_reason
+    and auth.uid() is not null
+    and not public.is_admin()
+  then
+    raise exception 'only_admin_can_set_decline_reason';
+  end if;
+
   return new;
 end;
 $$;

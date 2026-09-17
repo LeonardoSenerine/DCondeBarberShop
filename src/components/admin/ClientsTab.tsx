@@ -71,13 +71,13 @@ export function ClientsTab() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-lg text-white sm:text-xl">{c.name}</span>
-              <span className="block truncate text-sm text-muted sm:text-base">{c.phone}</span>
+              <span className="block truncate text-[15px] text-muted sm:text-base">{c.phone}</span>
             </span>
             <span className="flex-shrink-0 text-right font-heading text-lg text-white sm:text-2xl">
               {formatCents(c.totalCents)}
             </span>
           </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted sm:text-base">
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-[15px] text-muted sm:text-base">
             <span>{c.visits} visitas</span>
             <span>Última: {formatDateBR(c.lastVisit)}</span>
           </div>
@@ -85,7 +85,7 @@ export function ClientsTab() {
       ))}
       {clients.length > 0 && (
         <div className="mt-5 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm text-muted sm:text-base">
+          <span className="text-[15px] text-muted sm:text-base">
             {clients.length} cliente{clients.length === 1 ? "" : "s"} · página {currentPage} de {pageCount}
           </span>
           <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />

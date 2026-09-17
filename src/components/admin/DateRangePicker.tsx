@@ -113,7 +113,7 @@ export function DateRangePicker({
               <button
                 key={p.label}
                 onClick={() => applyPreset(p.days)}
-                className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-[12px] tracking-[0.06em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-[13px] tracking-[0.05em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
               >
                 {p.label}
               </button>
@@ -145,7 +145,7 @@ export function DateRangePicker({
 
           <div className="mb-2 grid grid-cols-7 gap-1.5">
             {WEEKDAY_SHORT.map((w, i) => (
-              <span key={i} className="text-center text-[12px] tracking-[0.08em] text-muted-2">
+              <span key={i} className="text-center text-[13px] tracking-[0.06em] text-muted-2">
                 {w}
               </span>
             ))}

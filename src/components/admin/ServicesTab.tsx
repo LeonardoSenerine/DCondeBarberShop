@@ -37,7 +37,7 @@ export function ServicesTab() {
           <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase sm:text-3xl">
             Serviços e preços
           </h2>
-          <span className="text-sm text-muted sm:text-base">As alterações aparecem no site na hora.</span>
+          <span className="text-[15px] text-muted sm:text-base">As alterações aparecem no site na hora.</span>
         </div>
         <button
           onClick={() => setEditing({ service: null })}
@@ -63,7 +63,7 @@ export function ServicesTab() {
         >
           <div className="min-w-0">
             <span className="block text-base text-white sm:text-lg">{s.name}</span>
-            <span className="block text-sm text-muted">{formatDuration(s.duration_minutes)}</span>
+            <span className="block text-[15px] text-muted">{formatDuration(s.duration_minutes)}</span>
           </div>
           <div className="flex items-center justify-between gap-3 sm:justify-end sm:gap-5">
             <span className="font-heading text-base text-white sm:text-lg">{formatCents(s.price_cents)}</span>

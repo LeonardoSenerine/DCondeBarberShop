@@ -189,7 +189,7 @@ export function AdminPage() {
               <span className="block truncate font-heading text-base text-white">
                 {profile.full_name || profile.email}
               </span>
-              <span className="block text-xs tracking-[0.12em] text-muted-2 uppercase">
+              <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">
                 {roleLabel}
               </span>
             </span>
@@ -231,7 +231,7 @@ export function AdminPage() {
 
       <main className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
         <header className="sticky top-0 z-10 border-b border-border bg-ink/95 px-6 py-6 backdrop-blur lg:px-10">
-          <h1 className="m-0 font-heading text-[34px] font-semibold tracking-[0.05em] text-white uppercase">
+          <h1 className="m-0 font-heading text-[38px] font-semibold tracking-[0.05em] text-white uppercase">
             {active.name}
           </h1>
           <p className="mt-1.5 text-lg text-muted first-letter:uppercase">

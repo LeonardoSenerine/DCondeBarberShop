@@ -80,13 +80,13 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
           <h3 className="m-0 mb-1 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
             Concluir agendamento
           </h3>
-          <p className="m-0 mb-6 text-[14px] text-muted">
+          <p className="m-0 mb-6 text-[15px] leading-relaxed text-muted">
             {booking.customer_name} · {booking.services?.name}
           </p>
 
           <div className="flex flex-col gap-4">
             <div>
-              <span className="mb-2 block text-[13px] text-muted">Forma de pagamento</span>
+              <span className="mb-2 block text-sm text-muted">Forma de pagamento</span>
               <div className="flex flex-wrap gap-2">
                 {METHODS.map((m) => {
                   const on = m === method;
@@ -109,7 +109,7 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
             </div>
 
             <label className="flex flex-col gap-2">
-              <span className="text-[13px] text-muted">Valor do serviço (R$)</span>
+              <span className="text-sm text-muted">Valor do serviço (R$)</span>
               <input
                 inputMode="decimal"
                 value={value}
@@ -122,7 +122,7 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
             </label>
 
             <div>
-              <span className="mb-2 block text-[13px] text-muted">Produtos levados (opcional)</span>
+              <span className="mb-2 block text-sm text-muted">Produtos levados (opcional)</span>
               <div className="scroll-thin max-h-[240px] overflow-y-auto rounded-lg border border-border bg-surface-alt">
                 {available.length === 0 && (
                   <p className="m-0 p-3.5 text-[13px] text-muted">Nenhum produto cadastrado.</p>
@@ -165,7 +165,7 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
             </div>
 
             <div className="flex items-baseline justify-between border-t border-border pt-3.5">
-              <span className="text-[13px] text-muted">Total</span>
+              <span className="text-sm text-muted">Total</span>
               <span className="font-heading text-[22px] text-white">{formatCents(totalCents)}</span>
             </div>
 

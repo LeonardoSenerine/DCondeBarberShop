@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFinance, type FinancePeriod } from "@/hooks/useAdmin";
 import { useBarbers } from "@/hooks/useCatalog";
 import { useAuth } from "@/context/AuthContext";
@@ -18,6 +18,37 @@ function shortMoney(cents: number) {
   const v = cents / 100;
   if (v >= 1000) return `${(v / 1000).toFixed(1).replace(".", ",")}k`;
   return String(Math.round(v));
+}
+
+function AnimatedMoney({ cents }: { cents: number }) {
+  const [displayed, setDisplayed] = useState(0);
+  const lastValue = useRef(0);
+
+  useEffect(() => {
+    const from = lastValue.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      lastValue.current = cents;
+      setDisplayed(cents);
+      return;
+    }
+
+    const duration = 700;
+    const startedAt = performance.now();
+    let frame = 0;
+    const animate = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(from + (cents - from) * eased);
+      lastValue.current = value;
+      setDisplayed(value);
+      if (progress < 1) frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [cents]);
+
+  return <>{formatCents(displayed)}</>;
 }
 
 export function FinanceTab() {
@@ -100,17 +131,17 @@ export function FinanceTab() {
   const stats = [
     {
       label: "Ticket médio",
-      value: formatCents(avgTicket),
+      cents: avgTicket,
       note: `${serviceCount} atendimentos`,
     },
     {
       label: "Serviços",
-      value: formatCents(revenue - productRevenue),
+      cents: revenue - productRevenue,
       note: `${serviceCount} no período`,
     },
     {
       label: "Produtos",
-      value: formatCents(productRevenue),
+      cents: productRevenue,
       note: "Vendas no balcão",
     },
     {
@@ -248,12 +279,12 @@ export function FinanceTab() {
         <>
           {/* hero + stat grid */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-            <div className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-8">
-              <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
+            <div className="dc-finance-card flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-8">
+              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Receita no período
               </span>
-              <div className="mt-4 font-heading text-[38px] leading-none font-semibold text-white tabular-nums sm:text-[54px]">
-                {formatCents(revenue)}
+              <div className="dc-finance-value mt-4 font-heading text-[42px] leading-none font-semibold text-white tabular-nums sm:text-[58px]">
+                <AnimatedMoney cents={revenue} />
               </div>
               <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
                 {transactions.length} lançamentos · {serviceCount} atendimentos
@@ -271,15 +302,16 @@ export function FinanceTab() {
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {stats.map((s) => (
-                <div
-                  key={s.label}
-                  className="rounded-2xl border border-border bg-surface p-4 sm:p-7"
+                  <div
+                    key={s.label}
+                  className="dc-finance-card rounded-2xl border border-border bg-surface p-4 sm:p-7"
+                  style={{ animationDelay: `${100 + stats.indexOf(s) * 70}ms` }}
                 >
-                  <span className="font-heading text-xs tracking-[0.18em] text-muted-2 uppercase sm:text-sm">
+                  <span className="font-heading text-[13px] font-medium tracking-[0.14em] text-muted-2 uppercase sm:text-[15px]">
                     {s.label}
                   </span>
-                  <div className="mt-2 font-heading text-xl leading-tight font-semibold text-white tabular-nums sm:mt-2.5 sm:text-[30px]">
-                    {s.value}
+                  <div className="dc-finance-value mt-2 font-heading text-[22px] leading-tight font-semibold text-white tabular-nums sm:mt-2.5 sm:text-[32px]">
+                    {"cents" in s ? <AnimatedMoney cents={s.cents ?? 0} /> : s.value}
                   </div>
                   <div className="mt-1 text-xs text-muted sm:mt-1.5 sm:text-sm">
                     {s.note}
@@ -290,9 +322,9 @@ export function FinanceTab() {
           </div>
 
           {/* area chart */}
-          <div className="rounded-2xl border border-border bg-surface p-8">
+          <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "160ms" }}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
+              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Faturamento
               </span>
               <span className="text-lg text-muted">
@@ -326,6 +358,7 @@ export function FinanceTab() {
                     onMouseLeave={() => setHover(null)}
                   >
                     <svg
+                      key={`${period}-${customFrom}-${customTo}-${barberId}-${revenue}`}
                       viewBox="0 0 100 100"
                       preserveAspectRatio="none"
                       className="h-full w-full overflow-visible"
@@ -362,8 +395,9 @@ export function FinanceTab() {
                           vectorEffect="non-scaling-stroke"
                         />
                       ))}
-                      <path d={areaPath} fill="url(#finFill)" />
+                      <path className="dc-finance-area" d={areaPath} fill="url(#finFill)" />
                       <path
+                        className="dc-finance-line"
                         d={linePath}
                         fill="none"
                         stroke="var(--color-silver)"
@@ -371,6 +405,7 @@ export function FinanceTab() {
                         strokeLinejoin="round"
                         strokeLinecap="round"
                         vectorEffect="non-scaling-stroke"
+                        pathLength="1"
                       />
                       {hover != null && chart[hover] && (
                         <line
@@ -471,8 +506,8 @@ export function FinanceTab() {
 
           {/* payment + ledger */}
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
-            <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
-              <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
+            <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
+              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Formas de pagamento
               </span>
               <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
@@ -494,7 +529,7 @@ export function FinanceTab() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
                       <div
-                        className="h-full rounded-full"
+                        className="dc-finance-progress h-full rounded-full"
                         style={{
                           width: `${Math.round(m.pct * 100)}%`,
                           background: "var(--color-silver)",
@@ -507,8 +542,8 @@ export function FinanceTab() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
-              <span className="font-heading text-sm tracking-[0.2em] text-muted-2 uppercase">
+            <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "300ms" }}>
+              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Últimos lançamentos
               </span>
               <div className="mt-4 flex max-h-[460px] flex-col overflow-y-auto pr-1">

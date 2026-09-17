@@ -111,7 +111,7 @@ export function ReviewsTab() {
                   <span className="font-heading text-lg text-white">{r.customer_name}</span>
                   <StarRating value={r.rating} size={16} />
                   <span
-                    className="rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.08em] uppercase"
+                    className="rounded-full px-2.5 py-1 text-[13px] font-medium tracking-[0.07em] uppercase"
                     style={
                       r.published
                         ? { background: "rgba(120,200,140,0.14)", color: "#7FC98F" }
@@ -121,10 +121,10 @@ export function ReviewsTab() {
                     {r.published ? "Publicada" : "Não publicada"}
                   </span>
                 </div>
-                <span className="mt-1 block text-sm text-muted">
+                <span className="mt-1 block text-[15px] text-muted">
                   {r.services?.name} com {r.barbers?.name} · {formatDateBR(r.created_at.slice(0, 10))}
                 </span>
-                {r.comment && <p className="m-0 mt-2.5 max-w-[60ch] text-[15px] text-white">{r.comment}</p>}
+                {r.comment && <p className="m-0 mt-2.5 max-w-[60ch] text-[17px] leading-relaxed text-white">{r.comment}</p>}
               </div>
               <div className="flex shrink-0 gap-2.5">
                 <button

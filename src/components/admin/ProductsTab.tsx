@@ -87,12 +87,12 @@ export function ProductsTab() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-base text-white sm:text-lg">{p.name}</span>
                   {sale && (
-                    <span className="rounded-full border border-silver px-2 py-0.5 text-[11px] tracking-[0.1em] text-white uppercase">
+                    <span className="rounded-full border border-silver px-2 py-0.5 text-[13px] tracking-[0.08em] text-white uppercase">
                       -{p.sale_percent}%{p.sale_until ? ` até ${formatDateBR(p.sale_until).slice(0, 5)}` : ""}
                     </span>
                   )}
                 </div>
-                <span className="block text-sm text-muted-2">{p.category}</span>
+                <span className="block text-[15px] text-muted-2">{p.category}</span>
               </div>
 
               <div className="flex-shrink-0 text-right font-heading text-white tabular-nums">
@@ -111,7 +111,7 @@ export function ProductsTab() {
             <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span
-                  className="rounded-full border px-2.5 py-1 text-xs tracking-[0.1em] uppercase sm:px-3 sm:py-1.5 sm:text-sm"
+                  className="rounded-full border px-2.5 py-1 text-[13px] tracking-[0.08em] uppercase sm:px-3 sm:py-1.5 sm:text-sm"
                   style={{ color: lowStock ? "#FFFFFF" : "#A3A3A3", borderColor: lowStock ? "#E0E0E0" : "#2A2A2A" }}
                 >
                   {status}

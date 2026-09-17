@@ -226,7 +226,7 @@ export function GalleryTab() {
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-sm text-muted">{label}</span>
       {children}
     </label>
   );
@@ -246,7 +246,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-12 w-full cursor-pointer appearance-none rounded-lg border border-border bg-surface-alt px-3.5 pr-10 text-[15px] text-white outline-none transition-colors focus:border-silver"
+        className="min-h-12 w-full cursor-pointer appearance-none rounded-lg border border-border bg-surface-alt px-3.5 pr-10 text-base text-white outline-none transition-colors focus:border-silver"
       >
         {children}
       </select>

@@ -246,7 +246,7 @@ function AgendaList({ items, loading, skeletonCount, showDate, emptyMessage, get
 function AgendaHeader() {
   return (
     <div
-      className="grid items-center gap-6 border-t border-border px-3 py-3 font-heading text-sm tracking-widest text-muted-2 uppercase"
+      className="grid items-center gap-6 border-t border-border px-3 py-3.5 font-heading text-[15px] tracking-[0.12em] text-muted-2 uppercase"
       style={{ gridTemplateColumns: AGENDA_COLS }}
     >
       <span>Quando</span>
@@ -320,7 +320,7 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
     >
       <span>
         {showDate && (
-          <span className="block font-heading text-[11px] tracking-[0.12em] text-muted-2 uppercase">
+          <span className="block font-heading text-[13px] tracking-[0.1em] text-muted-2 uppercase">
             {shortDateLabel(a.scheduled_date)}
           </span>
         )}
@@ -356,7 +356,7 @@ function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onCompl
       <div className="flex items-start justify-between gap-3">
         <span>
           {showDate && (
-            <span className="block font-heading text-[11px] tracking-[0.12em] text-muted-2 uppercase">
+            <span className="block font-heading text-[13px] tracking-[0.1em] text-muted-2 uppercase">
               {shortDateLabel(a.scheduled_date)}
             </span>
           )}
@@ -371,7 +371,7 @@ function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onCompl
         <span className="min-w-0">
           <span className="block truncate text-lg text-white">{a.customer_name}</span>
           <span className="block truncate text-base text-muted">{a.services?.name}</span>
-          {a.barbers?.name && <span className="block truncate text-sm text-muted-2">{a.barbers.name}</span>}
+          {a.barbers?.name && <span className="block truncate text-[15px] text-muted-2">{a.barbers.name}</span>}
         </span>
         <span className="shrink-0 font-heading text-xl text-white">{formatCents(a.price_cents)}</span>
       </div>

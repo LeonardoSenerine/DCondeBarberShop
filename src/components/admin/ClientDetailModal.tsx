@@ -48,7 +48,7 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
               <h3 className="m-0 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
                 {client.name}
               </h3>
-              <span className="block text-[13px] text-muted">{client.phone}</span>
+              <span className="block text-sm text-muted">{client.phone}</span>
             </div>
           </div>
 
@@ -78,9 +78,9 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
                     className="grid items-center gap-3 border-t border-border py-3.5"
                     style={{ gridTemplateColumns: APPT_COLS }}
                   >
-                    <span className="text-[13px] text-muted">{formatDateBR(a.date)}</span>
+                    <span className="text-sm text-muted">{formatDateBR(a.date)}</span>
                     <span className="text-[15px] text-white">{a.service}</span>
-                    <span className="text-[13px] text-muted">{a.barber}</span>
+                    <span className="text-sm text-muted">{a.barber}</span>
                     <BookingStatusBadge status={STATUS_KEY[a.status] ?? a.status} />
                     <span className="text-right font-heading text-[15px] text-white">{formatCents(a.priceCents)}</span>
                   </div>
@@ -108,9 +108,9 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
                     className="grid items-center gap-3 border-t border-border py-3.5"
                     style={{ gridTemplateColumns: PRODUCT_COLS }}
                   >
-                    <span className="text-[13px] text-muted">{formatDateBR(p.date)}</span>
+                    <span className="text-sm text-muted">{formatDateBR(p.date)}</span>
                     <span className="text-[15px] text-white">{p.product}</span>
-                    <span className="text-[13px] text-muted">x{p.qty}</span>
+                    <span className="text-sm text-muted">x{p.qty}</span>
                     <span className="text-right font-heading text-[15px] text-white">{formatCents(p.priceCents)}</span>
                   </div>
                 ))}
@@ -126,7 +126,7 @@ export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface-alt px-4 py-3">
-      <span className="block text-[11px] tracking-[0.1em] text-muted uppercase">{label}</span>
+      <span className="block text-[13px] tracking-[0.08em] text-muted uppercase">{label}</span>
       <span className="block font-heading text-[17px] text-white">{value}</span>
     </div>
   );
@@ -135,7 +135,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function ColumnHeaders({ cols, children }: { cols: string; children: React.ReactNode }) {
   return (
     <div
-      className="sticky top-0 z-10 grid items-center gap-3 bg-surface-alt py-3 font-heading text-[11px] tracking-[0.1em] text-muted-2 uppercase"
+      className="sticky top-0 z-10 grid items-center gap-3 bg-surface-alt py-3 font-heading text-[13px] tracking-[0.08em] text-muted-2 uppercase"
       style={{ gridTemplateColumns: cols }}
     >
       {children}
@@ -146,7 +146,7 @@ function ColumnHeaders({ cols, children }: { cols: string; children: React.React
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-6 last:mb-0">
-      <span className="mb-2 block font-heading text-xs tracking-[0.2em] text-muted-2 uppercase">{title}</span>
+      <span className="mb-2 block font-heading text-sm tracking-[0.16em] text-muted-2 uppercase">{title}</span>
       <div className="rounded-lg border border-border bg-surface-alt px-5">{children}</div>
     </div>
   );

@@ -413,14 +413,14 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-sm text-muted">{label}</span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`min-h-12 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass({ invalid: !!invalid, shaking: !!shaking })}`}
       />
-      {hint && <span className="text-xs text-muted-2">{hint}</span>}
+      {hint && <span className="text-[13px] text-muted-2">{hint}</span>}
     </label>
   );
 }

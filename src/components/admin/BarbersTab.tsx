@@ -163,7 +163,7 @@ export function BarbersTab() {
                         <span className="block truncate text-sm text-white">
                           {linkedAccountFor(b.id)!.full_name || linkedAccountFor(b.id)!.email}
                         </span>
-                        <span className="block text-xs text-muted">Acesso ao painel vinculado</span>
+                        <span className="block text-[13px] text-muted">Acesso ao painel vinculado</span>
                       </span>
                       <span className="flex flex-shrink-0 gap-2">
                         <button
@@ -182,7 +182,7 @@ export function BarbersTab() {
                     </>
                   ) : (
                     <>
-                      <span className="text-sm text-muted">Nenhuma conta vinculada</span>
+                      <span className="text-[15px] text-muted">Nenhuma conta vinculada</span>
                       <button
                         onClick={() => setLinking({ barber: b, currentAccount: null })}
                         className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"

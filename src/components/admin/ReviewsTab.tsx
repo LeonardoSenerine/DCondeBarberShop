@@ -3,17 +3,40 @@ import { useAdminReviews, setReviewPublished, deleteReview, type ReviewWithDetai
 import { formatDateBR } from "@/lib/format";
 import { StarRating } from "@/components/StarRating";
 import { Skeleton } from "@/components/Skeleton";
+import { Select } from "@/components/admin/Select";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
+
+const RATING_OPTIONS = [
+  { value: "all", label: "Todas as notas" },
+  { value: "5", label: "5 estrelas" },
+  { value: "4", label: "4 estrelas" },
+  { value: "3", label: "3 estrelas" },
+  { value: "2", label: "2 estrelas" },
+  { value: "1", label: "1 estrela" },
+];
+
+const SORT_OPTIONS = [
+  { value: "recent", label: "Mais recentes" },
+  { value: "oldest", label: "Mais antigas" },
+];
 
 export function ReviewsTab() {
   const { reviews, loading, reload } = useAdminReviews();
   const [acting, setActing] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<ReviewWithDetails | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("recent");
 
   const publishedCount = reviews.filter((r) => r.published).length;
   const avgRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
+
+  const visibleReviews = reviews
+    .filter((r) => ratingFilter === "all" || r.rating === Number(ratingFilter))
+    .sort((a, b) =>
+      sortOrder === "recent" ? b.created_at.localeCompare(a.created_at) : a.created_at.localeCompare(b.created_at),
+    );
 
   async function togglePublish(review: ReviewWithDetails) {
     setActing(review.id);
@@ -45,6 +68,13 @@ export function ReviewsTab() {
           </span>
         </div>
 
+        {reviews.length > 0 && (
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Select value={ratingFilter} onChange={setRatingFilter} options={RATING_OPTIONS} className="sm:w-50" />
+            <Select value={sortOrder} onChange={setSortOrder} options={SORT_OPTIONS} className="sm:w-50" />
+          </div>
+        )}
+
         {loading && reviews.length === 0 && (
           <div className="flex flex-col">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -57,9 +87,12 @@ export function ReviewsTab() {
         )}
 
         {!loading && reviews.length === 0 && <p className="text-muted">Nenhuma avaliação recebida ainda.</p>}
+        {!loading && reviews.length > 0 && visibleReviews.length === 0 && (
+          <p className="text-muted">Nenhuma avaliação com esse filtro.</p>
+        )}
 
         <div className="flex flex-col">
-          {reviews.map((r) => (
+          {visibleReviews.map((r) => (
             <div
               key={r.id}
               className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"

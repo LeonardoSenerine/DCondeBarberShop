@@ -6,6 +6,7 @@ import { WEEKDAY_LABELS } from "@/lib/format";
 import { BarberFormModal } from "@/components/admin/BarberFormModal";
 import { StaffLinkModal } from "@/components/admin/StaffLinkModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { Toast } from "@/components/admin/Toast";
 import { Skeleton } from "@/components/Skeleton";
 
 const DEFAULT_WEEKDAY_SLOTS = ["09:00", "10:00", "11:00", "13:30", "14:30", "15:30", "16:30", "18:00", "19:00"];
@@ -24,6 +25,7 @@ export function BarbersTab() {
   const [linking, setLinking] = useState<{ barber: Barber; currentAccount: StaffProfile | null } | null>(null);
   const [unlinking, setUnlinking] = useState<StaffProfile | null>(null);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   function linkedAccountFor(barberId: string) {
     return staffProfiles.find((p) => p.barber_id === barberId) ?? null;
@@ -49,8 +51,12 @@ export function BarbersTab() {
   async function handleConfirmDelete() {
     if (!removing) return;
     setDeleting(true);
-    await deleteBarber(removing.id);
+    const { error } = await deleteBarber(removing.id);
     setDeleting(false);
+    if (error) {
+      setToast(error);
+      return;
+    }
     setRemoving(null);
     reloadBarbers();
     reloadHours();
@@ -247,6 +253,8 @@ export function BarbersTab() {
           onClose={() => setUnlinking(null)}
         />
       )}
+
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} variant="error" />}
     </div>
   );
 }

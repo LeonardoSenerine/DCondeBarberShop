@@ -27,8 +27,12 @@ export function ProductsTab() {
   async function handleConfirmDelete() {
     if (!removing) return;
     setDeleting(true);
-    await deleteProduct(removing.id);
+    const { error } = await deleteProduct(removing.id);
     setDeleting(false);
+    if (error) {
+      setToast(error);
+      return;
+    }
     setRemoving(null);
     reload();
   }

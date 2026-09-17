@@ -756,7 +756,14 @@ export async function saveProduct(input: ProductInput, id?: string) {
 
 export async function deleteProduct(id: string) {
   const { error } = await supabase.from("products").delete().eq("id", id);
-  return { error: error?.message ?? null };
+  if (!error) return { error: null };
+  // 23503 = foreign_key_violation — order_items references products
+  // without ON DELETE CASCADE, so a product that was ever part of an
+  // order can't just vanish and silently corrupt that order's history.
+  if (error.code === "23503") {
+    return { error: "Esse produto já foi vendido em algum pedido e não pode ser removido enquanto esse pedido existir." };
+  }
+  return { error: error.message };
 }
 
 export function useAdminProducts() {
@@ -942,7 +949,18 @@ export async function saveBarber(input: BarberInput, hours: WeekdayHours[], isNe
 
 export async function deleteBarber(id: string) {
   const { error } = await supabase.from("barbers").delete().eq("id", id);
-  return { error: error?.message ?? null };
+  if (!error) return { error: null };
+  // 23503 = foreign_key_violation — bookings/reviews/gallery_photos all
+  // reference barbers without ON DELETE CASCADE (on purpose: losing a
+  // barber row should never silently wipe their booking/financial/review
+  // history), so the delete gets rejected instead of blindly succeeding
+  // and orphaning that data.
+  if (error.code === "23503") {
+    return {
+      error: "Esse barbeiro tem agendamentos, avaliações ou fotos vinculadas e não pode ser removido enquanto esses registros existirem.",
+    };
+  }
+  return { error: error.message };
 }
 
 // ---------------------------------------------------------------------------

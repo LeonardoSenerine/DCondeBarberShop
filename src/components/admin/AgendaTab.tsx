@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { CompleteBookingModal } from "@/components/admin/CompleteBookingModal";
 import { DeclineBookingModal } from "@/components/admin/DeclineBookingModal";
+import { ViewCancelReasonModal } from "@/components/admin/ViewCancelReasonModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
 import { BookingStatusBadge } from "@/components/StatusBadge";
@@ -29,6 +30,7 @@ export function AgendaTab() {
   const [completing, setCompleting] = useState<BookingWithDetails | null>(null);
   const [cancelling, setCancelling] = useState<BookingWithDetails | null>(null);
   const [declining, setDeclining] = useState<BookingWithDetails | null>(null);
+  const [viewingCancelReason, setViewingCancelReason] = useState<BookingWithDetails | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   function reloadAll() {
@@ -88,6 +90,7 @@ export function AgendaTab() {
             onComplete: a.status === "confirmed" ? () => setCompleting(a) : undefined,
             onCancel: a.status === "confirmed" ? () => setCancelling(a) : undefined,
             onRemind: a.status === "confirmed" ? () => handleRemind(a) : undefined,
+            onViewCancelReason: a.status === "cancelled" && a.cancel_reason ? () => setViewingCancelReason(a) : undefined,
           })}
         />
       </div>
@@ -186,6 +189,10 @@ export function AgendaTab() {
         />
       )}
 
+      {viewingCancelReason && (
+        <ViewCancelReasonModal booking={viewingCancelReason} onClose={() => setViewingCancelReason(null)} />
+      )}
+
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </div>
   );
@@ -197,6 +204,7 @@ interface AgendaActionHandlers {
   onComplete?: () => void;
   onCancel?: () => void;
   onRemind?: () => void;
+  onViewCancelReason?: () => void;
 }
 
 interface AgendaListProps extends Pick<AgendaRowProps, "showDate"> {
@@ -303,7 +311,7 @@ interface AgendaRowProps extends AgendaActionHandlers {
   acting: boolean;
 }
 
-function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind }: AgendaRowProps) {
+function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason }: AgendaRowProps) {
   return (
     <div
       className="grid items-center gap-6 border-t border-border px-3 py-5 first:border-t-0"
@@ -322,8 +330,9 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
         <span className="block truncate text-base text-muted">{a.services?.name}</span>
       </span>
       <span className="truncate text-base text-muted">{a.barbers?.name}</span>
-      <span>
+      <span className="flex items-center gap-2">
         <BookingStatusBadge status={a.status} />
+        {onViewCancelReason && <CancelReasonIcon onClick={onViewCancelReason} />}
       </span>
       <span className="flex gap-2.5">
         <AgendaActions
@@ -340,7 +349,7 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
   );
 }
 
-function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind }: AgendaRowProps) {
+function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason }: AgendaRowProps) {
   return (
     <div className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0">
       <div className="flex items-start justify-between gap-3">
@@ -352,7 +361,10 @@ function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onCompl
           )}
           <span className="font-heading text-xl text-white">{formatTimeShort(a.scheduled_time)}</span>
         </span>
-        <BookingStatusBadge status={a.status} />
+        <span className="flex items-center gap-2">
+          <BookingStatusBadge status={a.status} />
+          {onViewCancelReason && <CancelReasonIcon onClick={onViewCancelReason} />}
+        </span>
       </div>
       <div className="flex items-start justify-between gap-3">
         <span className="min-w-0">
@@ -436,5 +448,23 @@ function AgendaActions({
         </>
       )}
     </>
+  );
+}
+
+/** Opens the "why did the customer cancel" modal — only shown when that reason exists. */
+function CancelReasonIcon({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Ver motivo do cancelamento"
+      title="Ver motivo do cancelamento"
+      className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-silver hover:text-white"
+    >
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <line x1="12" y1="16" x2="12" y2="11.5" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+    </button>
   );
 }

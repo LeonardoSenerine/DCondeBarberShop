@@ -5,13 +5,12 @@ import {
   useMyBookings,
   useMyPurchases,
   useCreateBooking,
-  cancelBooking,
   markDeclineSeen,
   type BookingWithDetails,
 } from "@/hooks/useBooking";
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
-import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { CancelBookingModal } from "@/components/CancelBookingModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
 import { StarRating } from "@/components/StarRating";
 import { Toast } from "@/components/admin/Toast";
@@ -47,7 +46,6 @@ export function AccountPage() {
   const { message: profileError, fail: failProfile, clear: clearProfileError, clearField: clearProfileField, fieldProps: profileFieldProps } = useFormErrors();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [cancellingBusy, setCancellingBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
   const [submittingReviewId, setSubmittingReviewId] = useState<string | null>(null);
@@ -137,19 +135,6 @@ export function AccountPage() {
     setDismissingReviewId(booking.id);
     await dismissReviewPrompt(booking.id);
     setDismissingReviewId(null);
-    reload();
-  }
-
-  async function handleConfirmCancel() {
-    if (!upcoming) return;
-    setCancellingBusy(true);
-    const { error } = await cancelBooking(upcoming.id);
-    setCancellingBusy(false);
-    setCancelling(false);
-    if (error) {
-      setActionError(`Não deu pra cancelar o agendamento: ${error}`);
-      return;
-    }
     reload();
   }
 
@@ -698,14 +683,13 @@ export function AccountPage() {
       )}
 
       {cancelling && upcoming && (
-        <ConfirmModal
-          title="Cancelar agendamento?"
-          message={`Tem certeza que deseja cancelar "${upcoming.services?.name}" em ${formatDateBR(upcoming.scheduled_date)} às ${formatTimeShort(upcoming.scheduled_time)}? Essa ação não pode ser desfeita.`}
-          confirmLabel="Cancelar agendamento"
-          cancelLabel="Voltar"
-          busy={cancellingBusy}
-          onConfirm={handleConfirmCancel}
+        <CancelBookingModal
+          booking={upcoming}
           onClose={() => setCancelling(false)}
+          onCancelled={() => {
+            setCancelling(false);
+            reload();
+          }}
         />
       )}
 

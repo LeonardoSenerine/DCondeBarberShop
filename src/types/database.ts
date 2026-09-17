@@ -70,6 +70,7 @@ type BookingsRow = {
   review_dismissed_at: string | null;
   decline_reason: string | null;
   decline_seen_at: string | null;
+  cancel_reason: string | null;
   created_at: string;
 };
 
@@ -181,6 +182,7 @@ export interface Database {
           | "review_dismissed_at"
           | "decline_reason"
           | "decline_seen_at"
+          | "cancel_reason"
         > & {
           id?: string;
           created_at?: string;
@@ -189,6 +191,7 @@ export interface Database {
           review_dismissed_at?: string | null;
           decline_reason?: string | null;
           decline_seen_at?: string | null;
+          cancel_reason?: string | null;
         };
         Update: Partial<BookingsRow>;
         Relationships: [];

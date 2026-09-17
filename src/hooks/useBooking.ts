@@ -188,6 +188,7 @@ function sampleMyBookings(): BookingWithDetails[] {
       review_dismissed_at: null,
       decline_reason: null,
       decline_seen_at: null,
+      cancel_reason: null,
       created_at: new Date().toISOString(),
       barbers: { name: "Daniel" },
       services: { name: "Corte + barba terapia", duration_minutes: 80 },
@@ -209,6 +210,7 @@ function sampleMyBookings(): BookingWithDetails[] {
       review_dismissed_at: null,
       decline_reason: null,
       decline_seen_at: null,
+      cancel_reason: null,
       created_at: new Date().toISOString(),
       barbers: { name: "João Lima" },
       services: { name: "Corte", duration_minutes: 50 },
@@ -230,6 +232,7 @@ function sampleMyBookings(): BookingWithDetails[] {
       review_dismissed_at: null,
       decline_reason: null,
       decline_seen_at: null,
+      cancel_reason: null,
       created_at: new Date().toISOString(),
       barbers: { name: "Daniel" },
       services: { name: "Barba terapia", duration_minutes: 40 },
@@ -251,6 +254,7 @@ function sampleMyBookings(): BookingWithDetails[] {
       review_dismissed_at: null,
       decline_reason: "Vou estar de folga nesse dia — remarca pra outro horário que eu te atendo com calma.",
       decline_seen_at: null,
+      cancel_reason: null,
       created_at: new Date().toISOString(),
       barbers: { name: "João Lima" },
       services: { name: "Corte", duration_minutes: 50 },
@@ -289,8 +293,12 @@ export function useMyBookings(customerId: string | null) {
   return { bookings, loading, reload };
 }
 
-export async function cancelBooking(id: string) {
-  const { error } = await supabase.from("bookings").update({ status: "cancelled" }).eq("id", id);
+/** Customer cancelling their own booking — reason is required so the barber sees why instead of a silent cancellation. */
+export async function cancelBooking(id: string, reason: string) {
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled", cancel_reason: reason.trim() })
+    .eq("id", id);
   return { error: error?.message ?? null };
 }
 

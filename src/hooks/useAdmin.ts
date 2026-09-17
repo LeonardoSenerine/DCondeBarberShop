@@ -452,6 +452,7 @@ function sampleAgenda(key: string): BookingWithDetails[] {
       review_dismissed_at: null,
       decline_reason: null,
       decline_seen_at: null,
+      cancel_reason: null,
       created_at: new Date().toISOString(),
       barbers: { name: barber.name },
       services: { name: serviceName, duration_minutes: durationMinutes },
@@ -961,14 +962,20 @@ export async function saveBarber(input: BarberInput, hours: WeekdayHours[], isNe
 export async function deleteBarber(id: string) {
   const { error } = await supabase.from("barbers").delete().eq("id", id);
   if (!error) return { error: null };
-  // 23503 = foreign_key_violation — only bookings.barber_id is still
-  // RESTRICT (on purpose: losing a barber row should never silently wipe
-  // booking/financial history). Reviews and gallery photos cascade instead
-  // — see gallery_photos_barber_id_fkey / reviews_barber_id_fkey in
-  // schema.sql — so this only fires when there's booking history left.
+  // Raised by barbers_guard_delete (schema.sql) when the barber still has
+  // a pending/confirmed booking — cancelled, completed and no_show ones
+  // don't count and get cleared automatically by that same trigger.
+  if (error.message === "barber_has_active_bookings") {
+    return {
+      error: "Esse barbeiro ainda tem agendamentos pendentes ou confirmados e não pode ser removido enquanto eles existirem.",
+    };
+  }
+  // 23503 = foreign_key_violation — belt-and-suspenders backstop in case
+  // some other reference (or a project that hasn't re-run schema.sql yet)
+  // still blocks it.
   if (error.code === "23503") {
     return {
-      error: "Esse barbeiro ainda tem agendamentos registrados e não pode ser removido enquanto eles existirem.",
+      error: "Esse barbeiro tem registros vinculados e não pode ser removido enquanto eles existirem.",
     };
   }
   return { error: error.message };

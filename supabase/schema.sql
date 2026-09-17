@@ -246,6 +246,40 @@ for each row execute function public.bookings_restrict_update();
 create index if not exists bookings_customer_idx on public.bookings (customer_id);
 create index if not exists bookings_barber_date_idx on public.bookings (barber_id, scheduled_date);
 
+-- Lets a barber be deleted once they have no upcoming commitment left —
+-- only pending/confirmed bookings still need the barber to show up, so
+-- those are the only ones that should hold up removing them. Cancelled,
+-- completed and no_show are already-resolved history with no future
+-- schedule impact (a completed one's revenue lives on in `transactions`,
+-- which keeps the row via ON DELETE SET NULL — see below). bookings.barber_id
+-- has no ON DELETE clause (default RESTRICT), which alone would block on
+-- ANY row regardless of status — this trigger runs first and either blocks
+-- with a clear reason or clears out the resolved ones so that RESTRICT
+-- never actually fires.
+create or replace function public.prevent_barber_delete_with_active_bookings()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if exists (
+    select 1 from public.bookings
+    where barber_id = old.id and status in ('pending', 'confirmed')
+  ) then
+    raise exception 'barber_has_active_bookings';
+  end if;
+
+  delete from public.bookings where barber_id = old.id;
+  return old;
+end;
+$$;
+
+drop trigger if exists barbers_guard_delete on public.barbers;
+create trigger barbers_guard_delete
+  before delete on public.barbers
+  for each row execute function public.prevent_barber_delete_with_active_bookings();
+
 -- Powers the admin panel's live "novo agendamento" alert (Supabase
 -- Realtime, filtered by the bookings RLS policies above).
 do $$
@@ -485,6 +519,13 @@ alter table public.bookings add column if not exists review_dismissed_at timesta
 -- doesn't keep reappearing.
 alter table public.bookings add column if not exists decline_reason text;
 alter table public.bookings add column if not exists decline_seen_at timestamptz;
+
+-- Set when the CUSTOMER cancels their own booking (as opposed to
+-- decline_reason above, set by the barber). Required by the app's cancel
+-- flow — see CancelBookingModal.tsx — so the barber sees why instead of
+-- just a silent cancellation, and shown with a small icon on that row in
+-- the admin agenda (AgendaTab.tsx).
+alter table public.bookings add column if not exists cancel_reason text;
 
 -- ---------------------------------------------------------------------------
 -- customer reviews, left on a completed booking. customer_name/barber_id/

@@ -70,6 +70,9 @@ create table if not exists public.barbers (
   sort_order int not null default 0
 );
 
+-- migration safety net for projects whose barbers table predates this column
+alter table public.barbers add column if not exists email text;
+
 -- which barber a staff/owner account operates as — drives the "só vejo o
 -- meu" scoping on Agenda, Financeiro and Clientes for role = 'staff'.
 alter table public.profiles add column if not exists barber_id text references public.barbers (id) on delete set null;

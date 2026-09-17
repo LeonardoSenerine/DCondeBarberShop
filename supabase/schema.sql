@@ -70,8 +70,15 @@ create table if not exists public.barbers (
   sort_order int not null default 0
 );
 
--- migration safety net for projects whose barbers table predates this column
+-- migration safety net for projects whose barbers table predates these
+-- columns — id/name/photo_path are assumed to already exist everywhere
+-- since the site can't show a barber card at all without them.
+alter table public.barbers add column if not exists role_title text not null default 'Barbeiro';
+alter table public.barbers add column if not exists instagram text;
 alter table public.barbers add column if not exists email text;
+alter table public.barbers add column if not exists phone text;
+alter table public.barbers add column if not exists gallery_paths text[] not null default '{}';
+alter table public.barbers add column if not exists sort_order int not null default 0;
 
 -- which barber a staff/owner account operates as — drives the "só vejo o
 -- meu" scoping on Agenda, Financeiro and Clientes for role = 'staff'.

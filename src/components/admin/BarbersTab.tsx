@@ -59,6 +59,7 @@ export function BarbersTab() {
   function reloadAll() {
     reloadBarbers();
     reloadHours();
+    reloadStaff();
   }
 
   const busy = barbersLoading || hoursLoading;

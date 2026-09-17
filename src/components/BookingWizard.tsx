@@ -234,14 +234,14 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
         </div>
 
         {step === 1 && (
-          <div className="max-w-full md:max-w-[560px]">
+          <div className="max-w-full md:max-w-[820px]">
             <h3 className="mb-1.5 font-heading text-[13px] font-medium tracking-[0.24em] text-white uppercase">
               Escolha o profissional
             </h3>
             <p className="mb-4.5 text-sm text-muted-2">
               A agenda mostrada depois é a dele.
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))" }}>
               {barbersLoading && (
                 <Skeleton
                   count={2}

@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { saveBarber, uploadBarberPhoto, type WeekdayHours } from "@/hooks/useAdmin";
+import {
+  saveBarber,
+  uploadBarberPhoto,
+  searchProfileByEmail,
+  linkBarberAccount,
+  type WeekdayHours,
+  type StaffProfile,
+} from "@/hooks/useAdmin";
 import type { Barber, BarberHours } from "@/hooks/useCatalog";
 import { WEEKDAY_LABELS, formatTimeShort } from "@/lib/format";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
@@ -36,6 +43,13 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
   const [instagram, setInstagram] = useState(barber?.instagram ?? "");
   const [email, setEmail] = useState(barber?.email ?? "");
   const [phone, setPhone] = useState(barber?.phone ?? "");
+  // New barbers skip manual name/e-mail/telefone entirely — that contact
+  // info always comes from the linked login account instead, found here by
+  // e-mail. Editing an existing barber keeps the plain fields above, since
+  // an older barber row might not have a linked account at all.
+  const [linkEmail, setLinkEmail] = useState("");
+  const [searchingLink, setSearchingLink] = useState(false);
+  const [linkedProfile, setLinkedProfile] = useState<StaffProfile | null | undefined>(undefined);
   const [photoPath, setPhotoPath] = useState(barber?.photo_path ?? "");
   const [gallery, setGallery] = useState<string[]>(barber?.gallery_paths ?? []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -70,7 +84,8 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
     setWeek((w) => w.map((d) => (d.weekday === weekday ? { ...d, ...patch } : d)));
   }
 
-  const effectiveId = isNew ? (idTouched ? id : slug(name)) : id;
+  const displayName = isNew ? (linkedProfile?.full_name ?? "") : name;
+  const effectiveId = isNew ? (idTouched ? id : slug(displayName)) : id;
 
   async function handlePhoto(file: File) {
     setUploadingPhoto(true);
@@ -98,8 +113,21 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
     setUploadingGallery(false);
   }
 
+  async function handleSearchLink() {
+    if (!linkEmail.trim()) return fail("Digite o e-mail da pessoa.", ["link"]);
+    clear();
+    setSearchingLink(true);
+    setLinkedProfile(undefined);
+    const { data, error: err } = await searchProfileByEmail(linkEmail.trim());
+    setSearchingLink(false);
+    if (err) return fail(err);
+    setLinkedProfile(data);
+    if (data) clearField("link");
+  }
+
   async function handleSave() {
-    if (!name.trim()) return fail("Digite o nome.", ["name"]);
+    if (isNew && !linkedProfile) return fail("Busque e encontre a conta da pessoa antes de salvar.", ["link"]);
+    if (!isNew && !name.trim()) return fail("Digite o nome.", ["name"]);
     if (!effectiveId) return fail("Defina o identificador.", ["id"]);
     if (!photoPath) return fail("Envie uma foto.", ["photo"]);
 
@@ -108,19 +136,30 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
     const { error: err } = await saveBarber(
       {
         id: effectiveId,
-        name: name.trim(),
+        name: isNew ? linkedProfile!.full_name.trim() : name.trim(),
         role_title: roleTitle.trim() || "Barbeiro",
         instagram: instagram.trim() || null,
-        email: email.trim() || null,
-        phone: phone.trim() || null,
+        email: isNew ? linkedProfile!.email : email.trim() || null,
+        phone: isNew ? linkedProfile!.phone : phone.trim() || null,
         photo_path: photoPath,
         gallery_paths: gallery,
       },
       week,
       isNew,
     );
+    if (err) {
+      setSaving(false);
+      return fail(err);
+    }
+
+    if (isNew && linkedProfile) {
+      const { error: linkErr } = await linkBarberAccount(linkedProfile.id, effectiveId);
+      if (linkErr) {
+        setSaving(false);
+        return fail(`Barbeiro criado, mas não deu pra vincular a conta: ${linkErr}`);
+      }
+    }
     setSaving(false);
-    if (err) return fail(err);
     onSaved();
     onClose();
   }
@@ -152,7 +191,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
                 <img src={photoPath} alt="" className="h-full w-full object-cover" />
               ) : (
                 <span className="flex h-full w-full items-center justify-center font-display text-3xl text-silver">
-                  {name.charAt(0) || "?"}
+                  {displayName.charAt(0) || "?"}
                 </span>
               )}
             </span>
@@ -171,15 +210,71 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
             </label>
           </div>
 
-          <Field
-            label="Nome"
-            value={name}
-            onChange={(v) => {
-              setName(v);
-              clearField("name");
-            }}
-            {...fieldProps("name")}
-          />
+          {isNew ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-[13px] text-muted">E-mail de login</span>
+              <div className="flex gap-2.5">
+                <input
+                  value={linkEmail}
+                  onChange={(e) => {
+                    setLinkEmail(e.target.value);
+                    setLinkedProfile(undefined);
+                    clearField("link");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearchLink()}
+                  placeholder="pessoa@email.com"
+                  className={`min-h-12 flex-1 rounded-lg border border-border bg-surface-alt px-3.5 text-[15px] text-white outline-none focus:border-silver ${fieldClass(fieldProps("link"))}`}
+                />
+                <button
+                  onClick={handleSearchLink}
+                  disabled={searchingLink}
+                  className="flex min-h-12 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border px-5 font-heading text-xs tracking-[0.14em] text-white uppercase transition-colors hover:border-silver disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {searchingLink ? "Buscando…" : "Buscar"}
+                </button>
+              </div>
+              <span className="text-xs text-muted-2">
+                A pessoa precisa já ter feito login no site pelo menos uma vez. Nome, e-mail e telefone vêm dessa conta.
+              </span>
+
+              {linkedProfile === null && (
+                <p className="m-0 mt-1 text-[13px] text-muted">
+                  Nenhuma conta encontrada com esse e-mail. Peça pra pessoa criar login no site primeiro.
+                </p>
+              )}
+
+              {linkedProfile && (
+                <div className="mt-1 flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-alt p-3.5">
+                  <span className="min-w-0">
+                    <span className="block truncate text-[15px] text-white">{linkedProfile.full_name || "—"}</span>
+                    <span className="block truncate text-[13px] text-muted">{linkedProfile.email}</span>
+                  </span>
+                  {linkedProfile.role !== "customer" && (
+                    <span
+                      className="flex-shrink-0 rounded-full border px-2.5 py-1 text-[11px] tracking-[0.08em] uppercase"
+                      style={{ borderColor: "#E0B341", color: "#E0B341" }}
+                    >
+                      já vinculada
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Field
+                label="Nome"
+                value={name}
+                onChange={(v) => {
+                  setName(v);
+                  clearField("name");
+                }}
+                {...fieldProps("name")}
+              />
+              <Field label="E-mail" value={email} onChange={setEmail} placeholder="barbeiro@email.com" />
+              <Field label="Telefone" value={phone} onChange={setPhone} placeholder="(18) 99730-7852" />
+            </>
+          )}
           {isNew && (
             <Field
               label="Identificador (slug)"
@@ -195,8 +290,6 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
           )}
           <Field label="Cargo" value={roleTitle} onChange={setRoleTitle} />
           <Field label="Instagram" value={instagram} onChange={setInstagram} placeholder="@usuario" />
-          <Field label="E-mail" value={email} onChange={setEmail} placeholder="barbeiro@email.com" />
-          <Field label="Telefone" value={phone} onChange={setPhone} placeholder="(18) 99730-7852" />
 
           <span className="mt-2 font-heading text-xs tracking-[0.2em] text-muted-2 uppercase">
             Fotos do carrossel

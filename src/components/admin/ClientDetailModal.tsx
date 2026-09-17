@@ -2,6 +2,7 @@ import { useClientHistory, type ClientSummary } from "@/hooks/useAdmin";
 import { formatCents, formatDateBR } from "@/lib/format";
 import { BookingStatusBadge } from "@/components/StatusBadge";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
+import { useModalTransition } from "@/hooks/useModalTransition";
 import "@/styles/scrollbar.css";
 
 interface ClientDetailModalProps {
@@ -19,21 +20,23 @@ const APPT_COLS = "88px minmax(0,1fr) 104px 150px 100px";
 const PRODUCT_COLS = "88px minmax(0,1fr) 56px 84px";
 
 export function ClientDetailModal({ client, onClose }: ClientDetailModalProps) {
+  const { isClosing, requestClose } = useModalTransition(onClose);
   const { appointments, purchases, loading } = useClientHistory(client);
 
   return (
     <div
-      className="fixed inset-0 z-[120] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
-      onClick={onClose}
+      data-closing={isClosing}
+      onClick={requestClose}
     >
       <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative max-h-[88vh] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-[0_40px_90px_rgba(0,0,0,0.8)] sm:p-9"
+          className="dc-modal-panel relative max-h-[88vh] w-full max-w-[760px] overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-[0_40px_90px_rgba(0,0,0,0.8)] sm:p-9"
         >
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Fechar"
             className="absolute top-4 right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
           >

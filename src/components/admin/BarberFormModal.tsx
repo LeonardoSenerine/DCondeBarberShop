@@ -10,6 +10,7 @@ import {
 import type { Barber, BarberHours } from "@/hooks/useCatalog";
 import { WEEKDAY_LABELS, formatTimeShort } from "@/lib/format";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import { useModalTransition } from "@/hooks/useModalTransition";
 import "@/styles/shake.css";
 
 interface BarberFormModalProps {
@@ -35,6 +36,7 @@ function slug(s: string) {
 }
 
 export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormModalProps) {
+  const { isClosing, requestClose } = useModalTransition(onClose);
   const isNew = !barber;
   const [name, setName] = useState(barber?.name ?? "");
   const [id, setId] = useState(barber?.id ?? "");
@@ -164,18 +166,19 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
     }
     setSaving(false);
     onSaved();
-    onClose();
+    requestClose();
   }
 
   return (
     <div
-      className="fixed inset-0 z-[120] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
+      data-closing={isClosing}
     >
       <div className="flex min-h-full items-center justify-center p-6">
-      <div className="relative w-full max-w-[560px] rounded-lg border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
+      <div className="dc-modal-panel relative w-full max-w-[560px] rounded-lg border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
         <button
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Fechar"
           className="absolute top-3.5 right-3.5 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
         >

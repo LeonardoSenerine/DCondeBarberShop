@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { WarningCircle } from "@phosphor-icons/react";
+import { useModalTransition } from "@/hooks/useModalTransition";
 
 interface ConfirmModalProps {
   title: string;
@@ -26,6 +27,7 @@ export function ConfirmModal({
   onClose,
 }: ConfirmModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(confirmDelaySeconds);
+  const { isClosing, requestClose } = useModalTransition(onClose);
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
@@ -37,14 +39,15 @@ export function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-[130] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[130] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
-      onClick={onClose}
+      data-closing={isClosing}
+      onClick={requestClose}
     >
       <div className="flex min-h-full items-center justify-center p-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-[400px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+          className="dc-modal-panel relative w-full max-w-[400px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
         >
           <span
             className="flex h-14 w-14 items-center justify-center rounded-full border"
@@ -59,7 +62,7 @@ export function ConfirmModal({
 
           <div className="mt-6 flex gap-2.5">
             <button
-              onClick={onClose}
+              onClick={requestClose}
               disabled={busy}
               className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >

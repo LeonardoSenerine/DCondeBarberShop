@@ -6,6 +6,7 @@ import { effectivePriceCents } from "@/lib/product";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { Select } from "@/components/admin/Select";
+import { useModalTransition } from "@/hooks/useModalTransition";
 import "@/styles/shake.css";
 
 const CATEGORIES: Product["category"][] = ["Cabelo", "Barba", "Pele"];
@@ -17,6 +18,7 @@ interface ProductFormModalProps {
 }
 
 export function ProductFormModal({ product, onClose, onSaved }: ProductFormModalProps) {
+  const { isClosing, requestClose } = useModalTransition(onClose);
   const isNew = !product;
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
@@ -93,18 +95,19 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
 
     setSaving(false);
     onSaved();
-    onClose();
+    requestClose();
   }
 
   return (
     <div
-      className="fixed inset-0 z-[120] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
+      data-closing={isClosing}
     >
       <div className="flex min-h-full items-center justify-center p-6">
-      <div className="relative w-full max-w-[520px] rounded-2xl border border-border bg-surface p-8 shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
+      <div className="dc-modal-panel relative w-full max-w-[520px] rounded-2xl border border-border bg-surface p-8 shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
         <button
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Fechar"
           className="absolute top-4 right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
         >

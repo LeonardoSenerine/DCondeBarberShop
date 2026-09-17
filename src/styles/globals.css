@@ -189,6 +189,55 @@
   animation: dc-admin-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
+@keyframes dc-modal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dc-modal-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes dc-modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dc-modal-panel-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+.dc-modal-overlay {
+  animation: dc-modal-backdrop-in 220ms ease-out both;
+}
+
+.dc-modal-panel {
+  animation: dc-modal-panel-in 280ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.dc-modal-overlay[data-closing="true"] {
+  animation: dc-modal-backdrop-out 190ms ease-in both;
+  pointer-events: none;
+}
+
+.dc-modal-overlay[data-closing="true"] .dc-modal-panel {
+  animation: dc-modal-panel-out 190ms ease-in both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dc-finance-card,
   .dc-finance-value,
@@ -200,6 +249,13 @@
 
   .dc-admin-enter,
   .dc-admin-enter-item {
+    animation: none;
+  }
+
+  .dc-modal-overlay,
+  .dc-modal-panel,
+  .dc-modal-overlay[data-closing="true"],
+  .dc-modal-overlay[data-closing="true"] .dc-modal-panel {
     animation: none;
   }
 }

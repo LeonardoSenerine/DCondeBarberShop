@@ -3,6 +3,7 @@ import { declineBooking } from "@/hooks/useAdmin";
 import type { BookingWithDetails } from "@/hooks/useBooking";
 import { formatDateBR, formatTimeShort, toWhatsAppPhone, whatsAppLink } from "@/lib/format";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import { useModalTransition } from "@/hooks/useModalTransition";
 
 interface DeclineBookingModalProps {
   booking: BookingWithDetails;
@@ -14,6 +15,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
+  const { isClosing, requestClose } = useModalTransition(onClose);
 
   async function handleConfirm() {
     if (!reason.trim()) return fail("Digite a mensagem para o cliente.", ["reason"]);
@@ -32,17 +34,18 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
 
   return (
     <div
-      className="fixed inset-0 z-[120] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
-      onClick={onClose}
+      data-closing={isClosing}
+      onClick={requestClose}
     >
       <div className="flex min-h-full items-center justify-center p-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-[460px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+          className="dc-modal-panel relative w-full max-w-[460px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
         >
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Fechar"
             className="absolute top-4 right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
           >
@@ -82,7 +85,7 @@ export function DeclineBookingModal({ booking, onClose, onDeclined }: DeclineBoo
 
           <div className="mt-6 flex gap-2.5">
             <button
-              onClick={onClose}
+              onClick={requestClose}
               disabled={busy}
               className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >

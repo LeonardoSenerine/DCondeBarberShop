@@ -1,5 +1,6 @@
 import type { BookingWithDetails } from "@/hooks/useBooking";
 import { formatDateBR, formatTimeShort } from "@/lib/format";
+import { useModalTransition } from "@/hooks/useModalTransition";
 
 interface ViewCancelReasonModalProps {
   booking: BookingWithDetails;
@@ -8,19 +9,21 @@ interface ViewCancelReasonModalProps {
 
 /** Read-only — shows why the customer cancelled their own booking (see cancel_reason in CancelBookingModal.tsx). */
 export function ViewCancelReasonModal({ booking, onClose }: ViewCancelReasonModalProps) {
+  const { isClosing, requestClose } = useModalTransition(onClose);
   return (
     <div
-      className="fixed inset-0 z-[120] overflow-y-auto"
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
-      onClick={onClose}
+      data-closing={isClosing}
+      onClick={requestClose}
     >
       <div className="flex min-h-full items-center justify-center p-6">
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-[460px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+          className="dc-modal-panel relative w-full max-w-[460px] rounded-2xl border border-border bg-surface p-7 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
         >
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Fechar"
             className="absolute top-4 right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
           >
@@ -41,7 +44,7 @@ export function ViewCancelReasonModal({ booking, onClose }: ViewCancelReasonModa
           </div>
 
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="mt-6 flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-white uppercase transition-colors hover:border-silver"
           >
             Fechar

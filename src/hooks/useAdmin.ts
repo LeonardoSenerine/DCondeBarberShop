@@ -950,14 +950,14 @@ export async function saveBarber(input: BarberInput, hours: WeekdayHours[], isNe
 export async function deleteBarber(id: string) {
   const { error } = await supabase.from("barbers").delete().eq("id", id);
   if (!error) return { error: null };
-  // 23503 = foreign_key_violation — bookings/reviews/gallery_photos all
-  // reference barbers without ON DELETE CASCADE (on purpose: losing a
-  // barber row should never silently wipe their booking/financial/review
-  // history), so the delete gets rejected instead of blindly succeeding
-  // and orphaning that data.
+  // 23503 = foreign_key_violation — only bookings.barber_id is still
+  // RESTRICT (on purpose: losing a barber row should never silently wipe
+  // booking/financial history). Reviews and gallery photos cascade instead
+  // — see gallery_photos_barber_id_fkey / reviews_barber_id_fkey in
+  // schema.sql — so this only fires when there's booking history left.
   if (error.code === "23503") {
     return {
-      error: "Esse barbeiro tem agendamentos, avaliações ou fotos vinculadas e não pode ser removido enquanto esses registros existirem.",
+      error: "Esse barbeiro ainda tem agendamentos registrados e não pode ser removido enquanto eles existirem.",
     };
   }
   return { error: error.message };

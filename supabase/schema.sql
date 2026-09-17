@@ -433,10 +433,18 @@ create table if not exists public.gallery_photos (
   kind text not null default 'autoral' check (kind in ('autoral', 'dia')),
   service_label text,
   client_label text,
-  barber_id text references public.barbers (id),
+  barber_id text references public.barbers (id) on delete cascade,
   taken_on date,
   sort_order int not null default 0
 );
+
+-- migration safety net: re-point the FK at ON DELETE CASCADE for projects
+-- whose constraint predates it (default name for an inline column
+-- reference). Without this, removing a barber is blocked by any gallery
+-- photo tagged with them — same reasoning as reviews_barber_id_fkey below.
+alter table public.gallery_photos drop constraint if exists gallery_photos_barber_id_fkey;
+alter table public.gallery_photos add constraint gallery_photos_barber_id_fkey
+  foreign key (barber_id) references public.barbers (id) on delete cascade;
 
 -- ---------------------------------------------------------------------------
 -- financial ledger shown in the admin panel
@@ -486,7 +494,7 @@ create table if not exists public.reviews (
   booking_id uuid unique references public.bookings (id) on delete cascade,
   customer_id uuid references public.profiles (id) on delete set null,
   customer_name text not null,
-  barber_id text not null references public.barbers (id),
+  barber_id text not null references public.barbers (id) on delete cascade,
   service_id text not null references public.services (id),
   rating smallint not null check (rating between 1 and 5),
   comment text,
@@ -495,6 +503,16 @@ create table if not exists public.reviews (
   published boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- migration safety net: re-point the FK at ON DELETE CASCADE for projects
+-- whose constraint predates it (default name for an inline column
+-- reference). Bookings are the one thing that should still block removing
+-- a barber (see bookings.barber_id, left as the default RESTRICT) — but a
+-- review or a gallery photo shouldn't hold up deleting one that has no
+-- booking history, so those cascade instead.
+alter table public.reviews drop constraint if exists reviews_barber_id_fkey;
+alter table public.reviews add constraint reviews_barber_id_fkey
+  foreign key (barber_id) references public.barbers (id) on delete cascade;
 
 -- migration safety net for projects that ran an earlier version of this
 -- table with booking_id not null

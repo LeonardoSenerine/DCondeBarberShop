@@ -222,7 +222,7 @@ export function BarbersTab() {
       {removing && (
         <ConfirmModal
           title="Remover barbeiro?"
-          message={`Tem certeza que deseja remover ${removing.name}? Os horários dele também serão apagados — essa ação não pode ser desfeita.`}
+          message={`Tem certeza que deseja remover ${removing.name}? Os horários, fotos da galeria e avaliações dele também serão apagados — essa ação não pode ser desfeita. Só é bloqueada se ele ainda tiver agendamentos.`}
           confirmDelaySeconds={5}
           busy={deleting}
           onConfirm={handleConfirmDelete}

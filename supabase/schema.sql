@@ -442,6 +442,37 @@ set barber_id = b.barber_id
 from public.bookings b
 where t.booking_id = b.id and t.barber_id is null;
 
+-- Lets a customer dismiss the "avalie seu atendimento" prompt on a completed
+-- booking without leaving a review — the prompt then just stays hidden for
+-- that one booking instead of nagging them every time they open the account
+-- page. Not covered by bookings_restrict_update() below since it's not in
+-- that trigger's guarded-fields list, same as status/reminder_sent_at.
+alter table public.bookings add column if not exists review_dismissed_at timestamptz;
+
+-- ---------------------------------------------------------------------------
+-- customer reviews, left on a completed booking. customer_name/barber_id/
+-- service_id are snapshotted onto the row (like bookings does with its own
+-- customer_name/phone) so the public "published" testimonials on the site
+-- can be read without needing looser RLS on bookings/profiles.
+-- ---------------------------------------------------------------------------
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  booking_id uuid not null unique references public.bookings (id) on delete cascade,
+  customer_id uuid references public.profiles (id) on delete set null,
+  customer_name text not null,
+  barber_id text not null references public.barbers (id),
+  service_id text not null references public.services (id),
+  rating smallint not null check (rating between 1 and 5),
+  comment text,
+  -- Reviews start hidden from the public site until an admin approves one
+  -- as a testimonial worth showing.
+  published boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists reviews_customer_idx on public.reviews (customer_id);
+create index if not exists reviews_barber_idx on public.reviews (barber_id);
+
 -- ---------------------------------------------------------------------------
 -- helpers: role checks used by the RLS policies below
 -- ---------------------------------------------------------------------------
@@ -518,6 +549,7 @@ alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.gallery_photos enable row level security;
 alter table public.transactions enable row level security;
+alter table public.reviews enable row level security;
 
 -- profiles: everyone can read their own row, admins can read/update all
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
@@ -592,6 +624,41 @@ create policy "bookings_update_own_or_admin" on public.bookings for update
 
 drop policy if exists "bookings_delete_admin" on public.bookings;
 create policy "bookings_delete_admin" on public.bookings for delete
+  using (public.is_admin());
+
+-- reviews: a customer can read their own (published or not) and leave one
+-- for their own completed booking; anyone (including anonymous site
+-- visitors) can read a published one, for the public testimonials
+-- carousel; only admins can approve (publish) or remove one.
+drop policy if exists "reviews_select_own_or_admin_or_published" on public.reviews;
+create policy "reviews_select_own_or_admin_or_published" on public.reviews for select
+  using (
+    customer_id = auth.uid()
+    or public.is_admin()
+    or published = true
+  );
+
+-- customer_name/barber_id/service_id aren't cross-checked against the
+-- booking here the way bookings_insert_own checks price_cents against the
+-- service — unlike that one, a mismatch here is purely cosmetic (what
+-- shows on a testimonial card), not something that lets anyone dodge a
+-- charge or a slot conflict, so it isn't worth a correlated subquery.
+drop policy if exists "reviews_insert_own" on public.reviews;
+create policy "reviews_insert_own" on public.reviews for insert
+  with check (
+    customer_id = auth.uid()
+    and exists (
+      select 1 from public.bookings b
+      where b.id = booking_id and b.customer_id = auth.uid() and b.status = 'completed'
+    )
+  );
+
+drop policy if exists "reviews_update_admin" on public.reviews;
+create policy "reviews_update_admin" on public.reviews for update
+  using (public.is_admin());
+
+drop policy if exists "reviews_delete_admin" on public.reviews;
+create policy "reviews_delete_admin" on public.reviews for delete
   using (public.is_admin());
 
 -- orders / order_items: customers manage their own, admins manage all

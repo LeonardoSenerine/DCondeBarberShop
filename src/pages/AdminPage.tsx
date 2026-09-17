@@ -12,6 +12,7 @@ import { ProductsTab } from "@/components/admin/ProductsTab";
 import { ServicesTab } from "@/components/admin/ServicesTab";
 import { GalleryTab } from "@/components/admin/GalleryTab";
 import { BarbersTab } from "@/components/admin/BarbersTab";
+import { ReviewsTab } from "@/components/admin/ReviewsTab";
 import { NewBookingAlert } from "@/components/admin/NewBookingAlert";
 
 interface IncomingBooking {
@@ -29,6 +30,7 @@ const TABS = [
   { id: "servicos", name: "Serviços", icon: iconTag },
   { id: "galeria", name: "Galeria", icon: iconImage },
   { id: "barbeiros", name: "Barbeiros", icon: iconScissors },
+  { id: "avaliacoes", name: "Avaliações", icon: iconStar },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -245,6 +247,7 @@ export function AdminPage() {
           {tab === "servicos" && <ServicesTab />}
           {tab === "galeria" && <GalleryTab />}
           {tab === "barbeiros" && <BarbersTab />}
+          {tab === "avaliacoes" && <ReviewsTab />}
         </div>
       </main>
 
@@ -333,6 +336,13 @@ function iconScissors() {
       <circle cx="6" cy="6" r="2.5" />
       <circle cx="6" cy="18" r="2.5" />
       <path d="M8 8l12 10M8 16 20 6" />
+    </>,
+  );
+}
+function iconStar() {
+  return svg(
+    <>
+      <path d="M12 3.5l2.6 5.35 5.9.75-4.3 4.1 1.1 5.85L12 16.9l-5.3 2.65 1.1-5.85-4.3-4.1 5.9-.75L12 3.5Z" />
     </>,
   );
 }

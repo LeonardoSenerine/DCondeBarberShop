@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useMyBookings, useMyPurchases, useCreateBooking, cancelBooking } from "@/hooks/useBooking";
+import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { BookingStatusBadge } from "@/components/StatusBadge";
+import { StarRating } from "@/components/StarRating";
 import { Toast } from "@/components/admin/Toast";
 import {
   dateKey,
@@ -29,6 +31,7 @@ export function AccountPage() {
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
   const { purchases, loading: purchasesLoading } = useMyPurchases(session?.user.id ?? null);
+  const { reviewsByBooking, reload: reloadReviews } = useMyReviews(session?.user.id ?? null);
   const { createBooking } = useCreateBooking();
   const [name, setName] = useState(profile?.full_name ?? (import.meta.env.DEV ? "Rafael Prado" : ""));
   const [phone, setPhone] = useState(profile?.phone ?? (import.meta.env.DEV ? "(18) 99863-4127" : ""));
@@ -39,6 +42,11 @@ export function AccountPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancellingBusy, setCancellingBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [dismissingReview, setDismissingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -61,6 +69,42 @@ export function AccountPage() {
   const servicesTotalCents = history.reduce((sum, h) => sum + h.price_cents, 0);
   const productsTotalCents = purchases.reduce((sum, p) => sum + p.priceCents, 0);
   const grandTotalCents = servicesTotalCents + productsTotalCents;
+  // Most recent completed booking still missing a review, unless the
+  // customer already dismissed the prompt for it.
+  const pendingReview = bookings
+    .filter((b) => b.status === "completed" && !b.review_dismissed_at && !reviewsByBooking[b.id])
+    .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date))[0];
+
+  async function handleSubmitReview() {
+    if (!pendingReview || !session?.user || reviewRating === 0) return;
+    setSubmittingReview(true);
+    setReviewError(null);
+    const { error } = await submitReview({
+      bookingId: pendingReview.id,
+      customerId: session.user.id,
+      customerName: profile?.full_name || name,
+      barberId: pendingReview.barber_id,
+      serviceId: pendingReview.service_id,
+      rating: reviewRating,
+      comment: reviewComment.trim() || null,
+    });
+    setSubmittingReview(false);
+    if (error) {
+      setReviewError("Não deu pra enviar sua avaliação. Tenta de novo.");
+      return;
+    }
+    setReviewRating(0);
+    setReviewComment("");
+    reloadReviews();
+  }
+
+  async function handleDismissReview() {
+    if (!pendingReview) return;
+    setDismissingReview(true);
+    await dismissReviewPrompt(pendingReview.id);
+    setDismissingReview(false);
+    reload();
+  }
 
   async function handleConfirmCancel() {
     if (!upcoming) return;
@@ -242,6 +286,55 @@ export function AccountPage() {
           )}
         </div>
 
+        {pendingReview && (
+          <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
+            <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Avalie seu atendimento</span>
+            <p className="m-0 mt-2 text-[15px] text-muted">
+              {pendingReview.services?.name} com {pendingReview.barbers?.name} · {formatDateBR(pendingReview.scheduled_date)}
+            </p>
+
+            <div className="mt-5 flex flex-col gap-4 md:max-w-130">
+              <div>
+                <span className="mb-2 block text-[13px] text-muted">
+                  Nota{reviewRating > 0 ? ` (${reviewRating}/5)` : ""}
+                </span>
+                <StarRating value={reviewRating} onChange={setReviewRating} size={30} />
+              </div>
+              <label className="flex flex-col gap-2">
+                <span className="text-[13px] text-muted">Comentário (opcional)</span>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  rows={3}
+                  placeholder="Conte como foi seu atendimento…"
+                  className="resize-none rounded-lg border border-border bg-surface-alt px-3.5 py-3 text-[15px] text-white outline-none focus:border-silver"
+                />
+              </label>
+              {reviewError && (
+                <span className="rounded-lg border border-border-strong bg-surface-alt p-2.5 text-[13px] text-white">
+                  {reviewError}
+                </span>
+              )}
+              <div className="flex gap-2.5">
+                <button
+                  onClick={handleDismissReview}
+                  disabled={dismissingReview || submittingReview}
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Agora não
+                </button>
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={reviewRating === 0 || submittingReview || dismissingReview}
+                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submittingReview ? "Enviando…" : "Enviar avaliação"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-5 rounded-lg border border-border bg-surface p-7">
           <span className="font-heading text-xs tracking-[0.22em] text-muted-2 uppercase">Histórico</span>
 
@@ -302,7 +395,8 @@ export function AccountPage() {
                           <span className="min-w-0">
                             <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Serviço</span>
                             <span className="block truncate text-[15px] text-white">{h.services?.name}</span>
-                            <span className="mt-1 block truncate text-sm text-muted">{h.barbers?.name}</span>
+                            <span className="mt-2 block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Barbeiro</span>
+                            <span className="block truncate text-sm text-muted">{h.barbers?.name}</span>
                           </span>
                           <span className="shrink-0 text-right">
                             <span className="block text-[11px] tracking-[0.08em] text-muted-2 uppercase">Total</span>

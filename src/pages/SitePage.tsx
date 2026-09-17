@@ -11,6 +11,7 @@ import { Perks } from "@/components/Perks";
 import { About } from "@/components/About";
 import { Contact } from "@/components/Contact";
 import { Shop } from "@/components/Shop";
+import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton, MobileBottomBar } from "@/components/FloatingActions";
 import { Lightbox } from "@/components/Lightbox";
@@ -164,6 +165,7 @@ export function SitePage() {
       <LightBanner />
       <Shop />
       <Perks />
+      <Testimonials />
       <About />
       <Contact />
       <Footer onOpenAuth={() => setAuthOpen(true)} />

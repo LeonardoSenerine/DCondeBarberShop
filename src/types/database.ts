@@ -67,6 +67,7 @@ type BookingsRow = {
   customer_phone: string;
   customer_email: string | null;
   reminder_sent_at: string | null;
+  review_dismissed_at: string | null;
   created_at: string;
 };
 
@@ -125,6 +126,19 @@ type TransactionsRow = {
   created_at: string;
 };
 
+type ReviewsRow = {
+  id: string;
+  booking_id: string;
+  customer_id: string | null;
+  customer_name: string;
+  barber_id: string;
+  service_id: string;
+  rating: number;
+  comment: string | null;
+  published: boolean;
+  created_at: string;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -155,11 +169,15 @@ export interface Database {
       };
       bookings: {
         Row: BookingsRow;
-        Insert: Omit<BookingsRow, "id" | "created_at" | "customer_email" | "reminder_sent_at"> & {
+        Insert: Omit<
+          BookingsRow,
+          "id" | "created_at" | "customer_email" | "reminder_sent_at" | "review_dismissed_at"
+        > & {
           id?: string;
           created_at?: string;
           customer_email?: string | null;
           reminder_sent_at?: string | null;
+          review_dismissed_at?: string | null;
         };
         Update: Partial<BookingsRow>;
         Relationships: [];
@@ -200,6 +218,17 @@ export interface Database {
         Row: TransactionsRow;
         Insert: Omit<TransactionsRow, "id" | "created_at"> & { id?: number; created_at?: string };
         Update: Partial<TransactionsRow>;
+        Relationships: [];
+      };
+      reviews: {
+        Row: ReviewsRow;
+        Insert: Omit<ReviewsRow, "id" | "created_at" | "comment" | "published"> & {
+          id?: string;
+          created_at?: string;
+          comment?: string | null;
+          published?: boolean;
+        };
+        Update: Partial<ReviewsRow>;
         Relationships: [];
       };
     };

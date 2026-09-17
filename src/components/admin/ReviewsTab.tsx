@@ -66,7 +66,7 @@ export function ReviewsTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-border bg-surface p-7">
+      <div className="dc-admin-enter rounded-lg border border-border bg-surface p-7">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
             Avaliações dos clientes
@@ -101,10 +101,11 @@ export function ReviewsTab() {
         )}
 
         <div className="flex flex-col">
-          {visibleReviews.map((r) => (
+          {visibleReviews.map((r, index) => (
             <div
               key={r.id}
-              className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+              className="dc-admin-enter-item flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+              style={{ animationDelay: `${index * 55}ms` }}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">

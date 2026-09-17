@@ -26,7 +26,7 @@ export function ClientsTab() {
   );
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-7">
+    <div className="dc-admin-enter rounded-lg border border-border bg-surface p-7">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Clientes</h2>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
@@ -59,11 +59,12 @@ export function ClientsTab() {
           </div>
         ))}
 
-      {pageClients.map((c) => (
+      {pageClients.map((c, index) => (
         <button
           key={c.customerId}
           onClick={() => setSelected(c)}
-          className="flex w-full cursor-pointer flex-col gap-2.5 border-t border-border py-4 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt sm:py-6"
+          className="dc-admin-enter-item flex w-full cursor-pointer flex-col gap-2.5 border-t border-border py-4 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt sm:py-6"
+          style={{ animationDelay: `${index * 45}ms` }}
         >
           <div className="flex items-center gap-3.5 sm:gap-4">
             <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-lg text-silver sm:h-14 sm:w-14 sm:text-xl">

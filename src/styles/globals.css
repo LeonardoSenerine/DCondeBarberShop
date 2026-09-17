@@ -169,12 +169,37 @@
   animation: dc-finance-bar-in 700ms 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
+/* Shared entrance used by the management tabs and their data rows. */
+@keyframes dc-admin-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dc-admin-enter {
+  animation: dc-admin-enter 380ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.dc-admin-enter-item {
+  animation: dc-admin-enter 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dc-finance-card,
   .dc-finance-value,
   .dc-finance-line,
   .dc-finance-area,
   .dc-finance-progress {
+    animation: none;
+  }
+
+  .dc-admin-enter,
+  .dc-admin-enter-item {
     animation: none;
   }
 }

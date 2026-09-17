@@ -31,7 +31,7 @@ export function ServicesTab() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 sm:p-7">
+    <div className="dc-admin-enter rounded-lg border border-border bg-surface p-5 sm:p-7">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
         <div>
           <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase sm:text-3xl">
@@ -56,10 +56,11 @@ export function ServicesTab() {
           </div>
         ))}
 
-      {services.map((s) => (
+      {services.map((s, index) => (
         <div
           key={s.id}
-          className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+          className="dc-admin-enter-item flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+          style={{ animationDelay: `${index * 45}ms` }}
         >
           <div className="min-w-0">
             <span className="block text-base text-white sm:text-lg">{s.name}</span>

@@ -77,7 +77,7 @@ export function BarbersTab() {
   const busy = barbersLoading || hoursLoading;
 
   return (
-    <div>
+    <div className="dc-admin-enter">
       <div className="mb-6 flex items-center justify-between gap-3">
         <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
         {isOwner && (
@@ -113,10 +113,10 @@ export function BarbersTab() {
 
       <div className="grid gap-5 sm:grid-cols-2">
         {barbers.length > 0 &&
-          barbers.map((b) => {
+          barbers.map((b, index) => {
           const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
           return (
-            <div key={b.id} className="rounded-lg border border-border bg-surface p-5 sm:p-8">
+            <div key={b.id} className="dc-admin-enter-item rounded-lg border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: `${index * 65}ms` }}>
               <div className="flex items-center gap-3 sm:gap-4">
                 <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt sm:h-16 sm:w-16">
                   {b.photo_path ? (

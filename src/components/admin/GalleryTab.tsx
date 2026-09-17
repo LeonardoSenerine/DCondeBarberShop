@@ -83,14 +83,14 @@ export function GalleryTab() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-7">
+    <div className="dc-admin-enter rounded-lg border border-border bg-surface p-7">
       <h2 className="m-0 mb-6 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
         Fotos da galeria
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {loading && photos.length === 0 && <Skeleton count={8} className="h-[180px] rounded-lg" />}
-        {photos.map((p) => (
-          <div key={p.id} className="relative h-[180px] overflow-hidden rounded-lg border border-border">
+        {photos.map((p, index) => (
+          <div key={p.id} className="dc-admin-enter-item relative h-[180px] overflow-hidden rounded-lg border border-border" style={{ animationDelay: `${index * 55}ms` }}>
             <img src={p.image_path} loading="lazy" alt="" className="h-full w-full object-cover" />
             <div className="absolute top-2.5 right-2.5 left-2.5 flex flex-wrap justify-end gap-2">
               <button

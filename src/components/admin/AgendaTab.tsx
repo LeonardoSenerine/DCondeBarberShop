@@ -70,7 +70,7 @@ export function AgendaTab() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-border bg-surface p-7">
+      <div className="dc-admin-enter rounded-lg border border-border bg-surface p-7">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
             Agenda do dia
@@ -96,7 +96,7 @@ export function AgendaTab() {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-surface p-7">
+      <div className="dc-admin-enter rounded-lg border border-border bg-surface p-7" style={{ animationDelay: "90ms" }}>
         <div className="mb-6">
           <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">
             Agendamentos totais
@@ -228,15 +228,15 @@ function AgendaList({ items, loading, skeletonCount, showDate, emptyMessage, get
         <ScrollFadeX minWidth="1100px">
           {items.length > 0 && <AgendaHeader />}
           {loading && items.length === 0 && <RowSkeletons count={skeletonCount} />}
-          {items.map((a) => (
-            <AgendaRow key={a.id} booking={a} showDate={showDate} acting={acting === a.id} {...getHandlers(a)} />
+          {items.map((a, index) => (
+            <AgendaRow key={a.id} booking={a} showDate={showDate} acting={acting === a.id} animationDelay={index * 45} {...getHandlers(a)} />
           ))}
         </ScrollFadeX>
       </div>
       <div className="flex flex-col md:hidden">
         {loading && items.length === 0 && <CardSkeletons count={skeletonCount} />}
-        {items.map((a) => (
-          <AgendaCard key={a.id} booking={a} showDate={showDate} acting={acting === a.id} {...getHandlers(a)} />
+        {items.map((a, index) => (
+          <AgendaCard key={a.id} booking={a} showDate={showDate} acting={acting === a.id} animationDelay={index * 45} {...getHandlers(a)} />
         ))}
       </div>
     </>
@@ -310,13 +310,14 @@ interface AgendaRowProps extends AgendaActionHandlers {
   booking: BookingWithDetails;
   showDate?: boolean;
   acting: boolean;
+  animationDelay?: number;
 }
 
-function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason }: AgendaRowProps) {
+function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason, animationDelay = 0 }: AgendaRowProps) {
   return (
     <div
-      className="grid items-center gap-6 border-t border-border px-3 py-5 first:border-t-0"
-      style={{ gridTemplateColumns: AGENDA_COLS }}
+      className="dc-admin-enter-item grid items-center gap-6 border-t border-border px-3 py-5 first:border-t-0"
+      style={{ gridTemplateColumns: AGENDA_COLS, animationDelay: `${animationDelay}ms` }}
     >
       <span>
         {showDate && (
@@ -350,9 +351,9 @@ function AgendaRow({ booking: a, showDate, acting, onAccept, onDecline, onComple
   );
 }
 
-function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason }: AgendaRowProps) {
+function AgendaCard({ booking: a, showDate, acting, onAccept, onDecline, onComplete, onCancel, onRemind, onViewCancelReason, animationDelay = 0 }: AgendaRowProps) {
   return (
-    <div className="flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0">
+    <div className="dc-admin-enter-item flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0" style={{ animationDelay: `${animationDelay}ms` }}>
       <div className="flex items-start justify-between gap-3">
         <span>
           {showDate && (

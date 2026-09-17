@@ -39,7 +39,7 @@ export function ProductsTab() {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 sm:p-8">
+    <div className="dc-admin-enter rounded-2xl border border-border bg-surface p-5 sm:p-8">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
         <h2 className="m-0 font-heading text-2xl font-semibold tracking-[0.06em] text-white uppercase sm:text-3xl">
           Produtos e estoque
@@ -64,13 +64,13 @@ export function ProductsTab() {
           </div>
         ))}
 
-      {products.map((p) => {
+      {products.map((p, index) => {
         const status = p.stock === 0 ? "Esgotado" : p.stock <= 5 ? "Baixo" : "Em estoque";
         const lowStock = p.stock <= 5;
         const sale = isOnSale(p);
         const current = effectivePriceCents(p);
         return (
-          <div key={p.id} className="border-t border-border py-4 first:border-t-0 sm:py-5">
+          <div key={p.id} className="dc-admin-enter-item border-t border-border py-4 first:border-t-0 sm:py-5" style={{ animationDelay: `${index * 45}ms` }}>
             {/* image · name/category · price */}
             <div className="flex items-start gap-3.5">
               <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt sm:h-14 sm:w-14">

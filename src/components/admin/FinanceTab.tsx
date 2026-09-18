@@ -506,9 +506,9 @@ export function FinanceTab() {
           </div>
 
           {/* payment + top services + ledger */}
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
+          <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
             <div className="flex flex-col gap-6">
-              <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
+              <div className="dc-finance-card shrink-0 rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
                 <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                   Formas de pagamento
                 </span>
@@ -544,14 +544,14 @@ export function FinanceTab() {
                 </div>
               </div>
 
-              <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "260ms" }}>
+              <div className="dc-finance-card flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "260ms" }}>
                 <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                   Serviços mais vendidos
                 </span>
                 {byService.length === 0 ? (
                   <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
                 ) : (
-                  <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
+                  <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
                     {byService.slice(0, 6).map((s) => (
                       <div key={s.name}>
                         <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
@@ -580,11 +580,11 @@ export function FinanceTab() {
               </div>
             </div>
 
-            <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "300ms" }}>
+            <div className="dc-finance-card flex flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "300ms" }}>
               <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Últimos lançamentos
               </span>
-              <div className="mt-4 flex max-h-[460px] flex-col overflow-y-auto pr-1">
+              <div className="mt-4 flex min-h-[300px] flex-1 flex-col overflow-y-auto pr-1">
                 {transactions.map((t) => {
                   const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
                   return (

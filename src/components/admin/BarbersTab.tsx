@@ -120,7 +120,7 @@ export function BarbersTab() {
               <div className="flex items-center gap-3 sm:gap-4">
                 <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt sm:h-16 sm:w-16">
                   {b.photo_path ? (
-                    <img src={b.photo_path} alt="" className="h-full w-full object-cover" />
+                    <img src={b.photo_path} alt={b.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center font-display text-xl text-silver sm:text-3xl">
                       {b.name.charAt(0)}

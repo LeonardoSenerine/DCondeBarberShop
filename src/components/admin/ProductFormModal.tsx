@@ -121,7 +121,7 @@ export function ProductFormModal({ product, onClose, onSaved }: ProductFormModal
           <div className="flex items-center gap-4">
             <span className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-border bg-surface-alt">
               {imagePath ? (
-                <img src={imagePath} alt="" className="h-full w-full object-cover" />
+                <img src={imagePath} alt="Foto do produto" className="h-full w-full object-cover" />
               ) : (
                 <span className="flex h-full w-full items-center justify-center font-display text-3xl text-silver">D</span>
               )}

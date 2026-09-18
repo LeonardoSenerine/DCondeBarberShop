@@ -214,7 +214,7 @@ export function Shop() {
                       className="relative flex h-[170px] items-center justify-center overflow-hidden rounded-lg border border-border bg-ink"
                     >
                       {p.image_path ? (
-                        <img src={p.image_path} alt="" className="h-full w-full object-cover" />
+                        <img src={p.image_path} alt={p.name} className="h-full w-full object-cover" />
                       ) : (
                         <span aria-hidden className="font-display text-[76px] leading-none text-white opacity-16">
                           D

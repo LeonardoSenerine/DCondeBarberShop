@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -47,6 +47,19 @@ export function AccountPage() {
   const [phone, setPhone] = useState(profile?.phone ?? (import.meta.env.DEV ? "(18) 99863-4127" : ""));
   const [savingProfile, setSavingProfile] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
+
+  // `profile` loads asynchronously after this component's first render
+  // (AuthContext resolves the session before fetching the profile row), so
+  // the useState initializers above only ever see it as null and name/phone
+  // stay blank until something re-syncs them — this does that once it
+  // arrives. Skipped while editing so it can't stomp an in-progress edit,
+  // and skipped when profile is null so the DEV sample values above survive
+  // being previewed without a real login.
+  useEffect(() => {
+    if (!profile || editingProfile) return;
+    setName(profile.full_name ?? "");
+    setPhone(profile.phone ?? "");
+  }, [profile, editingProfile]);
   const { message: profileError, fail: failProfile, clear: clearProfileError, clearField: clearProfileField, fieldProps: profileFieldProps } = useFormErrors();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -219,7 +232,7 @@ export function AccountPage() {
       <div className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-[1080px] items-center justify-between gap-4 px-6 py-4">
           <div className="flex min-w-0 items-center gap-3.5">
-            <img src="/img/monogram.jpg" alt="" className="h-10 w-11 object-contain" style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }} />
+            <img src="/img/monogram.jpg" alt="D'Conde Barbearia" className="h-10 w-11 object-contain" style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }} />
             <span className="font-heading text-[15px] tracking-[0.2em] text-white uppercase">Meus agendamentos</span>
           </div>
           <div className="flex items-center gap-2.5">

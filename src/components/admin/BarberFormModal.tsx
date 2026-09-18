@@ -194,7 +194,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
               className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt ${fieldClass(fieldProps("photo"))}`}
             >
               {photoPath ? (
-                <img src={photoPath} alt="" className="h-full w-full object-cover" />
+                <img src={photoPath} alt="Foto do barbeiro" className="h-full w-full object-cover" />
               ) : (
                 <span className="flex h-full w-full items-center justify-center font-display text-3xl text-silver">
                   {displayName.charAt(0) || "?"}
@@ -303,7 +303,7 @@ export function BarberFormModal({ barber, hours, onClose, onSaved }: BarberFormM
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
             {gallery.map((url, i) => (
               <div key={`${url}-${i}`} className="relative aspect-square overflow-hidden rounded-lg border border-border">
-                <img src={url} alt="" className="h-full w-full object-cover" />
+                <img src={url} alt={`Foto ${i + 1} do carrossel`} className="h-full w-full object-cover" />
                 <button
                   onClick={() => setGallery((g) => g.filter((_, idx) => idx !== i))}
                   aria-label="Remover foto"

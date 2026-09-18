@@ -90,7 +90,7 @@ export function ProductsTab() {
               <div className="flex items-start gap-3.5">
                 <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-surface-alt sm:h-14 sm:w-14">
                   {p.image_path ? (
-                    <img src={p.image_path} alt="" className="h-full w-full object-cover" />
+                    <img src={p.image_path} alt={p.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center font-display text-lg text-silver sm:text-xl">
                       D

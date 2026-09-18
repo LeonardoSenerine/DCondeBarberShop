@@ -91,7 +91,12 @@ export function GalleryTab() {
         {loading && photos.length === 0 && <Skeleton count={8} className="h-[180px] rounded-lg" />}
         {photos.map((p, index) => (
           <div key={p.id} className="dc-admin-enter-item relative h-[180px] overflow-hidden rounded-lg border border-border" style={{ animationDelay: `${index * 55}ms` }}>
-            <img src={p.image_path} loading="lazy" alt="" className="h-full w-full object-cover" />
+            <img
+              src={p.image_path}
+              loading="lazy"
+              alt={p.service_label ?? p.client_label ?? "Foto da galeria"}
+              className="h-full w-full object-cover"
+            />
             <div className="absolute top-2.5 right-2.5 left-2.5 flex flex-wrap justify-end gap-2">
               <button
                 onClick={() => openEdit(p)}
@@ -149,7 +154,7 @@ export function GalleryTab() {
             </h3>
             <img
               src={form.mode === "add" ? form.previewUrl : form.photo.image_path}
-              alt=""
+              alt="Pré-visualização da foto"
               className="mb-5 max-h-[52vh] w-full rounded-lg border border-border bg-ink object-contain"
             />
             <div className="flex flex-col gap-3.5">

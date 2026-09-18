@@ -90,7 +90,7 @@ export function AdminPage() {
         <div className="flex items-center gap-3">
           <img
             src="/img/monogram.jpg"
-            alt=""
+            alt="D'Conde Barbearia"
             className="h-10 w-11 object-contain"
             style={{
               filter: "brightness(1.25) contrast(3.4)",
@@ -127,7 +127,7 @@ export function AdminPage() {
           <div className="flex items-center gap-3">
             <img
               src="/img/monogram.jpg"
-              alt=""
+              alt="D'Conde Barbearia"
               className="h-10 w-11 object-contain"
               style={{
                 filter: "brightness(1.25) contrast(3.4)",
@@ -178,7 +178,7 @@ export function AdminPage() {
               {myBarber?.photo_path ? (
                 <img
                   src={myBarber.photo_path}
-                  alt=""
+                  alt={myBarber.name}
                   className="h-full w-full object-cover"
                 />
               ) : (

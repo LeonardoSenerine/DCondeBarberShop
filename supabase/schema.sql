@@ -884,6 +884,19 @@ create policy "order_items_insert_own" on public.order_items for insert
     or exists (select 1 from public.orders o where o.id = order_id and o.customer_id = auth.uid())
   );
 
+-- Powers the admin panel's live "novo pedido" alert (Supabase Realtime,
+-- filtered by the orders_select_own_or_admin policy above) — mirrors the
+-- bookings publication added near barbers_guard_delete.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'orders'
+  ) then
+    alter publication supabase_realtime add table public.orders;
+  end if;
+end $$;
+
 -- transactions: the owner sees/creates every lançamento; staff only their
 -- own barber's. Update/delete stay owner-only — nothing in the app edits
 -- a transaction after the fact, so there's no reason for staff to.

@@ -4,7 +4,7 @@ import { List, X } from "@phosphor-icons/react";
 import { useAuth } from "@/context/AuthContext";
 import { useBarbers } from "@/hooks/useCatalog";
 import { supabase } from "@/lib/supabaseClient";
-import { WEEKDAY_LABELS, MONTH_LABELS } from "@/lib/format";
+import { WEEKDAY_LABELS, MONTH_LABELS, formatCents, formatDateBR, formatTimeShort } from "@/lib/format";
 import { AgendaTab } from "@/components/admin/AgendaTab";
 import { FinanceTab } from "@/components/admin/FinanceTab";
 import { ClientsTab } from "@/components/admin/ClientsTab";
@@ -14,13 +14,19 @@ import { ServicesTab } from "@/components/admin/ServicesTab";
 import { GalleryTab } from "@/components/admin/GalleryTab";
 import { BarbersTab } from "@/components/admin/BarbersTab";
 import { ReviewsTab } from "@/components/admin/ReviewsTab";
-import { NewBookingAlert } from "@/components/admin/NewBookingAlert";
+import { LiveAlert } from "@/components/admin/LiveAlert";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 interface IncomingBooking {
   customer_name: string;
   scheduled_date: string;
   scheduled_time: string;
+  status: string;
+}
+
+interface IncomingOrder {
+  customer_name: string | null;
+  total_cents: number;
   status: string;
 }
 
@@ -44,22 +50,40 @@ export function AdminPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("agenda");
   const [incoming, setIncoming] = useState<IncomingBooking | null>(null);
+  const [incomingOrder, setIncomingOrder] = useState<IncomingOrder | null>(null);
+  const [unseenBookings, setUnseenBookings] = useState(0);
+  const [unseenOrders, setUnseenOrders] = useState(0);
   const [navOpen, setNavOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
-  // Live alert when a new booking request comes in — RLS scopes what each
-  // session receives, so staff only ever hears about their own barber's.
+  // Live alert (toast) + sidebar red dot when a new booking or shop order
+  // comes in — RLS scopes what each session receives, so staff only ever
+  // hears about their own barber's bookings (orders aren't barber-scoped).
+  // No page reload needed: Supabase Realtime pushes the row the instant the
+  // INSERT commits.
   useEffect(() => {
     if (!session) return;
     const channel = supabase
-      .channel("admin-new-bookings")
+      .channel("admin-live-updates")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "bookings" },
         (payload) => {
           const row = payload.new as IncomingBooking;
-          if (row.status === "pending") setIncoming(row);
+          if (row.status !== "pending") return;
+          setIncoming(row);
+          setUnseenBookings((n) => n + 1);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders" },
+        (payload) => {
+          const row = payload.new as IncomingOrder;
+          if (row.status !== "pending") return;
+          setIncomingOrder(row);
+          setUnseenOrders((n) => n + 1);
         },
       )
       .subscribe();
@@ -68,11 +92,25 @@ export function AdminPage() {
     };
   }, [session]);
 
+  /** Switching to a tab counts as having seen whatever it was flagging. */
+  function selectTab(id: TabId) {
+    setTab(id);
+    setNavOpen(false);
+    if (id === "agenda") setUnseenBookings(0);
+    if (id === "pedidos") setUnseenOrders(0);
+  }
+
   useEffect(() => {
     if (!incoming) return;
     const t = window.setTimeout(() => setIncoming(null), 10000);
     return () => window.clearTimeout(t);
   }, [incoming]);
+
+  useEffect(() => {
+    if (!incomingOrder) return;
+    const t = window.setTimeout(() => setIncomingOrder(null), 10000);
+    return () => window.clearTimeout(t);
+  }, [incomingOrder]);
 
   if (loading) return null;
   // DEV-only: let the panel open on `npm run dev` without an admin login so
@@ -108,9 +146,15 @@ export function AdminPage() {
           <button
             onClick={() => setNavOpen(true)}
             aria-label="Abrir menu"
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver"
+            className="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver"
           >
             <List size={22} />
+            {(unseenBookings > 0 || unseenOrders > 0) && (
+              <span
+                className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full"
+                style={{ background: "#E5484D", boxShadow: "0 0 0 2px var(--color-surface)" }}
+              />
+            )}
           </button>
         </div>
   
@@ -154,21 +198,25 @@ export function AdminPage() {
           <nav className="flex flex-col gap-1.5 overflow-y-auto p-3 lg:flex-1">
             {TABS.map((t) => {
               const on = tab === t.id;
+              const hasUnseen = (t.id === "agenda" && unseenBookings > 0) || (t.id === "pedidos" && unseenOrders > 0);
               return (
                 <button
                   key={t.id}
-                  onClick={() => {
-                    setTab(t.id);
-                    setNavOpen(false);
-                  }}
+                  onClick={() => selectTab(t.id)}
                   className="flex min-h-[54px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
                   style={{
                     background: on ? "var(--color-silver)" : "transparent",
                     color: on ? "#0A0A0A" : "#9E9E9E",
                   }}
                 >
-                  <span className="grid h-6 w-6 place-items-center" aria-hidden>
+                  <span className="relative grid h-6 w-6 place-items-center" aria-hidden>
                     {t.icon()}
+                    {hasUnseen && (
+                      <span
+                        className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full"
+                        style={{ background: "#E5484D", boxShadow: `0 0 0 2px ${on ? "var(--color-silver)" : "var(--color-surface)"}` }}
+                      />
+                    )}
                   </span>
                   {t.name}
                 </button>
@@ -259,15 +307,29 @@ export function AdminPage() {
         </main>
   
         {incoming && (
-          <NewBookingAlert
-            customerName={incoming.customer_name}
-            date={incoming.scheduled_date}
-            time={incoming.scheduled_time}
+          <LiveAlert
+            title="Novo agendamento"
+            message={`${incoming.customer_name} · ${formatDateBR(incoming.scheduled_date)} às ${formatTimeShort(incoming.scheduled_time)}`}
+            viewLabel="Ver agenda"
             onView={() => {
-              setTab("agenda");
+              selectTab("agenda");
               setIncoming(null);
             }}
             onDismiss={() => setIncoming(null)}
+          />
+        )}
+
+        {incomingOrder && (
+          <LiveAlert
+            title="Novo pedido"
+            message={`${incomingOrder.customer_name || "Cliente"} · ${formatCents(incomingOrder.total_cents)}`}
+            viewLabel="Ver pedidos"
+            offset={incoming ? 116 : 0}
+            onView={() => {
+              selectTab("pedidos");
+              setIncomingOrder(null);
+            }}
+            onDismiss={() => setIncomingOrder(null)}
           />
         )}
       </div>

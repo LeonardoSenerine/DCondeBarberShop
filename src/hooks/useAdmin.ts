@@ -39,6 +39,16 @@ export function useAgendaForDate(date: Date) {
 
   useEffect(() => reload(), [reload]);
 
+  // Keeps the visible day in sync with bookings created or changed by anyone
+  // else (customer, other staff) while this tab is open — no manual refresh needed.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`agenda-${key}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, reload)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [key, reload]);
+
   return { agenda, loading, reload };
 }
 
@@ -74,6 +84,16 @@ export function useAgendaTotals() {
   }, []);
 
   useEffect(() => reload(), [reload]);
+
+  // Same live-refresh as useAgendaForDate, so the pending/confirmed totals shown
+  // in the sidebar and header stay accurate without a page reload.
+  useEffect(() => {
+    const channel = supabase
+      .channel("agenda-totals")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, reload)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [reload]);
 
   return { pending, confirmed, loading, reload };
 }
@@ -1053,6 +1073,16 @@ export function useAdminOrders() {
   }, []);
 
   useEffect(() => reload(), [reload]);
+
+  // Live-refreshes the list on any change (new order, status update from another
+  // staff member) so the tab never shows stale data without a manual reload.
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, reload)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [reload]);
 
   return { orders, loading, reload };
 }

@@ -300,7 +300,7 @@ export function AccountPage() {
 
         <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <span className="font-heading text-sm font-medium tracking-[0.2em] text-silver uppercase">Próximo agendamento</span>
+            <span className="font-heading text-xl font-medium tracking-[0.16em] text-silver uppercase">Próximo agendamento</span>
             {upcoming && (
               <span className="flex flex-wrap items-center gap-2.5">
                 {upcomingPending && (

@@ -222,15 +222,26 @@ language plpgsql
 as $$
 begin
   if new.barber_id is distinct from old.barber_id
-    or new.service_id is distinct from old.service_id
     or new.scheduled_date is distinct from old.scheduled_date
     or new.scheduled_time is distinct from old.scheduled_time
-    or new.price_cents is distinct from old.price_cents
-    or new.duration_minutes is distinct from old.duration_minutes
     or new.customer_id is distinct from old.customer_id
     or new.customer_name is distinct from old.customer_name
     or new.customer_phone is distinct from old.customer_phone
     or new.customer_email is distinct from old.customer_email
+  then
+    raise exception 'bookings_immutable_fields';
+  end if;
+
+  -- service_id/price_cents/duration_minutes stay locked for everyone except
+  -- admins, who need to change them from CompleteBookingModal.tsx: the
+  -- client asked for something extra (or different) than what they booked
+  -- once they were in the chair, so the barber swaps in the service that
+  -- actually happened — the customer's history should show that, not the
+  -- original booking.
+  if (new.service_id is distinct from old.service_id
+      or new.price_cents is distinct from old.price_cents
+      or new.duration_minutes is distinct from old.duration_minutes)
+    and not public.is_admin()
   then
     raise exception 'bookings_immutable_fields';
   end if;

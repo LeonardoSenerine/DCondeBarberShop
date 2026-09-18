@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { completeBooking, useAdminProducts } from "@/hooks/useAdmin";
+import { useServices } from "@/hooks/useCatalog";
 import type { BookingWithDetails } from "@/hooks/useBooking";
 import { formatCents } from "@/lib/format";
 import type { PaymentMethod } from "@/types/database";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import { useModalTransition } from "@/hooks/useModalTransition";
+import { Select } from "@/components/admin/Select";
 import "@/styles/shake.css";
 import "@/styles/scrollbar.css";
 
@@ -19,13 +21,22 @@ interface CompleteBookingModalProps {
 export function CompleteBookingModal({ booking, onClose, onCompleted }: CompleteBookingModalProps) {
   const { isClosing, requestClose } = useModalTransition(onClose);
   const { products } = useAdminProducts();
+  const { data: services } = useServices();
   const [method, setMethod] = useState<PaymentMethod>("Pix");
+  const [serviceId, setServiceId] = useState(booking.service_id);
   const [value, setValue] = useState((booking.price_cents / 100).toFixed(2));
   const [qtyByProduct, setQtyByProduct] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
 
   const available = useMemo(() => products.filter((p) => p.active), [products]);
+  const selectedService = services.find((s) => s.id === serviceId);
+
+  function handleServiceChange(id: string) {
+    setServiceId(id);
+    const s = services.find((x) => x.id === id);
+    if (s) setValue((s.price_cents / 100).toFixed(2));
+  }
 
   const selectedProducts = available
     .filter((p) => (qtyByProduct[p.id] ?? 0) > 0)
@@ -47,8 +58,10 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
     const { error: err } = await completeBooking({
       bookingId: booking.id,
       barberId: booking.barber_id,
-      serviceName: booking.services?.name ?? "Serviço",
+      serviceId,
+      serviceName: selectedService?.name ?? booking.services?.name ?? "Serviço",
       serviceCents,
+      durationMinutes: selectedService?.duration_minutes ?? booking.duration_minutes,
       paymentMethod: method,
       customerId: booking.customer_id,
       customerName: booking.customer_name,
@@ -84,10 +97,24 @@ export function CompleteBookingModal({ booking, onClose, onCompleted }: Complete
             Concluir agendamento
           </h3>
           <p className="m-0 mb-6 text-[15px] leading-relaxed text-muted">
-            {booking.customer_name} · {booking.services?.name}
+            {booking.customer_name} · agendado: {booking.services?.name}
           </p>
 
           <div className="flex flex-col gap-4">
+            <label className="flex flex-col gap-2">
+              <span className="text-sm text-muted">Serviço realizado</span>
+              <Select
+                value={serviceId}
+                onChange={handleServiceChange}
+                options={services.map((s) => ({ value: s.id, label: `${s.name} — ${formatCents(s.price_cents)}` }))}
+              />
+              {serviceId !== booking.service_id && (
+                <span className="text-[13px]" style={{ color: "#E0B341" }}>
+                  Diferente do agendado — o histórico do cliente vai mostrar este serviço.
+                </span>
+              )}
+            </label>
+
             <div>
               <span className="mb-2 block text-sm text-muted">Forma de pagamento</span>
               <div className="flex flex-wrap gap-2">

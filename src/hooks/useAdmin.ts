@@ -103,8 +103,10 @@ export interface CompleteBookingProduct {
 export interface CompleteBookingInput {
   bookingId: string;
   barberId: string;
+  serviceId: string;
   serviceName: string;
   serviceCents: number;
+  durationMinutes: number;
   paymentMethod: Transaction["payment_method"];
   customerId: string | null;
   customerName: string | null;
@@ -138,9 +140,18 @@ export async function completeBooking(input: CompleteBookingInput) {
     }
   }
 
+  // service_id/price_cents/duration_minutes are normally locked (see
+  // bookings_restrict_update in schema.sql) — writable here because this is
+  // the one place an admin is allowed to swap in whatever the barber
+  // actually performed, if it ended up different from what was booked.
   const { error: bookingErr } = await supabase
     .from("bookings")
-    .update({ status: "completed" })
+    .update({
+      status: "completed",
+      service_id: input.serviceId,
+      price_cents: input.serviceCents,
+      duration_minutes: input.durationMinutes,
+    })
     .eq("id", input.bookingId);
   if (bookingErr) return { error: bookingErr.message };
 

@@ -1238,7 +1238,7 @@ const TIME_OFF_MAX_DAYS = 90;
  * period (e.g. a week of vacation); one row per day gets stored, so the
  * booking-availability check stays a simple per-date lookup.
  */
-export async function addBarberTimeOff(barberId: string, from: string, to: string, reason: string) {
+export async function addBarberTimeOff(barberId: string, from: string, to: string) {
   const dates: string[] = [];
   let cursor = new Date(`${from}T00:00:00`);
   const end = new Date(`${to}T00:00:00`);
@@ -1247,10 +1247,9 @@ export async function addBarberTimeOff(barberId: string, from: string, to: strin
     cursor = new Date(cursor.getTime() + 86400000);
     if (dates.length > TIME_OFF_MAX_DAYS) return { error: `Período muito longo — o máximo é ${TIME_OFF_MAX_DAYS} dias.` };
   }
-  const trimmedReason = reason.trim() || null;
   const { error } = await supabase
     .from("barber_time_off")
-    .insert(dates.map((date) => ({ barber_id: barberId, date, reason: trimmedReason })));
+    .insert(dates.map((date) => ({ barber_id: barberId, date, reason: null })));
   if (error?.code === "23505") return { error: "Um ou mais desses dias já estão marcados como fechados." };
   return { error: error?.message ?? null };
 }

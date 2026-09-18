@@ -24,18 +24,18 @@ const DEFAULT_SATURDAY_SLOTS = ["08:00", "09:00", "10:00", "11:00", "13:30", "14
 
 type Editing = { barber: Barber | null } | null;
 
-/** Folds consecutive same-reason days (e.g. a week of vacation, added as one range) into a single row to display. */
-function groupTimeOff(rows: BarberTimeOff[]): { ids: string[]; from: string; to: string; reason: string | null }[] {
+/** Folds consecutive days (e.g. a week of vacation, added as one range) into a single row to display. */
+function groupTimeOff(rows: BarberTimeOff[]): { ids: string[]; from: string; to: string }[] {
   const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
-  const groups: { ids: string[]; from: string; to: string; reason: string | null }[] = [];
+  const groups: { ids: string[]; from: string; to: string }[] = [];
   for (const row of sorted) {
     const last = groups[groups.length - 1];
     const nextExpected = last ? dateKey(new Date(new Date(`${last.to}T00:00:00`).getTime() + 86400000)) : null;
-    if (last && row.date === nextExpected && row.reason === last.reason) {
+    if (last && row.date === nextExpected) {
       last.to = row.date;
       last.ids.push(row.id);
     } else {
-      groups.push({ ids: [row.id], from: row.date, to: row.date, reason: row.reason });
+      groups.push({ ids: [row.id], from: row.date, to: row.date });
     }
   }
   return groups;
@@ -57,7 +57,6 @@ export function BarbersTab() {
   const [addingTimeOffFor, setAddingTimeOffFor] = useState<string | null>(null);
   const [timeOffFrom, setTimeOffFrom] = useState("");
   const [timeOffTo, setTimeOffTo] = useState("");
-  const [timeOffReason, setTimeOffReason] = useState("");
   const [savingTimeOff, setSavingTimeOff] = useState(false);
 
   function linkedAccountFor(barberId: string) {
@@ -89,7 +88,7 @@ export function BarbersTab() {
   async function handleAddTimeOff(barberId: string) {
     if (!timeOffFrom) return;
     setSavingTimeOff(true);
-    const { error } = await addBarberTimeOff(barberId, timeOffFrom, timeOffTo || timeOffFrom, timeOffReason);
+    const { error } = await addBarberTimeOff(barberId, timeOffFrom, timeOffTo || timeOffFrom);
     setSavingTimeOff(false);
     if (error) {
       setToast({ message: error, variant: "error" });
@@ -98,7 +97,6 @@ export function BarbersTab() {
     setAddingTimeOffFor(null);
     setTimeOffFrom("");
     setTimeOffTo("");
-    setTimeOffReason("");
     setToast({ message: "Fechamento marcado.", variant: "success" });
     reloadTimeOff();
   }
@@ -281,7 +279,6 @@ export function BarbersTab() {
                           setAddingTimeOffFor(addingTimeOffFor === b.id ? null : b.id);
                           setTimeOffFrom("");
                           setTimeOffTo("");
-                          setTimeOffReason("");
                         }}
                         className="min-h-8 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
                       >
@@ -300,13 +297,7 @@ export function BarbersTab() {
                           }}
                           variant="ink"
                           placeholder="Um dia ou um período"
-                          className="w-full sm:w-[260px]"
-                        />
-                        <input
-                          value={timeOffReason}
-                          onChange={(e) => setTimeOffReason(e.target.value)}
-                          placeholder="Motivo (opcional)"
-                          className="min-h-12 flex-1 rounded-lg border border-border bg-ink px-3 text-sm text-white outline-none focus:border-silver"
+                          className="w-full flex-1"
                         />
                         <button
                           onClick={() => handleAddTimeOff(b.id)}
@@ -328,7 +319,6 @@ export function BarbersTab() {
                             <div key={g.ids[0]} className="flex items-center justify-between gap-2 text-[13px]">
                               <span className="text-white">
                                 {g.from === g.to ? formatDateBR(g.from) : `${formatDateBR(g.from)} – ${formatDateBR(g.to)}`}
-                                {g.reason ? ` — ${g.reason}` : ""}
                               </span>
                               <button
                                 onClick={() => handleRemoveTimeOff(g.ids)}

@@ -26,7 +26,11 @@ export interface BookingDraft {
 }
 
 interface BookingWizardProps {
-  onConfirm: (draft: BookingDraft) => void;
+  /** Resolves to true once the booking is actually saved — false/void means
+   * don't show the success modal yet (e.g. the customer still needs to log in). */
+  onConfirm: (draft: BookingDraft) => Promise<boolean> | boolean | void;
+  /** Called once the customer dismisses the success modal. */
+  onBooked?: () => void;
   /** Pre-fill barber/service (e.g. "Remarcar") and jump straight to the day/time step. */
   initialBarberId?: string;
   initialServiceId?: string;
@@ -37,7 +41,7 @@ const STEP_NAMES = ["Profissional", "Serviço", "Dia e horário", "Confirmar"];
 const SILVER_GRADIENT =
   "linear-gradient(135deg,#FFFFFF 0%,#9E9E9E 52%,#E0E0E0 100%)";
 
-export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, initialStep }: BookingWizardProps) {
+export function BookingWizard({ onConfirm, onBooked, initialBarberId, initialServiceId, initialStep }: BookingWizardProps) {
   const { data: barbers, loading: barbersLoading } = useBarbers();
   const { data: services, loading: servicesLoading } = useServices();
   const { data: hours } = useBarberHours();
@@ -59,6 +63,8 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
   const [day, setDay] = useState<number | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   const { bookedByDate, error: bookedSlotsError } = useMonthBookings(
     barberId,
@@ -159,9 +165,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
     ? `${String(day).padStart(2, "0")} de ${MONTH_LABELS[viewMonth].toLowerCase()} · ${WEEKDAY_LABELS[selectedDate.getDay()].toLowerCase()}`
     : "Escolha um dia";
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!barber || !service || !day || !time || !isoDate) return;
-    onConfirm({
+    setSubmitting(true);
+    const ok = await onConfirm({
       barberId: barber.id,
       barberName: barber.name,
       serviceId: service.id,
@@ -173,6 +180,9 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
       time,
       priceCents: service.price_cents,
     });
+    setSubmitting(false);
+    setConfirmOpen(false);
+    if (ok) setSuccessOpen(true);
   }
 
   return (
@@ -269,6 +279,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                       setBarberId(b.id);
                       setDay(null);
                       setTime(null);
+                      setStep(2);
                     }}
                     className="group flex w-full cursor-pointer flex-col overflow-hidden rounded-[10px] border text-left transition duration-300 hover:z-10 hover:scale-[1.04] hover:border-silver"
                     style={{
@@ -354,9 +365,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                       // A different service can need a different number of
                       // back-to-back slots, so a previously chosen day/time
                       // isn't necessarily still valid — make them re-pick it.
-                      setServiceId((prev) => (prev === s.id ? null : s.id));
+                      setServiceId(s.id);
                       setDay(null);
                       setTime(null);
+                      setStep(3);
                     }}
                     className="flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition hover:brightness-125"
                     style={{
@@ -491,7 +503,10 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
                     return (
                       <button
                         key={t}
-                        onClick={() => setTime(t)}
+                        onClick={() => {
+                          setTime(t);
+                          setStep(4);
+                        }}
                         className="flex min-h-14 cursor-pointer items-center justify-center rounded-lg border text-sm font-medium tracking-[0.04em] transition hover:brightness-125"
                         style={{
                           background: on ? "#E0E0E0" : "#0A0A0A",
@@ -660,18 +675,72 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
               <div className="mt-6 flex gap-2.5">
                 <button
                   onClick={() => setConfirmOpen(false)}
-                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                  disabled={submitting}
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Revisar
                 </button>
                 <button
-                  onClick={() => {
-                    setConfirmOpen(false);
-                    handleConfirm();
-                  }}
-                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+                  onClick={handleConfirm}
+                  disabled={submitting}
+                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Confirmar
+                  {submitting ? "Confirmando…" : "Confirmar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {successOpen && (
+        <div
+          className="fixed inset-0 z-[130] overflow-y-auto"
+          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
+        >
+          <div className="flex min-h-full items-center justify-center p-6">
+            <div
+              className="relative w-full max-w-[420px] rounded-2xl border p-7 text-center shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+              style={{ borderColor: "#7FC98F", background: "var(--color-surface)" }}
+            >
+              <span
+                className="mx-auto flex h-14 w-14 items-center justify-center rounded-full"
+                style={{ background: "#7FC98F" }}
+              >
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              <h3 className="m-0 mt-4 font-heading text-xl font-semibold tracking-[0.05em] uppercase" style={{ color: "#7FC98F" }}>
+                Agendamento concluído!
+              </h3>
+              <p className="m-0 mt-2 text-base text-muted">
+                {barber?.name} vai receber sua solicitação e confirma pelo WhatsApp assim que aceitar.
+              </p>
+
+              <div className="mt-6 flex flex-col gap-2.5">
+                <button
+                  onClick={() => {
+                    setSuccessOpen(false);
+                    onBooked?.();
+                  }}
+                  className="flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+                  style={{ background: "#7FC98F" }}
+                >
+                  Ver meus agendamentos
+                </button>
+                <button
+                  onClick={() => {
+                    setSuccessOpen(false);
+                    setStep(1);
+                    setBarberId(null);
+                    setServiceId(null);
+                    setDay(null);
+                    setTime(null);
+                  }}
+                  className="flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-sm tracking-[0.16em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                >
+                  Agendar outro horário
                 </button>
               </div>
             </div>

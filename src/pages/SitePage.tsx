@@ -98,7 +98,7 @@ export function SitePage() {
     if (session?.user && authOpen) setAuthOpen(false);
   }, [session?.user, authOpen]);
 
-  async function handleConfirmBooking(draft: BookingDraft) {
+  async function handleConfirmBooking(draft: BookingDraft): Promise<boolean> {
     if (session?.user) {
       const { error } = await createBooking({
         customer_id: session.user.id,
@@ -115,13 +115,16 @@ export function SitePage() {
       });
       if (error) {
         setBookingError(`Não foi possível confirmar seu agendamento: ${friendlyBookingError(error)}`);
-        return;
+        return false;
       }
-      navigate("/conta");
-      return;
+      return true;
     }
+    // Not logged in yet — the auth modal takes over and completes the booking
+    // itself once the session is ready (see the pendingBooking effect above),
+    // so the wizard's own success modal doesn't apply to this path.
     setPendingBooking(draft);
     setAuthOpen(true);
+    return false;
   }
 
   // Owner/staff land on the marketing homepage right after login with
@@ -157,6 +160,7 @@ export function SitePage() {
       <Hero />
       <BookingWizard
         onConfirm={handleConfirmBooking}
+        onBooked={() => navigate("/conta")}
         initialBarberId={rebook?.barberId}
         initialServiceId={rebook?.serviceId}
         initialStep={rebook ? 3 : undefined}

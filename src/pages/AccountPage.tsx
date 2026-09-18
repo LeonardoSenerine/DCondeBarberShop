@@ -503,27 +503,27 @@ export function AccountPage() {
         )}
 
         <div className="mb-5 rounded-lg border border-border bg-surface p-7 md:p-8">
-          <span className="font-heading text-base font-medium tracking-[0.18em] text-silver uppercase">Histórico</span>
+          <span className="font-heading text-xl font-medium tracking-[0.16em] text-silver uppercase">Histórico</span>
 
-          <div className="mt-4.5 grid gap-3.5 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3.5 sm:grid-cols-3">
             <HistoryStat label="Atendimentos" value={String(history.length)} />
             <HistoryStat label="Pedidos concluídos" value={String(completedOrders.length)} />
             <HistoryStat label="Total gasto" value={formatCents(grandTotalCents)} />
           </div>
 
-          <div className="mt-7">
-            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Serviços</span>
+          <div className="mt-8">
+            <span className="font-heading text-lg font-medium tracking-[0.1em] text-white uppercase">Serviços</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
               {!historyLoading && history.length === 0 && (
-                <p className="py-3 text-[15px] text-muted">Nenhum atendimento anterior.</p>
+                <p className="py-3 text-base text-muted">Nenhum atendimento anterior.</p>
               )}
               {history.length > 0 && (
                 <>
                   <div className="hidden md:block">
                     <ScrollFadeX minWidth="680px">
                       <div
-                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-[13px] whitespace-nowrap tracking-[0.14em] text-muted-2 uppercase"
+                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-sm whitespace-nowrap tracking-[0.12em] text-muted-2 uppercase"
                         style={{ gridTemplateColumns: HISTORY_COLS }}
                       >
                         <span>Data</span>
@@ -538,13 +538,13 @@ export function AccountPage() {
                           className="grid items-center gap-4 border-t border-border py-4"
                           style={{ gridTemplateColumns: HISTORY_COLS }}
                         >
-                          <span className="text-[15px] text-muted">{formatDateBR(h.scheduled_date)}</span>
-                          <span className="min-w-0 truncate text-[17px] font-medium text-white">{h.services?.name}</span>
-                          <span className="truncate text-[15px] text-muted">{h.barbers?.name}</span>
+                          <span className="text-base text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <span className="min-w-0 truncate text-lg font-medium text-white">{h.services?.name}</span>
+                          <span className="truncate text-base text-muted">{h.barbers?.name}</span>
                           <span>
                             <BookingStatusBadge status={h.status} />
                           </span>
-                          <span className="text-right font-heading text-[17px] text-white">
+                          <span className="text-right font-heading text-lg text-white">
                             {formatCents(h.price_cents)}
                           </span>
                         </div>
@@ -555,19 +555,19 @@ export function AccountPage() {
                     {history.map((h) => (
                       <div key={h.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-[15px] text-muted">{formatDateBR(h.scheduled_date)}</span>
+                          <span className="text-base text-muted">{formatDateBR(h.scheduled_date)}</span>
                           <BookingStatusBadge status={h.status} />
                         </div>
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0">
-                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Serviço</span>
-                            <span className="block truncate text-[17px] font-medium text-white">{h.services?.name}</span>
-                            <span className="mt-2 block text-xs tracking-[0.1em] text-muted-2 uppercase">Barbeiro</span>
-                            <span className="block truncate text-[15px] text-muted">{h.barbers?.name}</span>
+                            <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">Serviço</span>
+                            <span className="block truncate text-lg font-medium text-white">{h.services?.name}</span>
+                            <span className="mt-2 block text-[13px] tracking-[0.1em] text-muted-2 uppercase">Barbeiro</span>
+                            <span className="block truncate text-base text-muted">{h.barbers?.name}</span>
                           </span>
                           <span className="shrink-0 text-right">
-                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
-                            <span className="block font-heading text-[17px] text-white">
+                            <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">Total</span>
+                            <span className="block font-heading text-lg text-white">
                               {formatCents(h.price_cents)}
                             </span>
                           </span>
@@ -580,19 +580,19 @@ export function AccountPage() {
             </div>
           </div>
 
-          <div className="mt-7">
-            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Histórico de pedidos</span>
+          <div className="mt-8">
+            <span className="font-heading text-lg font-medium tracking-[0.1em] text-white uppercase">Histórico de pedidos</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={2} className="my-2 h-6 w-full" />}
               {!historyLoading && orderHistory.length === 0 && (
-                <p className="py-3 text-[15px] text-muted">Nenhum pedido concluído ou cancelado ainda.</p>
+                <p className="py-3 text-base text-muted">Nenhum pedido concluído ou cancelado ainda.</p>
               )}
               {orderHistory.length > 0 && (
                 <>
                   <div className="hidden md:block">
                     <ScrollFadeX minWidth="620px">
                       <div
-                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-[13px] whitespace-nowrap tracking-[0.14em] text-muted-2 uppercase"
+                        className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-sm whitespace-nowrap tracking-[0.12em] text-muted-2 uppercase"
                         style={{ gridTemplateColumns: ORDER_COLS }}
                       >
                         <span>Data</span>
@@ -606,14 +606,14 @@ export function AccountPage() {
                           className="grid items-center gap-4 border-t border-border py-4"
                           style={{ gridTemplateColumns: ORDER_COLS }}
                         >
-                          <span className="text-[15px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
-                          <span className="min-w-0 truncate text-[17px] font-medium text-white">
+                          <span className="text-base text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
+                          <span className="min-w-0 truncate text-lg font-medium text-white">
                             {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
                           </span>
                           <span>
                             <OrderStatusBadge status={o.status} />
                           </span>
-                          <span className="text-right font-heading text-[17px] text-white">
+                          <span className="text-right font-heading text-lg text-white">
                             {formatCents(o.totalCents)}
                           </span>
                         </div>
@@ -624,19 +624,19 @@ export function AccountPage() {
                     {orderHistory.map((o) => (
                       <div key={o.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="text-[15px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
+                          <span className="text-base text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
                           <OrderStatusBadge status={o.status} />
                         </div>
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0">
-                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Itens</span>
-                            <span className="block truncate text-[17px] font-medium text-white">
+                            <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">Itens</span>
+                            <span className="block truncate text-lg font-medium text-white">
                               {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
                             </span>
                           </span>
                           <span className="shrink-0 text-right">
-                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
-                            <span className="block font-heading text-[17px] text-white">
+                            <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">Total</span>
+                            <span className="block font-heading text-lg text-white">
                               {formatCents(o.totalCents)}
                             </span>
                           </span>
@@ -808,8 +808,8 @@ export function AccountPage() {
 function HistoryStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface-alt px-5 py-4">
-      <span className="block text-xs tracking-[0.12em] text-muted uppercase">{label}</span>
-      <span className="mt-1 block font-heading text-2xl leading-none text-white">{value}</span>
+      <span className="block text-sm tracking-[0.12em] text-muted uppercase">{label}</span>
+      <span className="mt-1.5 block font-heading text-3xl leading-none text-white">{value}</span>
     </div>
   );
 }

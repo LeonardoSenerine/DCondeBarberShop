@@ -466,11 +466,11 @@ export function AccountPage() {
               </span>
             </div>
 
-            <div className="flex flex-col gap-5 md:grid md:grid-cols-2 md:gap-6">
+            <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-stretch md:gap-6">
               {activeOrders.map((o) => {
                 const busy = cancellingOrderId === o.id;
                 return (
-                  <div key={o.id} className="rounded-xl border border-border bg-surface-alt p-5 md:p-7">
+                  <div key={o.id} className="flex h-full flex-col rounded-xl border border-border bg-surface-alt p-5 md:p-7">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <OrderStatusBadge status={o.status} />
                       <span className="text-[13px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
@@ -478,12 +478,15 @@ export function AccountPage() {
                     <p className="m-0 mt-3.5 text-[15px] leading-relaxed text-white">
                       {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
                     </p>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+                      <span className="flex items-baseline gap-1.5">
+                        <span className="text-[13px] text-muted">Total:</span>
+                        <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
+                      </span>
                       <button
                         onClick={() => handleCancelOrder(o)}
                         disabled={busy}
-                        className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex min-h-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {busy ? "Cancelando…" : o.status === "pending" ? "Cancelar análise" : "Cancelar pedido"}
                       </button>

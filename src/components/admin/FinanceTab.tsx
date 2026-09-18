@@ -24,12 +24,12 @@ function shortMoney(cents: number) {
 }
 
 /** A product-order description is a comma list ("2x Pomada, 1x Óleo, …") that can run long
- * enough to truncate mid-word — shows the first couple of items plus a count instead. */
-function summarizeItems(description: string, maxItems = 2): string {
+ * enough to truncate mid-word — splits off the first couple of items from the rest, so the
+ * remainder can render as its own "+N itens" badge instead of more running text. */
+function summarizeItems(description: string, maxItems = 2): { head: string; rest: number } {
   const items = description.split(", ");
-  if (items.length <= maxItems) return description;
-  const rest = items.length - maxItems;
-  return `${items.slice(0, maxItems).join(", ")} +${rest} ${rest === 1 ? "item" : "itens"}`;
+  if (items.length <= maxItems) return { head: description, rest: 0 };
+  return { head: items.slice(0, maxItems).join(", "), rest: items.length - maxItems };
 }
 
 /** Full item-by-item breakdown of a product order's lançamento — the "Ver mais" from the ledger row,
@@ -718,8 +718,7 @@ export function FinanceTab() {
             <div className="mt-4 flex flex-col">
               {pageTransactions.map((t) => {
                 const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
-                const orderItems = t.order_id ? productItems.filter((it) => it.orderId === t.order_id) : [];
-                const hasMore = orderItems.length > 2;
+                const summary = t.order_id ? summarizeItems(t.description) : { head: t.description, rest: 0 };
                 return (
                   <div
                     key={t.id}
@@ -735,14 +734,17 @@ export function FinanceTab() {
                       </span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base text-white sm:text-lg" title={t.description}>
-                        {t.order_id ? summarizeItems(t.description) : t.description}
-                        {hasMore && (
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="min-w-0 truncate text-base text-white sm:text-lg" title={t.description}>
+                          {summary.head}
+                        </span>
+                        {summary.rest > 0 && (
                           <button
                             onClick={() => setViewingOrder(t)}
-                            className="ml-2 cursor-pointer text-sm font-semibold text-silver underline decoration-dotted underline-offset-2 hover:text-white"
+                            className="flex-shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[12px] font-semibold tracking-[0.04em] uppercase transition-colors hover:brightness-110"
+                            style={{ background: "rgba(255,255,255,0.12)", color: "#FFFFFF", border: "1px solid var(--color-border-strong)" }}
                           >
-                            Ver mais
+                            +{summary.rest} {summary.rest === 1 ? "item" : "itens"}
                           </button>
                         )}
                       </span>

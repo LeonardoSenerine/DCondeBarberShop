@@ -559,7 +559,7 @@ export function FinanceTab() {
                 Formas de pagamento
               </span>
               <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                {byMethod.map((m, i) => (
+                {byMethod.slice(0, 5).map((m, i) => (
                   <RankBar
                     key={m.method}
                     label={m.method}
@@ -584,7 +584,7 @@ export function FinanceTab() {
                 <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
               ) : (
                 <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                  {byService.slice(0, 6).map((s, i) => (
+                  {byService.slice(0, 5).map((s, i) => (
                     <RankBar
                       key={s.name}
                       label={s.name}
@@ -610,7 +610,7 @@ export function FinanceTab() {
                 <p className="mt-5 text-muted">Nenhum produto vendido no período.</p>
               ) : (
                 <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                  {byProduct.slice(0, 6).map((p, i) => (
+                  {byProduct.slice(0, 5).map((p, i) => (
                     <RankBar
                       key={p.name}
                       label={p.name}
@@ -642,7 +642,7 @@ export function FinanceTab() {
                     key={t.id}
                     className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 sm:gap-4 sm:py-4.5"
                   >
-                    <span className="w-[64px] flex-shrink-0 text-sm text-muted sm:w-[84px] sm:text-base">
+                    <span className="w-[72px] flex-shrink-0 text-base text-muted sm:w-[92px] sm:text-lg">
                       <span className="tabular-nums">
                         {t.occurred_on.slice(8, 10)}/
                         {t.occurred_on.slice(5, 7)}
@@ -652,7 +652,7 @@ export function FinanceTab() {
                       </span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base text-white sm:text-lg">
+                      <span className="block truncate text-base text-white sm:text-lg" title={t.description}>
                         {t.description}
                       </span>
                       <span className="block truncate text-sm text-muted">
@@ -666,10 +666,13 @@ export function FinanceTab() {
                         )}
                       </span>
                     </span>
-                    <span className="hidden flex-shrink-0 rounded-full border border-border px-3 py-1.5 text-sm tracking-widest text-muted uppercase sm:inline">
+                    <span
+                      className="hidden flex-shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold tracking-widest uppercase sm:inline"
+                      style={{ border: "1px solid var(--color-silver)", color: "#FFFFFF", background: "rgba(255,255,255,0.08)" }}
+                    >
                       {t.payment_method}
                     </span>
-                    <span className="w-24 flex-shrink-0 text-right font-heading text-base text-white tabular-nums sm:w-32 sm:text-lg">
+                    <span className="w-24 flex-shrink-0 text-right font-heading text-base tabular-nums sm:w-32 sm:text-lg" style={{ color: "#7FC98F" }}>
                       {formatCents(t.amount_cents)}
                     </span>
                   </div>

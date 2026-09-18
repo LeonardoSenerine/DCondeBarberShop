@@ -3,7 +3,7 @@ import type { Product } from "@/hooks/useCatalog";
 import { formatCents } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 
-const TOP_N = 6;
+const TOP_N = 5;
 const LOW_STOCK_THRESHOLD = 5;
 
 export function ProductSalesReport({ products }: { products: Product[] }) {
@@ -49,9 +49,9 @@ export function ProductSalesReport({ products }: { products: Product[] }) {
                   <div key={s.productId}>
                     <div className="mb-2 flex items-baseline justify-between gap-3">
                       <span className="truncate text-base text-white">{s.name}</span>
-                      <span className="flex-shrink-0 text-sm text-muted">
-                        <span className="text-white tabular-nums">{s.qty}</span> un ·{" "}
-                        <span className="tabular-nums">{formatCents(s.revenueCents)}</span>
+                      <span className="flex-shrink-0 text-base text-muted">
+                        <span className="font-semibold tabular-nums" style={{ color: "#7FC98F" }}>{s.qty}</span> un ·{" "}
+                        <span className="font-semibold tabular-nums" style={{ color: "#7FC98F" }}>{formatCents(s.revenueCents)}</span>
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-surface-alt">

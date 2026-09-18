@@ -262,9 +262,18 @@ export function AccountPage() {
         )}
 
         <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
-          <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <span className="font-heading text-sm font-medium tracking-[0.2em] text-silver uppercase">Próximo agendamento</span>
-            {upcoming && <BookingStatusBadge status={upcoming.status} />}
+            {upcoming && (
+              <span className="flex flex-wrap items-center gap-2.5">
+                {upcomingPending && (
+                  <span className="text-[13px]" style={{ color: "#E0B341" }}>
+                    Aguardando o barbeiro aceitar a solicitação
+                  </span>
+                )}
+                <BookingStatusBadge status={upcoming.status} />
+              </span>
+            )}
           </div>
           {bookingsLoading ? (
             <div className="flex flex-col gap-3">
@@ -297,11 +306,6 @@ export function AccountPage() {
                   </span>
                 </div>
               </div>
-              {upcomingPending && (
-                <p className="mt-3 text-[13px]" style={{ color: "#E0B341" }}>
-                  Aguardando o barbeiro aceitar a solicitação.
-                </p>
-              )}
               <div className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2 md:hidden">
                 {[
                   { k: "Barbeiro", v: upcoming.barbers?.name ?? "—" },

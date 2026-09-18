@@ -833,6 +833,7 @@ export function useFinance(
     byMethod,
     byService,
     byProduct,
+    productItems,
   };
 }
 

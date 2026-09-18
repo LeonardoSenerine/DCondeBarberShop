@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFinance, type FinancePeriod } from "@/hooks/useAdmin";
+import { useFinance, type FinancePeriod, type FinanceTx } from "@/hooks/useAdmin";
 import { useBarbers } from "@/hooks/useCatalog";
 import { useAuth } from "@/context/AuthContext";
-import { formatCents, MONTH_LABELS, dateKey } from "@/lib/format";
+import { formatCents, formatDateBR, MONTH_LABELS, dateKey } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
 import { Pagination } from "@/components/admin/Pagination";
+import { useModalTransition } from "@/hooks/useModalTransition";
+import "@/styles/scrollbar.css";
 
 const PERIODS: { id: FinancePeriod; label: string }[] = [
   { id: "7d", label: "7 dias" },
@@ -28,6 +30,73 @@ function summarizeItems(description: string, maxItems = 2): string {
   if (items.length <= maxItems) return description;
   const rest = items.length - maxItems;
   return `${items.slice(0, maxItems).join(", ")} +${rest} ${rest === 1 ? "item" : "itens"}`;
+}
+
+/** Full item-by-item breakdown of a product order's lançamento — the "Ver mais" from the ledger row,
+ * since the summarized line on mobile has no hover for a tooltip to reveal the rest. */
+function OrderItemsModal({
+  order,
+  items,
+  onClose,
+}: {
+  order: FinanceTx;
+  items: { name: string; quantity: number; unitCents: number }[];
+  onClose: () => void;
+}) {
+  const { isClosing, requestClose } = useModalTransition(onClose);
+  return (
+    <div
+      className="dc-modal-overlay fixed inset-0 z-[120] overflow-y-auto"
+      style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
+      data-closing={isClosing}
+      onClick={requestClose}
+    >
+      <div className="flex min-h-full items-center justify-center p-6">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="dc-modal-panel relative w-full max-w-[440px] rounded-2xl border border-border bg-surface p-8 shadow-[0_40px_90px_rgba(0,0,0,0.8)]"
+        >
+          <button
+            onClick={requestClose}
+            aria-label="Fechar"
+            className="absolute top-4 right-4 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border text-muted transition-colors hover:border-silver hover:text-white"
+          >
+            ×
+          </button>
+
+          <h3 className="m-0 mb-1 font-heading text-xl font-semibold tracking-[0.06em] text-white uppercase">
+            Itens do pedido
+          </h3>
+          <p className="m-0 mb-6 text-[15px] leading-relaxed text-muted">
+            {order.customer_name ?? "Balcão"} · {formatDateBR(order.occurred_on)}
+          </p>
+
+          <div className="scroll-thin flex max-h-[320px] flex-col overflow-y-auto">
+            {items.map((it, i) => (
+              <div key={i} className="flex items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-base text-white">{it.name}</span>
+                  <span className="block text-sm text-muted">
+                    {it.quantity}x {formatCents(it.unitCents)}
+                  </span>
+                </span>
+                <span className="flex-shrink-0 font-heading text-base tabular-nums" style={{ color: "#7FC98F" }}>
+                  {formatCents(it.quantity * it.unitCents)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex items-baseline justify-between border-t border-border pt-3.5">
+            <span className="text-sm text-muted">Total</span>
+            <span className="font-heading text-[22px] font-semibold tabular-nums" style={{ color: "#7FC98F" }}>
+              {formatCents(order.amount_cents)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AnimatedMoney({ cents }: { cents: number }) {
@@ -113,8 +182,11 @@ export function FinanceTab() {
     byMethod,
     byService,
     byProduct,
+    productItems,
     transactions,
   } = useFinance(period, custom, barberId);
+
+  const [viewingOrder, setViewingOrder] = useState<FinanceTx | null>(null);
 
   useEffect(() => setLedgerPage(1), [period, customFrom, customTo, barberId]);
   const ledgerPageCount = Math.max(1, Math.ceil(transactions.length / LEDGER_PAGE_SIZE));
@@ -646,6 +718,8 @@ export function FinanceTab() {
             <div className="mt-4 flex flex-col">
               {pageTransactions.map((t) => {
                 const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
+                const orderItems = t.order_id ? productItems.filter((it) => it.orderId === t.order_id) : [];
+                const hasMore = orderItems.length > 2;
                 return (
                   <div
                     key={t.id}
@@ -663,6 +737,14 @@ export function FinanceTab() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-base text-white sm:text-lg" title={t.description}>
                         {t.order_id ? summarizeItems(t.description) : t.description}
+                        {hasMore && (
+                          <button
+                            onClick={() => setViewingOrder(t)}
+                            className="ml-2 cursor-pointer text-sm font-semibold text-silver underline decoration-dotted underline-offset-2 hover:text-white"
+                          >
+                            Ver mais
+                          </button>
+                        )}
                       </span>
                       <span className="block truncate text-sm text-muted">
                         {t.customer_name ?? "Balcão"}
@@ -704,6 +786,14 @@ export function FinanceTab() {
             )}
           </div>
         </>
+      )}
+
+      {viewingOrder && (
+        <OrderItemsModal
+          order={viewingOrder}
+          items={productItems.filter((it) => it.orderId === viewingOrder.order_id)}
+          onClose={() => setViewingOrder(null)}
+        />
       )}
     </div>
   );

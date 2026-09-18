@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { formatCents, MONTH_LABELS, dateKey } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { DateRangePicker } from "@/components/admin/DateRangePicker";
+import { Pagination } from "@/components/admin/Pagination";
 
 const PERIODS: { id: FinancePeriod; label: string }[] = [
   { id: "7d", label: "7 dias" },
@@ -83,6 +84,8 @@ export function FinanceTab() {
   const [customTo, setCustomTo] = useState(today);
   const [hover, setHover] = useState<number | null>(null);
   const [barberId, setBarberId] = useState("all");
+  const [ledgerPage, setLedgerPage] = useState(1);
+  const LEDGER_PAGE_SIZE = 10;
   const { data: barbers } = useBarbers();
   const { isOwner, barberId: myBarberId } = useAuth();
 
@@ -103,6 +106,14 @@ export function FinanceTab() {
     byProduct,
     transactions,
   } = useFinance(period, custom, barberId);
+
+  useEffect(() => setLedgerPage(1), [period, customFrom, customTo, barberId]);
+  const ledgerPageCount = Math.max(1, Math.ceil(transactions.length / LEDGER_PAGE_SIZE));
+  const ledgerCurrentPage = Math.min(ledgerPage, ledgerPageCount);
+  const pageTransactions = transactions.slice(
+    (ledgerCurrentPage - 1) * LEDGER_PAGE_SIZE,
+    ledgerCurrentPage * LEDGER_PAGE_SIZE,
+  );
 
   // Staff only ever gets their own barber's rows back (RLS enforces this
   // server-side) — the filter dropdown would be misleading, so it's owner-only.
@@ -305,7 +316,7 @@ export function FinanceTab() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
             <div className="dc-finance-card flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-8">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                   Receita no período
                 </span>
                 {revenueChangePct != null && (
@@ -361,7 +372,7 @@ export function FinanceTab() {
           {/* area chart */}
           <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "160ms" }}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+              <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
                 Faturamento
               </span>
               <span className="text-lg text-muted">
@@ -541,136 +552,144 @@ export function FinanceTab() {
             )}
           </div>
 
-          {/* payment + top services + ledger */}
-          <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
-            <div className="flex flex-col gap-6">
-              <div className="dc-finance-card shrink-0 rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
-                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                  Formas de pagamento
-                </span>
-                <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
-                  {byMethod.map((m, i) => (
+          {/* payment + top services + top products, side by side */}
+          <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3">
+            <div className="dc-finance-card flex flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
+              <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                Formas de pagamento
+              </span>
+              <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
+                {byMethod.map((m, i) => (
+                  <RankBar
+                    key={m.method}
+                    label={m.method}
+                    pct={m.pct}
+                    highlight={i === 0 && m.value > 0}
+                    meta={
+                      <>
+                        <span className="tabular-nums">{Math.round(m.pct * 100)}%</span> ·{" "}
+                        <span className="text-white tabular-nums">{formatCents(m.value)}</span>
+                      </>
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="dc-finance-card flex flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "260ms" }}>
+              <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                Serviços mais vendidos
+              </span>
+              {byService.length === 0 ? (
+                <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
+              ) : (
+                <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
+                  {byService.slice(0, 6).map((s, i) => (
                     <RankBar
-                      key={m.method}
-                      label={m.method}
-                      pct={m.pct}
-                      highlight={i === 0 && m.value > 0}
+                      key={s.name}
+                      label={s.name}
+                      pct={s.pct}
+                      highlight={i === 0}
                       meta={
                         <>
-                          <span className="tabular-nums">{Math.round(m.pct * 100)}%</span> ·{" "}
-                          <span className="text-white tabular-nums">{formatCents(m.value)}</span>
+                          <span className="tabular-nums">{s.count}x</span> ·{" "}
+                          <span className="text-white tabular-nums">{formatCents(s.value)}</span>
                         </>
                       }
                     />
                   ))}
                 </div>
-              </div>
-
-              <div className="dc-finance-card flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "260ms" }}>
-                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                  Serviços mais vendidos
-                </span>
-                {byService.length === 0 ? (
-                  <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
-                ) : (
-                  <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                    {byService.slice(0, 6).map((s, i) => (
-                      <RankBar
-                        key={s.name}
-                        label={s.name}
-                        pct={s.pct}
-                        highlight={i === 0}
-                        meta={
-                          <>
-                            <span className="tabular-nums">{s.count}x</span> ·{" "}
-                            <span className="text-white tabular-nums">{formatCents(s.value)}</span>
-                          </>
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="dc-finance-card flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "280ms" }}>
-                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                  Produtos mais vendidos
-                </span>
-                {byProduct.length === 0 ? (
-                  <p className="mt-5 text-muted">Nenhum produto vendido no período.</p>
-                ) : (
-                  <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                    {byProduct.slice(0, 6).map((p, i) => (
-                      <RankBar
-                        key={p.name}
-                        label={p.name}
-                        pct={p.pct}
-                        highlight={i === 0}
-                        meta={
-                          <>
-                            <span className="tabular-nums">{p.count}x</span> ·{" "}
-                            <span className="text-white tabular-nums">{formatCents(p.value)}</span>
-                          </>
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
-            <div className="dc-finance-card flex flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "300ms" }}>
-              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                Últimos lançamentos
+            <div className="dc-finance-card flex flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "290ms" }}>
+              <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                Produtos mais vendidos
               </span>
-              <div className="mt-4 flex min-h-[300px] flex-1 flex-col overflow-y-auto pr-1">
-                {transactions.map((t) => {
-                  const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
-                  return (
-                    <div
-                      key={t.id}
-                      className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 sm:gap-4 sm:py-4.5"
-                    >
-                      <span className="w-[64px] flex-shrink-0 text-sm text-muted sm:w-[84px] sm:text-base">
-                        <span className="tabular-nums">
-                          {t.occurred_on.slice(8, 10)}/
-                          {t.occurred_on.slice(5, 7)}
-                        </span>
-                        <span className="ml-1 text-faint">
-                          {WEEKDAY_PT[wd]}
-                        </span>
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-base text-white sm:text-lg">
-                          {t.description}
-                        </span>
-                        <span className="block truncate text-sm text-muted">
-                          {t.customer_name ?? "Balcão"}
-                          {barberId === "all" && t.barber_id && (
-                            <span className="text-faint">
-                              {" · "}
-                              {barbers.find((b) => b.id === t.barber_id)
-                                ?.name ?? t.barber_id}
-                            </span>
-                          )}
-                        </span>
-                      </span>
-                      <span className="hidden flex-shrink-0 rounded-full border border-border px-3 py-1.5 text-sm tracking-widest text-muted uppercase sm:inline">
-                        {t.payment_method}
-                      </span>
-                      <span className="w-24 flex-shrink-0 text-right font-heading text-base text-white tabular-nums sm:w-32 sm:text-lg">
-                        {formatCents(t.amount_cents)}
-                      </span>
-                    </div>
-                  );
-                })}
-                {transactions.length === 0 && (
-                  <p className="mt-3 text-muted">
-                    Nenhum lançamento no período.
-                  </p>
-                )}
-              </div>
+              {byProduct.length === 0 ? (
+                <p className="mt-5 text-muted">Nenhum produto vendido no período.</p>
+              ) : (
+                <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
+                  {byProduct.slice(0, 6).map((p, i) => (
+                    <RankBar
+                      key={p.name}
+                      label={p.name}
+                      pct={p.pct}
+                      highlight={i === 0}
+                      meta={
+                        <>
+                          <span className="tabular-nums">{p.count}x</span> ·{" "}
+                          <span className="text-white tabular-nums">{formatCents(p.value)}</span>
+                        </>
+                      }
+                    />
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* ledger, full width, paginated */}
+          <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "320ms" }}>
+            <span className="font-heading text-[20px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+              Últimos lançamentos
+            </span>
+            <div className="mt-4 flex flex-col">
+              {pageTransactions.map((t) => {
+                const wd = new Date(`${t.occurred_on}T00:00:00`).getDay();
+                return (
+                  <div
+                    key={t.id}
+                    className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 sm:gap-4 sm:py-4.5"
+                  >
+                    <span className="w-[64px] flex-shrink-0 text-sm text-muted sm:w-[84px] sm:text-base">
+                      <span className="tabular-nums">
+                        {t.occurred_on.slice(8, 10)}/
+                        {t.occurred_on.slice(5, 7)}
+                      </span>
+                      <span className="ml-1 text-faint">
+                        {WEEKDAY_PT[wd]}
+                      </span>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-base text-white sm:text-lg">
+                        {t.description}
+                      </span>
+                      <span className="block truncate text-sm text-muted">
+                        {t.customer_name ?? "Balcão"}
+                        {barberId === "all" && t.barber_id && (
+                          <span className="text-faint">
+                            {" · "}
+                            {barbers.find((b) => b.id === t.barber_id)
+                              ?.name ?? t.barber_id}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="hidden flex-shrink-0 rounded-full border border-border px-3 py-1.5 text-sm tracking-widest text-muted uppercase sm:inline">
+                      {t.payment_method}
+                    </span>
+                    <span className="w-24 flex-shrink-0 text-right font-heading text-base text-white tabular-nums sm:w-32 sm:text-lg">
+                      {formatCents(t.amount_cents)}
+                    </span>
+                  </div>
+                );
+              })}
+              {transactions.length === 0 && (
+                <p className="mt-3 text-muted">
+                  Nenhum lançamento no período.
+                </p>
+              )}
+            </div>
+
+            {transactions.length > 0 && (
+              <div className="mt-5 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-[15px] text-muted sm:text-base">
+                  {transactions.length} lançamento{transactions.length === 1 ? "" : "s"} · página {ledgerCurrentPage} de {ledgerPageCount}
+                </span>
+                <Pagination page={ledgerCurrentPage} pageCount={ledgerPageCount} onChange={setLedgerPage} />
+              </div>
+            )}
           </div>
         </>
       )}

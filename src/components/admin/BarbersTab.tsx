@@ -77,146 +77,148 @@ export function BarbersTab() {
   const busy = barbersLoading || hoursLoading;
 
   return (
-    <div className="dc-admin-enter">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
-        {isOwner && (
-          <button
-            onClick={() => setEditing({ barber: null })}
-            className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
-          >
-            + Adicionar barbeiro
-          </button>
-        )}
-      </div>
-
-      {busy && barbers.length === 0 && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-border bg-surface p-7">
-              <div className="flex items-center gap-3.5">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <span className="flex flex-1 flex-col gap-2">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                </span>
-              </div>
-              <div className="mt-5 flex flex-col gap-3">
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <Skeleton key={j} className="h-6 w-full" />
-                ))}
-              </div>
-            </div>
-          ))}
+    <>
+      <div className="dc-admin-enter">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <h2 className="m-0 font-heading text-3xl font-semibold tracking-[0.06em] text-white uppercase">Barbeiros</h2>
+          {isOwner && (
+            <button
+              onClick={() => setEditing({ barber: null })}
+              className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6 font-heading text-sm font-semibold tracking-[0.16em] text-ink uppercase transition-[filter] hover:brightness-110"
+            >
+              + Adicionar barbeiro
+            </button>
+          )}
         </div>
-      )}
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        {barbers.length > 0 &&
-          barbers.map((b, index) => {
-          const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
-          return (
-            <div key={b.id} className="dc-admin-enter-item rounded-lg border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: `${index * 65}ms` }}>
-              <div className="flex items-center gap-3 sm:gap-4">
-                <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt sm:h-16 sm:w-16">
-                  {b.photo_path ? (
-                    <img src={b.photo_path} alt={b.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center font-display text-xl text-silver sm:text-3xl">
-                      {b.name.charAt(0)}
-                    </span>
-                  )}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-heading text-lg tracking-[0.06em] text-white uppercase sm:text-2xl sm:tracking-[0.08em]">
-                    {b.name}
+        {busy && barbers.length === 0 && (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="rounded-lg border border-border bg-surface p-7">
+                <div className="flex items-center gap-3.5">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <span className="flex flex-1 flex-col gap-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-20" />
                   </span>
-                  <span className="block text-sm text-muted sm:text-base">{b.role_title}</span>
-                </span>
-              </div>
-              {(b.email || b.phone) && (
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted sm:mt-3.5 sm:text-base">
-                  {b.email && <span>{b.email}</span>}
-                  {b.phone && <span>{b.phone}</span>}
                 </div>
-              )}
-              <div className="mt-4 flex gap-2 sm:mt-5">
-                <button
-                  onClick={() => setEditing({ barber: b })}
-                  className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-white uppercase transition-colors hover:border-silver sm:min-h-11 sm:flex-none sm:text-sm"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => setRemoving(b)}
-                  className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-muted uppercase transition-colors hover:border-silver hover:text-white sm:min-h-11 sm:flex-none sm:text-sm"
-                >
-                  Remover
-                </button>
+                <div className="mt-5 flex flex-col gap-3">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Skeleton key={j} className="h-6 w-full" />
+                  ))}
+                </div>
               </div>
+            ))}
+          </div>
+        )}
 
-              {isOwner && (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-border bg-surface-alt px-4 py-3 sm:mt-5">
-                  {linkedAccountFor(b.id) ? (
-                    <>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm text-white">
-                          {linkedAccountFor(b.id)!.full_name || linkedAccountFor(b.id)!.email}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {barbers.length > 0 &&
+            barbers.map((b, index) => {
+              const barberHours = hours.filter((h) => h.barber_id === b.id).sort((a, c) => a.weekday - c.weekday);
+              return (
+                <div key={b.id} className="dc-admin-enter-item rounded-lg border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: `${index * 65}ms` }}>
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <span className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt sm:h-16 sm:w-16">
+                      {b.photo_path ? (
+                        <img src={b.photo_path} alt={b.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center font-display text-xl text-silver sm:text-3xl">
+                          {b.name.charAt(0)}
                         </span>
-                        <span className="block text-[13px] text-muted">Acesso ao painel vinculado</span>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-heading text-lg tracking-[0.06em] text-white uppercase sm:text-2xl sm:tracking-[0.08em]">
+                        {b.name}
                       </span>
-                      <span className="flex flex-shrink-0 gap-2">
-                        <button
-                          onClick={() => setLinking({ barber: b, currentAccount: linkedAccountFor(b.id) })}
-                          className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
-                        >
-                          Trocar conta
-                        </button>
-                        <button
-                          onClick={() => setUnlinking(linkedAccountFor(b.id))}
-                          className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
-                        >
-                          Remover acesso
-                        </button>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-[15px] text-muted">Nenhuma conta vinculada</span>
-                      <button
-                        onClick={() => setLinking({ barber: b, currentAccount: null })}
-                        className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
-                      >
-                        Vincular conta
-                      </button>
-                    </>
+                      <span className="block text-sm text-muted sm:text-base">{b.role_title}</span>
+                    </span>
+                  </div>
+                  {(b.email || b.phone) && (
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted sm:mt-3.5 sm:text-base">
+                      {b.email && <span>{b.email}</span>}
+                      {b.phone && <span>{b.phone}</span>}
+                    </div>
                   )}
-                </div>
-              )}
-
-              <div className="mt-5 flex flex-col sm:mt-6">
-                {barberHours.map((h) => (
-                  <div key={h.id} className="flex items-center justify-between gap-2 border-t border-border py-3 sm:gap-3 sm:py-4">
-                    <span className="text-sm text-white sm:text-lg">{WEEKDAY_LABELS[h.weekday]}</span>
+                  <div className="mt-4 flex gap-2 sm:mt-5">
                     <button
-                      onClick={() => handleToggle(h.id)}
-                      className="min-h-9 cursor-pointer rounded-full border px-3 font-heading text-xs tracking-[0.1em] whitespace-nowrap sm:min-h-11 sm:px-4 sm:text-sm sm:tracking-[0.12em]"
-                      style={{
-                        background: h.is_open ? "rgba(255,255,255,0.07)" : "transparent",
-                        borderColor: h.is_open ? "#E0E0E0" : "#2A2A2A",
-                        color: h.is_open ? "#FFFFFF" : "#9E9E9E",
-                      }}
+                      onClick={() => setEditing({ barber: b })}
+                      className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-white uppercase transition-colors hover:border-silver sm:min-h-11 sm:flex-none sm:text-sm"
                     >
-                      {h.label || "Fechado"}
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => setRemoving(b)}
+                      className="min-h-10 flex-1 cursor-pointer rounded-lg border border-border px-4 font-heading text-xs tracking-[0.12em] text-muted uppercase transition-colors hover:border-silver hover:text-white sm:min-h-11 sm:flex-none sm:text-sm"
+                    >
+                      Remover
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+
+                  {isOwner && (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-border bg-surface-alt px-4 py-3 sm:mt-5">
+                      {linkedAccountFor(b.id) ? (
+                        <>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm text-white">
+                              {linkedAccountFor(b.id)!.full_name || linkedAccountFor(b.id)!.email}
+                            </span>
+                            <span className="block text-[13px] text-muted">Acesso ao painel vinculado</span>
+                          </span>
+                          <span className="flex flex-shrink-0 gap-2">
+                            <button
+                              onClick={() => setLinking({ barber: b, currentAccount: linkedAccountFor(b.id) })}
+                              className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
+                            >
+                              Trocar conta
+                            </button>
+                            <button
+                              onClick={() => setUnlinking(linkedAccountFor(b.id))}
+                              className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                            >
+                              Remover acesso
+                            </button>
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[15px] text-muted">Nenhuma conta vinculada</span>
+                          <button
+                            onClick={() => setLinking({ barber: b, currentAccount: null })}
+                            className="min-h-9 cursor-pointer rounded-lg border border-border px-3.5 font-heading text-xs tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
+                          >
+                            Vincular conta
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-5 flex flex-col sm:mt-6">
+                    {barberHours.map((h) => (
+                      <div key={h.id} className="flex items-center justify-between gap-2 border-t border-border py-3 sm:gap-3 sm:py-4">
+                        <span className="text-sm text-white sm:text-lg">{WEEKDAY_LABELS[h.weekday]}</span>
+                        <button
+                          onClick={() => handleToggle(h.id)}
+                          className="min-h-9 cursor-pointer rounded-full border px-3 font-heading text-xs tracking-[0.1em] whitespace-nowrap sm:min-h-11 sm:px-4 sm:text-sm sm:tracking-[0.12em]"
+                          style={{
+                            background: h.is_open ? "rgba(255,255,255,0.07)" : "transparent",
+                            borderColor: h.is_open ? "#E0E0E0" : "#2A2A2A",
+                            color: h.is_open ? "#FFFFFF" : "#9E9E9E",
+                          }}
+                        >
+                          {h.label || "Fechado"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        {error && <p className="mt-4 text-muted">{error}</p>}
       </div>
-      {error && <p className="mt-4 text-muted">{error}</p>}
 
       {editing && (
         <BarberFormModal
@@ -267,6 +269,6 @@ export function BarbersTab() {
       )}
 
       {toast && <Toast message={toast.message} onDismiss={() => setToast(null)} variant={toast.variant} />}
-    </div>
+    </>
   );
 }

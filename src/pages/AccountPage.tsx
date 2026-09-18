@@ -525,7 +525,7 @@ export function AccountPage() {
           </div>
 
           <div className="mt-8">
-            <span className="font-heading text-lg font-medium tracking-[0.1em] text-white uppercase">Serviços</span>
+            <span className="font-heading text-lg font-medium tracking-[0.1em] text-white uppercase">Histórico de agendamentos</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={3} className="my-2 h-6 w-full" />}
               {!historyLoading && history.length === 0 && (

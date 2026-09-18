@@ -4,14 +4,12 @@ import { useAuth } from "@/context/AuthContext";
 import {
   useMyBookings,
   useMyOrders,
-  useCreateBooking,
   markDeclineSeen,
   cancelMyOrder,
   type BookingWithDetails,
   type MyOrder,
 } from "@/hooks/useBooking";
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
-import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { CancelBookingModal } from "@/components/CancelBookingModal";
 import { CancelOrderModal } from "@/components/CancelOrderModal";
 import { BookingStatusBadge, OrderStatusBadge } from "@/components/StatusBadge";
@@ -24,7 +22,6 @@ import {
   formatDateBR,
   formatPhoneBR,
   formatTimeShort,
-  friendlyBookingError,
   MONTH_LABELS,
   WEEKDAY_LABELS,
 } from "@/lib/format";
@@ -42,7 +39,6 @@ export function AccountPage() {
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
   const { orders: myOrders, loading: ordersLoading, reload: reloadOrders } = useMyOrders(session?.user.id ?? null);
   const { reviewsByBooking, reload: reloadReviews } = useMyReviews(session?.user.id ?? null);
-  const { createBooking } = useCreateBooking();
   const [name, setName] = useState(profile?.full_name ?? (import.meta.env.DEV ? "Rafael Prado" : ""));
   const [phone, setPhone] = useState(profile?.phone ?? (import.meta.env.DEV ? "(18) 99863-4127" : ""));
   const [savingProfile, setSavingProfile] = useState(false);
@@ -61,7 +57,6 @@ export function AccountPage() {
     setPhone(profile.phone ?? "");
   }, [profile, editingProfile]);
   const { message: profileError, fail: failProfile, clear: clearProfileError, clearField: clearProfileField, fieldProps: profileFieldProps } = useFormErrors();
-  const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
@@ -203,30 +198,8 @@ export function AccountPage() {
     setEditingProfile(false);
   }
 
-  async function handleNewBooking(draft: BookingDraft) {
-    if (!session?.user) {
-      setBookingOpen(false);
-      return;
-    }
-    const { error } = await createBooking({
-      customer_id: session.user.id,
-      barber_id: draft.barberId,
-      service_id: draft.serviceId,
-      scheduled_date: draft.dateIso,
-      scheduled_time: draft.time,
-      status: "pending",
-      price_cents: draft.priceCents,
-      duration_minutes: draft.durationMinutes,
-      customer_name: profile?.full_name || name,
-      customer_phone: profile?.phone || phone,
-      customer_email: profile?.email ?? session.user.email ?? null,
-    });
-    if (error) {
-      setActionError(`Não foi possível confirmar seu agendamento: ${friendlyBookingError(error)}`);
-      return;
-    }
-    setBookingOpen(false);
-    reload();
+  function goToBooking() {
+    navigate("/", { state: { scrollToBooking: true } });
   }
 
   return (
@@ -262,7 +235,7 @@ export function AccountPage() {
             </h1>
           </div>
           <button
-            onClick={() => setBookingOpen(true)}
+            onClick={goToBooking}
             className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
           >
             Agendar horário
@@ -284,7 +257,7 @@ export function AccountPage() {
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">
               <button
-                onClick={() => setBookingOpen(true)}
+                onClick={goToBooking}
                 className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
               >
                 Agendar outro horário
@@ -395,7 +368,7 @@ export function AccountPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="m-0 text-[17px] leading-relaxed text-silver-dim">Você não tem nenhum agendamento ativo.</p>
               <button
-                onClick={() => setBookingOpen(true)}
+                onClick={goToBooking}
                 className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
               >
                 Agendar horário
@@ -757,29 +730,6 @@ export function AccountPage() {
           )}
         </div>
       </div>
-
-      {bookingOpen && (
-        <div
-          className="fixed inset-0 z-[120] overflow-y-auto"
-          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(8px)" }}
-          onClick={() => setBookingOpen(false)}
-        >
-          <div className="flex min-h-full items-start justify-center px-4 py-10 sm:px-6">
-            <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-[1240px]">
-              <button
-                onClick={() => setBookingOpen(false)}
-                aria-label="Fechar"
-                className="absolute -top-3 -right-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-surface text-muted shadow-[0_10px_30px_rgba(0,0,0,0.6)] transition-colors hover:border-silver hover:text-white"
-              >
-                ×
-              </button>
-              <div className="overflow-hidden rounded-2xl border border-border shadow-[0_40px_90px_rgba(0,0,0,0.8)]">
-                <BookingWizard onConfirm={handleNewBooking} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {cancelling && upcoming && (
         <CancelBookingModal

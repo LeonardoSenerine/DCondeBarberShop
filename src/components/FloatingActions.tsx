@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BRAND } from "@/data/content";
 import { whatsAppLink } from "@/lib/format";
 
@@ -20,9 +21,22 @@ export function WhatsAppButton() {
 }
 
 export function MobileBottomBar() {
+  // Hides while the booking section itself is on screen — no point showing a
+  // shortcut to something already in view — and slides back in once the
+  // person scrolls away from it, up or down.
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const target = document.getElementById("agendar");
+    if (!target) return;
+    const observer = new IntersectionObserver(([entry]) => setHidden(entry.isIntersecting));
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[85] border-t border-border px-4 pt-3 backdrop-blur-lg md:hidden"
+      className={`fixed inset-x-0 bottom-0 z-[85] border-t border-border px-4 pt-3 backdrop-blur-lg transition-transform duration-300 md:hidden ${hidden ? "translate-y-full" : "translate-y-0"}`}
       style={{ background: "rgba(10,10,10,0.92)", paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}
     >
       <a

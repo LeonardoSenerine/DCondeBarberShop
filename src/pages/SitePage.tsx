@@ -36,14 +36,16 @@ export function SitePage() {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
 
-  // "Remarcar" in "Meus agendamentos" sends the customer here instead of
-  // opening the booking modal, with the same barber/service already picked
-  // so they only need to pick a new day and time.
-  const rebook = (location.state as { rebook?: { barberId: string; serviceId: string } } | null)?.rebook;
+  // "Remarcar" and "Agendar horário" in "Meus agendamentos" send the customer
+  // here instead of opening a booking modal — "Remarcar" also pre-fills the
+  // same barber/service so they only need to pick a new day and time.
+  const navState = location.state as { rebook?: { barberId: string; serviceId: string }; scrollToBooking?: boolean } | null;
+  const rebook = navState?.rebook;
   useEffect(() => {
-    if (!rebook) return;
+    if (!rebook && !navState?.scrollToBooking) return;
     document.getElementById("agendar")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [rebook]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rebook, navState?.scrollToBooking]);
 
   // Completes a booking left pending across the magic-link email round
   // trip: once the session shows up (same tab after the redirect, or

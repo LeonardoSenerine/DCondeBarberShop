@@ -6,7 +6,9 @@ import {
   useMyOrders,
   useCreateBooking,
   markDeclineSeen,
+  cancelMyOrder,
   type BookingWithDetails,
+  type MyOrder,
 } from "@/hooks/useBooking";
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
@@ -30,13 +32,13 @@ import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import { isViewingSiteAsAdmin } from "@/lib/adminSiteView";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
-const ORDER_COLS = "88px minmax(0,1fr) 170px 100px";
+const ORDER_COLS = "88px minmax(0,1fr) 190px 100px";
 
 export function AccountPage() {
   const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
-  const { orders: myOrders, loading: ordersLoading } = useMyOrders(session?.user.id ?? null);
+  const { orders: myOrders, loading: ordersLoading, reload: reloadOrders } = useMyOrders(session?.user.id ?? null);
   const { reviewsByBooking, reload: reloadReviews } = useMyReviews(session?.user.id ?? null);
   const { createBooking } = useCreateBooking();
   const [name, setName] = useState(profile?.full_name ?? (import.meta.env.DEV ? "Rafael Prado" : ""));
@@ -52,6 +54,7 @@ export function AccountPage() {
   const [dismissingReviewId, setDismissingReviewId] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [dismissingDecline, setDismissingDecline] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -75,6 +78,8 @@ export function AccountPage() {
   const completedOrders = myOrders.filter((o) => o.status === "completed");
   const productsTotalCents = completedOrders.reduce((sum, o) => sum + o.totalCents, 0);
   const grandTotalCents = servicesTotalCents + productsTotalCents;
+  const activeOrders = myOrders.filter((o) => o.status === "pending" || o.status === "confirmed" || o.status === "ready");
+  const orderHistory = myOrders.filter((o) => o.status === "completed" || o.status === "cancelled");
   // Every completed booking still missing a review, unless the customer
   // already dismissed the prompt for it — newest first.
   const pendingReviews = bookings
@@ -95,6 +100,17 @@ export function AccountPage() {
       return;
     }
     reload();
+  }
+
+  async function handleCancelOrder(order: MyOrder) {
+    setCancellingOrderId(order.id);
+    const { error } = await cancelMyOrder(order.id);
+    setCancellingOrderId(null);
+    if (error) {
+      setActionError(`Não foi possível cancelar o pedido: ${error}`);
+      return;
+    }
+    reloadOrders();
   }
 
   function reviewDraft(bookingId: string) {
@@ -438,6 +454,47 @@ export function AccountPage() {
           </div>
         )}
 
+        {activeOrders.length > 0 && (
+          <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Meus pedidos</span>
+              <span
+                className="flex h-6 min-w-6 items-center justify-center rounded-full px-2 font-heading text-xs font-semibold tabular-nums"
+                style={{ background: "rgba(224,179,65,0.16)", color: "#E0B341" }}
+              >
+                {activeOrders.length}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-5 md:grid md:grid-cols-2 md:gap-6">
+              {activeOrders.map((o) => {
+                const busy = cancellingOrderId === o.id;
+                return (
+                  <div key={o.id} className="rounded-xl border border-border bg-surface-alt p-5 md:p-7">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <OrderStatusBadge status={o.status} />
+                      <span className="text-[13px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
+                    </div>
+                    <p className="m-0 mt-3.5 text-[15px] leading-relaxed text-white">
+                      {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
+                      <button
+                        onClick={() => handleCancelOrder(o)}
+                        disabled={busy}
+                        className="flex min-h-10 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {busy ? "Cancelando…" : o.status === "pending" ? "Cancelar análise" : "Cancelar pedido"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="mb-5 rounded-lg border border-border bg-surface p-7 md:p-8">
           <span className="font-heading text-base font-medium tracking-[0.18em] text-silver uppercase">Histórico</span>
 
@@ -517,13 +574,13 @@ export function AccountPage() {
           </div>
 
           <div className="mt-7">
-            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Pedidos</span>
+            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Histórico de pedidos</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={2} className="my-2 h-6 w-full" />}
-              {!historyLoading && myOrders.length === 0 && (
-                <p className="py-3 text-[15px] text-muted">Nenhum pedido feito na loja ainda.</p>
+              {!historyLoading && orderHistory.length === 0 && (
+                <p className="py-3 text-[15px] text-muted">Nenhum pedido concluído ou cancelado ainda.</p>
               )}
-              {myOrders.length > 0 && (
+              {orderHistory.length > 0 && (
                 <>
                   <div className="hidden md:block">
                     <ScrollFadeX minWidth="620px">
@@ -536,7 +593,7 @@ export function AccountPage() {
                         <span>Status</span>
                         <span className="text-right">Total</span>
                       </div>
-                      {myOrders.map((o) => (
+                      {orderHistory.map((o) => (
                         <div
                           key={o.id}
                           className="grid items-center gap-4 border-t border-border py-4"
@@ -557,7 +614,7 @@ export function AccountPage() {
                     </ScrollFadeX>
                   </div>
                   <div className="flex flex-col md:hidden">
-                    {myOrders.map((o) => (
+                    {orderHistory.map((o) => (
                       <div key={o.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-[15px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>

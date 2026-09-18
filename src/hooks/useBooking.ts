@@ -379,3 +379,11 @@ export function useMyOrders(customerId: string | null) {
 
   return { orders, loading, reload };
 }
+
+/** Customer cancelling their own reservation — only allowed while it's still
+ * pending, confirmed or ready; the orders_restrict_update trigger enforces
+ * this server-side too, since RLS alone doesn't check which status it's in. */
+export async function cancelMyOrder(id: string) {
+  const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
+  return { error: error?.message ?? null };
+}

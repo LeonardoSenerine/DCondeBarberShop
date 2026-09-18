@@ -391,6 +391,41 @@ alter table public.orders drop constraint if exists orders_status_check;
 alter table public.orders add constraint orders_status_check
   check (status in ('pending', 'confirmed', 'ready', 'completed', 'cancelled'));
 
+-- Lets a customer cancel their own reservation (mirrors cancelBooking() for
+-- appointments) without opening a path to rewrite it into any other state or
+-- tamper with its other columns — orders_update_own_or_admin's USING clause
+-- below only checks customer_id = auth.uid(), it doesn't care which columns
+-- change or what status transition happens.
+create or replace function public.orders_restrict_update()
+returns trigger
+language plpgsql
+as $$
+begin
+  if public.is_admin() then
+    return new;
+  end if;
+
+  if new.customer_id is distinct from old.customer_id
+    or new.customer_name is distinct from old.customer_name
+    or new.customer_phone is distinct from old.customer_phone
+    or new.total_cents is distinct from old.total_cents
+  then
+    raise exception 'orders_immutable_fields';
+  end if;
+
+  if new.status is distinct from 'cancelled' or old.status not in ('pending', 'confirmed', 'ready') then
+    raise exception 'customer_can_only_cancel_active_order';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists orders_restrict_update on public.orders;
+create trigger orders_restrict_update
+before update on public.orders
+for each row execute function public.orders_restrict_update();
+
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,
   order_id uuid not null references public.orders (id) on delete cascade,
@@ -797,8 +832,9 @@ drop policy if exists "orders_insert_own" on public.orders;
 create policy "orders_insert_own" on public.orders for insert
   with check (customer_id = auth.uid() or public.is_admin());
 drop policy if exists "orders_update_admin" on public.orders;
-create policy "orders_update_admin" on public.orders for update
-  using (public.is_admin());
+drop policy if exists "orders_update_own_or_admin" on public.orders;
+create policy "orders_update_own_or_admin" on public.orders for update
+  using (customer_id = auth.uid() or public.is_admin());
 
 drop policy if exists "order_items_select_own_or_admin" on public.order_items;
 create policy "order_items_select_own_or_admin" on public.order_items for select

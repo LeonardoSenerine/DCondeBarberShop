@@ -9,6 +9,7 @@ import { AgendaTab } from "@/components/admin/AgendaTab";
 import { FinanceTab } from "@/components/admin/FinanceTab";
 import { ClientsTab } from "@/components/admin/ClientsTab";
 import { ProductsTab } from "@/components/admin/ProductsTab";
+import { OrdersTab } from "@/components/admin/OrdersTab";
 import { ServicesTab } from "@/components/admin/ServicesTab";
 import { GalleryTab } from "@/components/admin/GalleryTab";
 import { BarbersTab } from "@/components/admin/BarbersTab";
@@ -27,6 +28,7 @@ const TABS = [
   { id: "fin", name: "Financeiro", icon: iconChart },
   { id: "clientes", name: "Clientes", icon: iconUsers },
   { id: "produtos", name: "Produtos", icon: iconBox },
+  { id: "pedidos", name: "Pedidos", icon: iconBag },
   { id: "servicos", name: "Serviços", icon: iconTag },
   { id: "galeria", name: "Galeria", icon: iconImage },
   { id: "barbeiros", name: "Barbeiros", icon: iconScissors },
@@ -244,6 +246,7 @@ export function AdminPage() {
           {tab === "fin" && <FinanceTab />}
           {tab === "clientes" && <ClientsTab />}
           {tab === "produtos" && <ProductsTab />}
+          {tab === "pedidos" && <OrdersTab />}
           {tab === "servicos" && <ServicesTab />}
           {tab === "galeria" && <GalleryTab />}
           {tab === "barbeiros" && <BarbersTab />}
@@ -310,6 +313,14 @@ function iconBox() {
     <>
       <path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" />
       <path d="M3 8l9 5 9-5M12 13v8" />
+    </>,
+  );
+}
+function iconBag() {
+  return svg(
+    <>
+      <path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
     </>,
   );
 }

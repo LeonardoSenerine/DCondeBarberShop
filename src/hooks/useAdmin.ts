@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { dateKey, formatTimeShort } from "@/lib/format";
 import type { BookingWithDetails } from "@/hooks/useBooking";
-import type { BookingStatus, Database } from "@/types/database";
+import type { BookingStatus, Database, OrderStatus, PaymentMethod } from "@/types/database";
 
 type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -808,6 +808,189 @@ export function useAdminProducts() {
   useEffect(() => reload(), [reload]);
 
   return { products, loading, reload };
+}
+
+export interface ProductSale {
+  productId: string;
+  name: string;
+  qty: number;
+  revenueCents: number;
+}
+
+/**
+ * Units sold and revenue per product, from completed orders only — an order
+ * placed through the site sits at "pending"/"ready" without ever touching
+ * stock (see Shop.tsx), so counting it here would report sales that haven't
+ * actually happened yet. completeBooking() is what inserts "completed" rows.
+ */
+export function useProductSales() {
+  const [sales, setSales] = useState<ProductSale[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    supabase
+      .from("orders")
+      .select("order_items(product_id, quantity, unit_price_cents, products(name))")
+      .eq("status", "completed")
+      .then(({ data }) => {
+        type Row = {
+          order_items:
+            | { product_id: string; quantity: number; unit_price_cents: number; products: { name: string } | null }[]
+            | null;
+        };
+        const byProduct = new Map<string, ProductSale>();
+        ((data ?? []) as Row[]).forEach((order) => {
+          (order.order_items ?? []).forEach((it) => {
+            const existing = byProduct.get(it.product_id);
+            if (existing) {
+              existing.qty += it.quantity;
+              existing.revenueCents += it.quantity * it.unit_price_cents;
+            } else {
+              byProduct.set(it.product_id, {
+                productId: it.product_id,
+                name: it.products?.name ?? "Produto removido",
+                qty: it.quantity,
+                revenueCents: it.quantity * it.unit_price_cents,
+              });
+            }
+          });
+        });
+        setSales(Array.from(byProduct.values()).sort((a, b) => b.qty - a.qty));
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => reload(), [reload]);
+
+  return { sales, loading, reload };
+}
+
+export interface AdminOrderItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  unitCents: number;
+}
+
+export interface AdminOrder {
+  id: string;
+  customerName: string | null;
+  customerPhone: string | null;
+  status: OrderStatus;
+  totalCents: number;
+  createdAt: string;
+  items: AdminOrderItem[];
+}
+
+/** Reservations placed through the site's shop (Shop.tsx) — separate from
+ * the products a client buys at the counter while a booking is completed. */
+export function useAdminOrders() {
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    supabase
+      .from("orders")
+      .select(
+        "id, customer_name, customer_phone, status, total_cents, created_at, order_items(product_id, quantity, unit_price_cents, products(name))",
+      )
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        type Row = {
+          id: string;
+          customer_name: string | null;
+          customer_phone: string | null;
+          status: OrderStatus;
+          total_cents: number;
+          created_at: string;
+          order_items:
+            | { product_id: string; quantity: number; unit_price_cents: number; products: { name: string } | null }[]
+            | null;
+        };
+        const rows = ((data ?? []) as Row[]).map((o) => ({
+          id: o.id,
+          customerName: o.customer_name,
+          customerPhone: o.customer_phone,
+          status: o.status,
+          totalCents: o.total_cents,
+          createdAt: o.created_at,
+          items: (o.order_items ?? []).map((it) => ({
+            productId: it.product_id,
+            name: it.products?.name ?? "Produto removido",
+            quantity: it.quantity,
+            unitCents: it.unit_price_cents,
+          })),
+        }));
+        setOrders(rows);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => reload(), [reload]);
+
+  return { orders, loading, reload };
+}
+
+/** Staff prepared the items — the customer can come pick them up. */
+export async function markOrderReady(id: string) {
+  const { error } = await supabase.from("orders").update({ status: "ready" }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+/** The reservation won't be picked up — no stock to release since it was never reserved. */
+export async function cancelOrder(id: string) {
+  const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export interface CompleteOrderInput {
+  orderId: string;
+  items: { productId: string; quantity: number }[];
+  totalCents: number;
+  description: string;
+  paymentMethod: PaymentMethod;
+  barberId: string | null;
+}
+
+/**
+ * Customer paid and picked up the order at the counter: takes the stock out
+ * now (a site reservation doesn't touch it — see Shop.tsx), marks the order
+ * completed, and books the revenue, mirroring what completeBooking() does
+ * for products sold alongside a haircut.
+ */
+export async function completeOrder(input: CompleteOrderInput) {
+  if (input.items.length > 0) {
+    const { error: stockErr } = (await (supabase.rpc as any)("adjust_product_stock_batch", {
+      deltas: input.items.map((it) => ({ id: it.productId, delta: -it.quantity })),
+    })) as { error: { message: string } | null };
+    if (stockErr) {
+      if (stockErr.message === "insufficient_stock") {
+        return { error: "Estoque insuficiente para um dos produtos deste pedido." };
+      }
+      if (stockErr.message === "product_not_found") {
+        return { error: "Um dos produtos deste pedido não foi encontrado." };
+      }
+      return { error: stockErr.message };
+    }
+  }
+
+  const { error: orderErr } = await supabase.from("orders").update({ status: "completed" }).eq("id", input.orderId);
+  if (orderErr) return { error: orderErr.message };
+
+  const { error: txErr } = await supabase.from("transactions").insert({
+    occurred_on: dateKey(new Date()),
+    description: input.description,
+    payment_method: input.paymentMethod,
+    amount_cents: input.totalCents,
+    booking_id: null,
+    order_id: input.orderId,
+    barber_id: input.barberId,
+  });
+  if (txErr) return { error: txErr.message };
+
+  return { error: null };
 }
 
 export function useAdminServices() {

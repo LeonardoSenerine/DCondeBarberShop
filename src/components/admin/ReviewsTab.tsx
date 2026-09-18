@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdminReviews, setReviewPublished, deleteReview, type ReviewWithDetails } from "@/hooks/useReviews";
 import { formatDateBR } from "@/lib/format";
 import { StarRating } from "@/components/StarRating";
@@ -6,6 +6,9 @@ import { Skeleton } from "@/components/Skeleton";
 import { Select } from "@/components/admin/Select";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
+import { Pagination } from "@/components/admin/Pagination";
+
+const PAGE_SIZE = 8;
 
 const RATING_OPTIONS = [
   { value: "all", label: "Todas as notas" },
@@ -28,6 +31,7 @@ export function ReviewsTab() {
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
   const [ratingFilter, setRatingFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("recent");
+  const [page, setPage] = useState(1);
 
   const publishedCount = reviews.filter((r) => r.published).length;
   const avgRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
@@ -37,6 +41,15 @@ export function ReviewsTab() {
     .sort((a, b) =>
       sortOrder === "recent" ? b.created_at.localeCompare(a.created_at) : a.created_at.localeCompare(b.created_at),
     );
+
+  useEffect(() => setPage(1), [ratingFilter, sortOrder]);
+
+  const pageCount = Math.max(1, Math.ceil(visibleReviews.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageReviews = useMemo(
+    () => visibleReviews.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [visibleReviews, currentPage],
+  );
 
   async function togglePublish(review: ReviewWithDetails) {
     setActing(review.id);
@@ -101,7 +114,7 @@ export function ReviewsTab() {
         )}
 
         <div className="flex flex-col">
-          {visibleReviews.map((r, index) => (
+          {pageReviews.map((r, index) => (
             <div
               key={r.id}
               className="dc-admin-enter-item flex flex-col gap-3 border-t border-border px-1 py-5 first:border-t-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
@@ -146,6 +159,15 @@ export function ReviewsTab() {
             </div>
           ))}
         </div>
+
+        {visibleReviews.length > 0 && (
+          <div className="mt-5 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-[15px] text-muted sm:text-base">
+              {visibleReviews.length} avaliaç{visibleReviews.length === 1 ? "ão" : "ões"} · página {currentPage} de {pageCount}
+            </span>
+            <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />
+          </div>
+        )}
       </div>
 
       {deleting && (

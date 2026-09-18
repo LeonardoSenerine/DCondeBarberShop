@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAdminServices, removeService } from "@/hooks/useAdmin";
 import type { Service } from "@/hooks/useCatalog";
 import { formatCents, formatDuration } from "@/lib/format";
@@ -6,8 +6,11 @@ import { Skeleton } from "@/components/Skeleton";
 import { ServiceFormModal } from "@/components/admin/ServiceFormModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import { Toast } from "@/components/admin/Toast";
+import { Pagination } from "@/components/admin/Pagination";
 
 type Editing = { service: Service | null } | null;
+
+const PAGE_SIZE = 8;
 
 export function ServicesTab() {
   const { services, loading, reload } = useAdminServices();
@@ -15,6 +18,14 @@ export function ServicesTab() {
   const [removing, setRemoving] = useState<Service | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
+  const [page, setPage] = useState(1);
+
+  const pageCount = Math.max(1, Math.ceil(services.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageServices = useMemo(
+    () => services.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [services, currentPage],
+  );
 
   async function handleConfirmDelete() {
     if (!removing) return;
@@ -56,7 +67,7 @@ export function ServicesTab() {
           </div>
         ))}
 
-      {services.map((s, index) => (
+      {pageServices.map((s, index) => (
         <div
           key={s.id}
           className="dc-admin-enter-item flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
@@ -85,6 +96,15 @@ export function ServicesTab() {
           </div>
         </div>
       ))}
+
+      {services.length > 0 && (
+        <div className="mt-5 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-[15px] text-muted sm:text-base">
+            {services.length} serviço{services.length === 1 ? "" : "s"} · página {currentPage} de {pageCount}
+          </span>
+          <Pagination page={currentPage} pageCount={pageCount} onChange={setPage} />
+        </div>
+      )}
 
       {editing && (
         <ServiceFormModal

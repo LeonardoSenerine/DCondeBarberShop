@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAdminOrders, acceptOrder, markOrderReady, cancelOrder, type AdminOrder } from "@/hooks/useAdmin";
 import type { OrderStatus } from "@/types/database";
-import { formatCents } from "@/lib/format";
+import { formatCents, toWhatsAppPhone, whatsAppLink } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
 import { Select } from "@/components/admin/Select";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -91,6 +91,11 @@ export function OrdersTab() {
     }
     setToast({ message: "Pedido marcado como pronto.", variant: "success" });
     reload();
+
+    if (!order.customerPhone) return;
+    const items = order.items.map((it) => `${it.quantity}x ${it.name}`).join(", ");
+    const message = `Olá, ${order.customerName || "tudo bem"}! Seu pedido (${items}) já está pronto para retirada na D'Conde Barbearia. Te esperamos!`;
+    window.open(whatsAppLink(toWhatsAppPhone(order.customerPhone), message), "_blank", "noopener");
   }
 
   async function handleConfirmCancel() {

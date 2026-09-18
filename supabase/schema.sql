@@ -379,10 +379,17 @@ create table if not exists public.orders (
   customer_name text,
   customer_phone text,
   status text not null default 'pending'
-    check (status in ('pending', 'ready', 'completed', 'cancelled')),
+    check (status in ('pending', 'confirmed', 'ready', 'completed', 'cancelled')),
   total_cents int not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- migration safety net: add "confirmed" as an explicit accept step between a
+-- pending shop reservation and preparing it — mirrors bookings' pending ->
+-- confirmed step, so the barber reviews and accepts before marking it ready.
+alter table public.orders drop constraint if exists orders_status_check;
+alter table public.orders add constraint orders_status_check
+  check (status in ('pending', 'confirmed', 'ready', 'completed', 'cancelled'));
 
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,

@@ -933,6 +933,12 @@ export function useAdminOrders() {
   return { orders, loading, reload };
 }
 
+/** Barber reviewed the reservation and accepted it — starts preparing the items. */
+export async function acceptOrder(id: string) {
+  const { error } = await supabase.from("orders").update({ status: "confirmed" }).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
 /** Staff prepared the items — the customer can come pick them up. */
 export async function markOrderReady(id: string) {
   const { error } = await supabase.from("orders").update({ status: "ready" }).eq("id", id);

@@ -5,7 +5,7 @@
  */
 
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
-export type OrderStatus = "pending" | "ready" | "completed" | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "ready" | "completed" | "cancelled";
 export type ProductCategory = "Cabelo" | "Barba" | "Pele";
 export type PaymentMethod = "Pix" | "Crédito" | "Débito" | "Dinheiro";
 export type UserRole = "customer" | "staff" | "owner";

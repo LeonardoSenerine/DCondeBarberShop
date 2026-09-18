@@ -41,7 +41,8 @@ export function BookingStatusBadge({ status, className = "" }: { status: string;
 }
 
 const ORDER_CONFIG: Record<OrderStatus, StatusConfig> = {
-  pending: { label: "Pedido recebido", icon: Clock, color: "#E0B341", border: "#E0B341" },
+  pending: { label: "Aguardando análise", icon: Clock, color: "#E0B341", border: "#E0B341" },
+  confirmed: { label: "Aceito pelo barbeiro", icon: CheckCircle, color: "#8FB4FF", border: "#8FB4FF" },
   ready: { label: "Pronto p/ retirada", icon: CheckCircle, color: "#FFFFFF", border: "#E0E0E0" },
   completed: {
     label: "Retirado",

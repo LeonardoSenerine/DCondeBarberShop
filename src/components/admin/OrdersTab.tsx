@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAdminOrders, markOrderReady, cancelOrder, type AdminOrder } from "@/hooks/useAdmin";
+import { useAdminOrders, acceptOrder, markOrderReady, cancelOrder, type AdminOrder } from "@/hooks/useAdmin";
 import type { OrderStatus } from "@/types/database";
 import { formatCents } from "@/lib/format";
 import { Skeleton } from "@/components/Skeleton";
@@ -12,8 +12,9 @@ import { Pagination } from "@/components/admin/Pagination";
 const PAGE_SIZE = 8;
 
 const STATUS_OPTIONS = [
-  { value: "active", label: "Pendentes e prontos" },
-  { value: "pending", label: "Pendentes" },
+  { value: "active", label: "Em andamento" },
+  { value: "pending", label: "Aguardando análise" },
+  { value: "confirmed", label: "Aceitos" },
   { value: "ready", label: "Prontos p/ retirada" },
   { value: "completed", label: "Concluídos" },
   { value: "cancelled", label: "Cancelados" },
@@ -21,8 +22,9 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_BADGE: Record<OrderStatus, { label: string; bg: string; color: string }> = {
-  pending: { label: "Pendente", bg: "rgba(255,255,255,0.08)", color: "#E0E0E0" },
-  ready: { label: "Pronto p/ retirada", bg: "rgba(120,170,255,0.14)", color: "#8FB4FF" },
+  pending: { label: "Aguardando análise", bg: "rgba(224,179,65,0.14)", color: "#E0B341" },
+  confirmed: { label: "Aceito", bg: "rgba(120,170,255,0.14)", color: "#8FB4FF" },
+  ready: { label: "Pronto p/ retirada", bg: "rgba(196,150,255,0.14)", color: "#C6A6FF" },
   completed: { label: "Concluído", bg: "rgba(120,200,140,0.14)", color: "#7FC98F" },
   cancelled: { label: "Cancelado", bg: "rgba(255,255,255,0.06)", color: "#9E9E9E" },
 };
@@ -49,11 +51,12 @@ export function OrdersTab() {
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
 
   const pendingCount = orders.filter((o) => o.status === "pending").length;
+  const confirmedCount = orders.filter((o) => o.status === "confirmed").length;
   const readyCount = orders.filter((o) => o.status === "ready").length;
 
   const visibleOrders = orders.filter((o) => {
     if (statusFilter === "all") return true;
-    if (statusFilter === "active") return o.status === "pending" || o.status === "ready";
+    if (statusFilter === "active") return o.status === "pending" || o.status === "confirmed" || o.status === "ready";
     return o.status === statusFilter;
   });
 
@@ -65,6 +68,18 @@ export function OrdersTab() {
     () => visibleOrders.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
     [visibleOrders, currentPage],
   );
+
+  async function handleAccept(order: AdminOrder) {
+    setActing(order.id);
+    const { error } = await acceptOrder(order.id);
+    setActing(null);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
+    setToast({ message: "Pedido aceito.", variant: "success" });
+    reload();
+  }
 
   async function handleMarkReady(order: AdminOrder) {
     setActing(order.id);
@@ -100,7 +115,7 @@ export function OrdersTab() {
             Pedidos da loja
           </h2>
           <span className="text-base text-muted">
-            {pendingCount} pendente{pendingCount === 1 ? "" : "s"} · {readyCount} pronto{readyCount === 1 ? "" : "s"} p/ retirada
+            {pendingCount} aguardando análise · {confirmedCount} aceito{confirmedCount === 1 ? "" : "s"} · {readyCount} pronto{readyCount === 1 ? "" : "s"} p/ retirada
           </span>
         </div>
 
@@ -155,9 +170,18 @@ export function OrdersTab() {
 
                 <div className="flex shrink-0 flex-col items-start gap-2.5 sm:items-end">
                   <span className="font-heading text-lg text-white tabular-nums">{formatCents(o.totalCents)}</span>
-                  {(o.status === "pending" || o.status === "ready") && (
+                  {(o.status === "pending" || o.status === "confirmed" || o.status === "ready") && (
                     <span className="flex gap-2">
                       {o.status === "pending" && (
+                        <button
+                          onClick={() => handleAccept(o)}
+                          disabled={busy}
+                          className="bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Aceitar
+                        </button>
+                      )}
+                      {o.status === "confirmed" && (
                         <button
                           onClick={() => handleMarkReady(o)}
                           disabled={busy}

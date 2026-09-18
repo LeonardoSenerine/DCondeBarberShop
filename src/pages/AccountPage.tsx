@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   useMyBookings,
-  useMyPurchases,
+  useMyOrders,
   useCreateBooking,
   markDeclineSeen,
   type BookingWithDetails,
@@ -11,7 +11,7 @@ import {
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { CancelBookingModal } from "@/components/CancelBookingModal";
-import { BookingStatusBadge } from "@/components/StatusBadge";
+import { BookingStatusBadge, OrderStatusBadge } from "@/components/StatusBadge";
 import { StarRating } from "@/components/StarRating";
 import { Toast } from "@/components/admin/Toast";
 import {
@@ -30,13 +30,13 @@ import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import { isViewingSiteAsAdmin } from "@/lib/adminSiteView";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
-const PRODUCT_COLS = "88px minmax(0,1fr) 64px 100px";
+const ORDER_COLS = "88px minmax(0,1fr) 170px 100px";
 
 export function AccountPage() {
   const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
-  const { purchases, loading: purchasesLoading } = useMyPurchases(session?.user.id ?? null);
+  const { orders: myOrders, loading: ordersLoading } = useMyOrders(session?.user.id ?? null);
   const { reviewsByBooking, reload: reloadReviews } = useMyReviews(session?.user.id ?? null);
   const { createBooking } = useCreateBooking();
   const [name, setName] = useState(profile?.full_name ?? (import.meta.env.DEV ? "Rafael Prado" : ""));
@@ -70,9 +70,10 @@ export function AccountPage() {
     .sort((a, b) => a.scheduled_date.localeCompare(b.scheduled_date))[0];
   const history = bookings.filter((b) => b !== upcoming && b.status !== "cancelled");
   const upcomingPending = upcoming?.status === "pending";
-  const historyLoading = bookingsLoading || purchasesLoading;
+  const historyLoading = bookingsLoading || ordersLoading;
   const servicesTotalCents = history.reduce((sum, h) => sum + h.price_cents, 0);
-  const productsTotalCents = purchases.reduce((sum, p) => sum + p.priceCents, 0);
+  const completedOrders = myOrders.filter((o) => o.status === "completed");
+  const productsTotalCents = completedOrders.reduce((sum, o) => sum + o.totalCents, 0);
   const grandTotalCents = servicesTotalCents + productsTotalCents;
   // Every completed booking still missing a review, unless the customer
   // already dismissed the prompt for it — newest first.
@@ -439,7 +440,7 @@ export function AccountPage() {
 
           <div className="mt-4.5 grid gap-3.5 sm:grid-cols-3">
             <HistoryStat label="Atendimentos" value={String(history.length)} />
-            <HistoryStat label="Produtos comprados" value={String(purchases.length)} />
+            <HistoryStat label="Pedidos concluídos" value={String(completedOrders.length)} />
             <HistoryStat label="Total gasto" value={formatCents(grandTotalCents)} />
           </div>
 
@@ -513,60 +514,66 @@ export function AccountPage() {
           </div>
 
           <div className="mt-7">
-            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Produtos</span>
+            <span className="font-heading text-sm font-medium tracking-[0.16em] text-white uppercase">Pedidos</span>
             <div className="mt-3 flex flex-col">
               {historyLoading && <Skeleton count={2} className="my-2 h-6 w-full" />}
-              {!historyLoading && purchases.length === 0 && (
-                <p className="py-3 text-[15px] text-muted">Nenhuma compra de produto.</p>
+              {!historyLoading && myOrders.length === 0 && (
+                <p className="py-3 text-[15px] text-muted">Nenhum pedido feito na loja ainda.</p>
               )}
-              {purchases.length > 0 && (
+              {myOrders.length > 0 && (
                 <>
                   <div className="hidden md:block">
-                    <ScrollFadeX minWidth="520px">
+                    <ScrollFadeX minWidth="620px">
                       <div
                         className="grid items-center gap-4 border-t border-border py-3.5 font-heading text-[13px] whitespace-nowrap tracking-[0.14em] text-muted-2 uppercase"
-                        style={{ gridTemplateColumns: PRODUCT_COLS }}
+                        style={{ gridTemplateColumns: ORDER_COLS }}
                       >
                         <span>Data</span>
-                        <span>Produto</span>
-                        <span>Qtd.</span>
+                        <span>Itens</span>
+                        <span>Status</span>
                         <span className="text-right">Total</span>
                       </div>
-                      {purchases.map((p) => (
+                      {myOrders.map((o) => (
                         <div
-                          key={p.id}
+                          key={o.id}
                           className="grid items-center gap-4 border-t border-border py-4"
-                          style={{ gridTemplateColumns: PRODUCT_COLS }}
+                          style={{ gridTemplateColumns: ORDER_COLS }}
                         >
-                          <span className="text-[15px] text-muted">{formatDateBR(p.date)}</span>
-                          <span className="min-w-0 truncate text-[17px] font-medium text-white">{p.product}</span>
-                          <span className="text-[15px] text-muted">x{p.qty}</span>
+                          <span className="text-[15px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
+                          <span className="min-w-0 truncate text-[17px] font-medium text-white">
+                            {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
+                          </span>
+                          <span>
+                            <OrderStatusBadge status={o.status} />
+                          </span>
                           <span className="text-right font-heading text-[17px] text-white">
-                            {formatCents(p.priceCents)}
+                            {formatCents(o.totalCents)}
                           </span>
                         </div>
                       ))}
                     </ScrollFadeX>
                   </div>
                   <div className="flex flex-col md:hidden">
-                    {purchases.map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex items-center justify-between gap-3 border-t border-border py-4 first:border-t-0"
-                      >
-                        <span className="min-w-0">
-                          <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Produto</span>
-                          <span className="block truncate text-[17px] font-medium text-white">{p.product}</span>
-                          <span className="mt-1 block text-[15px] text-muted">
-                            {formatDateBR(p.date)} · x{p.qty}
+                    {myOrders.map((o) => (
+                      <div key={o.id} className="flex flex-col gap-2.5 border-t border-border py-4 first:border-t-0">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[15px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
+                          <OrderStatusBadge status={o.status} />
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="min-w-0">
+                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Itens</span>
+                            <span className="block truncate text-[17px] font-medium text-white">
+                              {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
+                            </span>
                           </span>
-                        </span>
-                        <span className="shrink-0 text-right">
-                          <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
-                          <span className="block font-heading text-[17px] text-white">
-                            {formatCents(p.priceCents)}
+                          <span className="shrink-0 text-right">
+                            <span className="block text-xs tracking-[0.1em] text-muted-2 uppercase">Total</span>
+                            <span className="block font-heading text-[17px] text-white">
+                              {formatCents(o.totalCents)}
+                            </span>
                           </span>
-                        </span>
+                        </div>
                       </div>
                     ))}
                   </div>

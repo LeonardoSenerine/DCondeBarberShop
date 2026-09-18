@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { dateKey, formatTimeShort } from "@/lib/format";
 import type { BarberHours } from "@/hooks/useCatalog";
-import type { Database } from "@/types/database";
+import type { Database, OrderStatus } from "@/types/database";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 type BookingInsert = Database["public"]["Tables"]["bookings"]["Insert"];
@@ -308,75 +308,74 @@ export async function markDeclineSeen(id: string) {
   return { error: error?.message ?? null };
 }
 
-export interface MyPurchase {
-  id: string;
-  date: string;
-  product: string;
-  qty: number;
-  priceCents: number;
+export interface MyOrderItem {
+  name: string;
+  quantity: number;
 }
 
-/** DEV-only mocked product purchases for the "Meus agendamentos" page. */
-function sampleMyPurchases(): MyPurchase[] {
+export interface MyOrder {
+  id: string;
+  status: OrderStatus;
+  createdAt: string;
+  totalCents: number;
+  items: MyOrderItem[];
+}
+
+/** DEV-only mocked shop orders for the "Meus agendamentos" page. */
+function sampleMyOrders(): MyOrder[] {
   const today = new Date();
   const daysAgo = (n: number) => {
     const d = new Date(today);
     d.setDate(d.getDate() - n);
-    return dateKey(d);
+    return d.toISOString();
   };
 
   return [
-    { id: "sample-my-purchase-1", date: daysAgo(14), product: "Pomada modeladora efeito matte", qty: 1, priceCents: 4200 },
-    { id: "sample-my-purchase-2", date: daysAgo(40), product: "Óleo para barba 30ml", qty: 2, priceCents: 8800 },
+    { id: "sample-order-1", status: "ready", createdAt: daysAgo(1), totalCents: 3500, items: [{ name: "Shampoo anticaspa", quantity: 1 }] },
+    { id: "sample-order-2", status: "completed", createdAt: daysAgo(14), totalCents: 4200, items: [{ name: "Pomada modeladora efeito matte", quantity: 1 }] },
+    { id: "sample-order-3", status: "completed", createdAt: daysAgo(40), totalCents: 8800, items: [{ name: "Óleo para barba 30ml", quantity: 2 }] },
   ];
 }
 
-/** The logged-in customer's completed product purchases, for the account page's history. */
-export function useMyPurchases(customerId: string | null) {
-  const [purchases, setPurchases] = useState<MyPurchase[]>([]);
+/** The logged-in customer's shop reservations, in every status — pending
+ * ones let them see something's waiting for pickup, not just past purchases. */
+export function useMyOrders(customerId: string | null) {
+  const [orders, setOrders] = useState<MyOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     if (!customerId) {
-      setPurchases(import.meta.env.DEV ? sampleMyPurchases() : []);
+      setOrders(import.meta.env.DEV ? sampleMyOrders() : []);
       setLoading(false);
       return;
     }
-    let active = true;
     setLoading(true);
     supabase
       .from("orders")
-      .select("id, created_at, order_items(quantity, unit_price_cents, products(name))")
+      .select("id, status, created_at, total_cents, order_items(quantity, products(name))")
       .eq("customer_id", customerId)
-      .eq("status", "completed")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        if (!active) return;
-        const rawOrders = (data ?? []) as unknown as {
+        type Row = {
           id: string;
+          status: OrderStatus;
           created_at: string;
-          order_items: { quantity: number; unit_price_cents: number; products: { name: string } | null }[] | null;
-        }[];
-        const items: MyPurchase[] = [];
-        rawOrders.forEach((o) => {
-          (o.order_items ?? []).forEach((it, i) => {
-            items.push({
-              id: `${o.id}-${i}`,
-              date: dateKey(new Date(o.created_at)),
-              product: it.products?.name ?? "Produto",
-              qty: it.quantity,
-              priceCents: it.unit_price_cents * it.quantity,
-            });
-          });
-        });
-        setPurchases(items.length === 0 && import.meta.env.DEV ? sampleMyPurchases() : items);
+          total_cents: number;
+          order_items: { quantity: number; products: { name: string } | null }[] | null;
+        };
+        const rows: MyOrder[] = ((data ?? []) as Row[]).map((o) => ({
+          id: o.id,
+          status: o.status,
+          createdAt: o.created_at,
+          totalCents: o.total_cents,
+          items: (o.order_items ?? []).map((it) => ({ name: it.products?.name ?? "Produto", quantity: it.quantity })),
+        }));
+        setOrders(rows.length === 0 && import.meta.env.DEV ? sampleMyOrders() : rows);
         setLoading(false);
       });
-
-    return () => {
-      active = false;
-    };
   }, [customerId]);
 
-  return { purchases, loading };
+  useEffect(() => reload(), [reload]);
+
+  return { orders, loading, reload };
 }

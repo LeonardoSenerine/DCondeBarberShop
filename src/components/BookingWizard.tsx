@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useBarbers, useBarberHours, useServices } from "@/hooks/useCatalog";
+import { useBarbers, useBarberHours, useBarberTimeOff, useServices } from "@/hooks/useCatalog";
 import { availableStartTimes, slotsForWeekday, useMonthBookings } from "@/hooks/useBooking";
 import {
   MONTH_LABELS,
@@ -41,6 +41,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
   const { data: barbers, loading: barbersLoading } = useBarbers();
   const { data: services, loading: servicesLoading } = useServices();
   const { data: hours } = useBarberHours();
+  const { data: timeOff } = useBarberTimeOff();
 
   const [step, setStep] = useState(initialStep ?? 1);
   const [barberId, setBarberId] = useState<string | null>(initialBarberId ?? null);
@@ -78,8 +79,18 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
   // where every slot the service would occupy is on the grid and free.
   const durationMinutes = service?.duration_minutes ?? 60;
 
+  // One-off closures (holiday, day off) layered on top of the weekly grid —
+  // set once per (barber, date) so a whole day can be blocked without
+  // touching the recurring weekly hours.
+  const closedDates = useMemo(
+    () => new Set(timeOff.map((t) => `${t.barber_id}|${t.date}`)),
+    [timeOff],
+  );
+  const isClosed = (bId: string, iso: string) => closedDates.has(`${bId}|${iso}`);
+
   const freeTimes = (() => {
     if (!barberId || !selectedDate || bookedSlotsError) return [];
+    if (isoDate && isClosed(barberId, isoDate)) return [];
     const weekday = selectedDate.getDay();
     const slots = slotsForWeekday(hours, barberId, weekday);
     const booked = (isoDate && bookedByDate[isoDate]) || [];
@@ -97,6 +108,7 @@ export function BookingWizard({ onConfirm, initialBarberId, initialServiceId, in
     const slots = slotsForWeekday(hours, barberId, weekday);
     if (slots.length === 0) return false;
     const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    if (isClosed(barberId, iso)) return false;
     const booked = bookedByDate[iso] || [];
     const isToday = date.getTime() === today.getTime();
     return availableStartTimes(slots, booked, durationMinutes).some(

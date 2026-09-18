@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { dateKey } from "@/lib/format";
 import type { Database } from "@/types/database";
 
 type Barber = Database["public"]["Tables"]["barbers"]["Row"];
 type BarberHours = Database["public"]["Tables"]["barber_hours"]["Row"];
+type BarberTimeOff = Database["public"]["Tables"]["barber_time_off"]["Row"];
 type Service = Database["public"]["Tables"]["services"]["Row"];
 type GalleryPhoto = Database["public"]["Tables"]["gallery_photos"]["Row"];
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -60,6 +62,14 @@ export function useBarberHours() {
   );
 }
 
+/** Upcoming one-off closures (holidays, days off) — past dates are irrelevant to booking. */
+export function useBarberTimeOff() {
+  return useTable<BarberTimeOff[]>(
+    () => supabase.from("barber_time_off").select("*").gte("date", dateKey(new Date())).order("date"),
+    [],
+  );
+}
+
 export function useServices() {
   return useTable<Service[]>(
     () =>
@@ -91,4 +101,4 @@ export function useProducts() {
   );
 }
 
-export type { Barber, BarberHours, Service, GalleryPhoto, Product };
+export type { Barber, BarberHours, BarberTimeOff, Service, GalleryPhoto, Product };

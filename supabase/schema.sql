@@ -95,6 +95,18 @@ create table if not exists public.barber_hours (
   unique (barber_id, weekday)
 );
 
+-- One-off closures on top of the weekly grid above — a holiday or a single
+-- day of vacation, without having to touch the recurring weekly hours (which
+-- would also close every future occurrence of that weekday).
+create table if not exists public.barber_time_off (
+  id uuid primary key default gen_random_uuid(),
+  barber_id text not null references public.barbers (id) on delete cascade,
+  date date not null,
+  reason text,
+  created_at timestamptz not null default now(),
+  unique (barber_id, date)
+);
+
 -- ---------------------------------------------------------------------------
 -- services
 -- ---------------------------------------------------------------------------
@@ -714,6 +726,7 @@ create trigger profiles_guard_role
 alter table public.profiles enable row level security;
 alter table public.barbers enable row level security;
 alter table public.barber_hours enable row level security;
+alter table public.barber_time_off enable row level security;
 alter table public.services enable row level security;
 alter table public.bookings enable row level security;
 alter table public.products enable row level security;
@@ -743,6 +756,12 @@ drop policy if exists "barber_hours_read_all" on public.barber_hours;
 create policy "barber_hours_read_all" on public.barber_hours for select using (true);
 drop policy if exists "barber_hours_write_admin" on public.barber_hours;
 create policy "barber_hours_write_admin" on public.barber_hours for all
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "barber_time_off_read_all" on public.barber_time_off;
+create policy "barber_time_off_read_all" on public.barber_time_off for select using (true);
+drop policy if exists "barber_time_off_write_admin" on public.barber_time_off;
+create policy "barber_time_off_write_admin" on public.barber_time_off for all
   using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "services_read_all" on public.services;

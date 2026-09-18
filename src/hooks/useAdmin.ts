@@ -647,6 +647,13 @@ export interface FinanceMethodSlice {
   pct: number;
 }
 
+export interface FinanceServiceSlice {
+  name: string;
+  count: number;
+  value: number;
+  pct: number;
+}
+
 export interface FinanceBar {
   key: string;
   label: string;
@@ -713,6 +720,19 @@ export function useFinance(
     return { method, value, pct: revenue > 0 ? value / revenue : 0 };
   }).sort((a, b) => b.value - a.value);
 
+  // Grouped by description rather than a join to services — completeBooking()
+  // writes the service actually performed as the transaction's description
+  // (see CompleteBookingModal's "Serviço realizado"), so this already
+  // reflects a swapped service correctly without extra joins.
+  const byServiceMap = new Map<string, { count: number; value: number }>();
+  serviceRows.forEach((t) => {
+    const prev = byServiceMap.get(t.description) ?? { count: 0, value: 0 };
+    byServiceMap.set(t.description, { count: prev.count + 1, value: prev.value + t.amount_cents });
+  });
+  const byService: FinanceServiceSlice[] = Array.from(byServiceMap.entries())
+    .map(([name, { count, value }]) => ({ name, count, value, pct: serviceRevenue > 0 ? value / serviceRevenue : 0 }))
+    .sort((a, b) => b.value - a.value);
+
   return {
     transactions,
     loading,
@@ -724,6 +744,7 @@ export function useFinance(
     serviceCount,
     chart,
     byMethod,
+    byService,
   };
 }
 
@@ -1117,6 +1138,20 @@ export async function toggleBarberHour(hours: BarberHours, defaultSlots: string[
       slots: hours.is_open ? [] : defaultSlots,
     })
     .eq("id", hours.id);
+  return { error: error?.message ?? null };
+}
+
+/** A one-off closure (holiday, day off) for a barber, on top of their weekly hours. */
+export async function addBarberTimeOff(barberId: string, date: string, reason: string) {
+  const { error } = await supabase
+    .from("barber_time_off")
+    .insert({ barber_id: barberId, date, reason: reason.trim() || null });
+  if (error?.code === "23505") return { error: "Esse dia já está marcado como fechado." };
+  return { error: error?.message ?? null };
+}
+
+export async function removeBarberTimeOff(id: string) {
+  const { error } = await supabase.from("barber_time_off").delete().eq("id", id);
   return { error: error?.message ?? null };
 }
 

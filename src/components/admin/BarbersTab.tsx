@@ -1,8 +1,16 @@
 import { useState } from "react";
-import { useBarbers, useBarberHours, type Barber } from "@/hooks/useCatalog";
-import { toggleBarberHour, deleteBarber, useStaffProfiles, unlinkBarberAccount, type StaffProfile } from "@/hooks/useAdmin";
+import { useBarbers, useBarberHours, useBarberTimeOff, type Barber } from "@/hooks/useCatalog";
+import {
+  toggleBarberHour,
+  deleteBarber,
+  useStaffProfiles,
+  unlinkBarberAccount,
+  addBarberTimeOff,
+  removeBarberTimeOff,
+  type StaffProfile,
+} from "@/hooks/useAdmin";
 import { useAuth } from "@/context/AuthContext";
-import { WEEKDAY_LABELS } from "@/lib/format";
+import { WEEKDAY_LABELS, formatDateBR } from "@/lib/format";
 import { BarberFormModal } from "@/components/admin/BarberFormModal";
 import { StaffLinkModal } from "@/components/admin/StaffLinkModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -18,6 +26,7 @@ export function BarbersTab() {
   const { isOwner } = useAuth();
   const { data: barbers, loading: barbersLoading, reload: reloadBarbers } = useBarbers();
   const { data: hours, loading: hoursLoading, error, reload: reloadHours } = useBarberHours();
+  const { data: timeOff, reload: reloadTimeOff } = useBarberTimeOff();
   const { profiles: staffProfiles, reload: reloadStaff } = useStaffProfiles();
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<Barber | null>(null);
@@ -26,6 +35,10 @@ export function BarbersTab() {
   const [unlinking, setUnlinking] = useState<StaffProfile | null>(null);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
   const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(null);
+  const [addingTimeOffFor, setAddingTimeOffFor] = useState<string | null>(null);
+  const [timeOffDate, setTimeOffDate] = useState("");
+  const [timeOffReason, setTimeOffReason] = useState("");
+  const [savingTimeOff, setSavingTimeOff] = useState(false);
 
   function linkedAccountFor(barberId: string) {
     return staffProfiles.find((p) => p.barber_id === barberId) ?? null;
@@ -51,6 +64,31 @@ export function BarbersTab() {
     const defaults = row.weekday === 6 ? DEFAULT_SATURDAY_SLOTS : DEFAULT_WEEKDAY_SLOTS;
     await toggleBarberHour(row, defaults);
     reloadHours();
+  }
+
+  async function handleAddTimeOff(barberId: string) {
+    if (!timeOffDate) return;
+    setSavingTimeOff(true);
+    const { error } = await addBarberTimeOff(barberId, timeOffDate, timeOffReason);
+    setSavingTimeOff(false);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
+    setAddingTimeOffFor(null);
+    setTimeOffDate("");
+    setTimeOffReason("");
+    setToast({ message: "Dia fechado marcado.", variant: "success" });
+    reloadTimeOff();
+  }
+
+  async function handleRemoveTimeOff(id: string) {
+    const { error } = await removeBarberTimeOff(id);
+    if (error) {
+      setToast({ message: error, variant: "error" });
+      return;
+    }
+    reloadTimeOff();
   }
 
   async function handleConfirmDelete() {
@@ -212,6 +250,69 @@ export function BarbersTab() {
                         </button>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="mt-5 border-t border-border pt-4 sm:mt-6 sm:pt-5">
+                    <div className="mb-2.5 flex items-center justify-between gap-2">
+                      <span className="font-heading text-xs tracking-[0.14em] text-muted-2 uppercase">Dias fechados</span>
+                      <button
+                        onClick={() => {
+                          setAddingTimeOffFor(addingTimeOffFor === b.id ? null : b.id);
+                          setTimeOffDate("");
+                          setTimeOffReason("");
+                        }}
+                        className="min-h-8 cursor-pointer rounded-lg border border-border px-3 font-heading text-[11px] tracking-[0.1em] text-white uppercase transition-colors hover:border-silver"
+                      >
+                        {addingTimeOffFor === b.id ? "Cancelar" : "+ Adicionar"}
+                      </button>
+                    </div>
+
+                    {addingTimeOffFor === b.id && (
+                      <div className="mb-3 flex flex-col gap-2 rounded-lg border border-border bg-surface-alt p-3 sm:flex-row sm:items-center">
+                        <input
+                          type="date"
+                          value={timeOffDate}
+                          onChange={(e) => setTimeOffDate(e.target.value)}
+                          className="min-h-10 rounded-lg border border-border bg-surface px-3 text-sm text-white outline-none focus:border-silver"
+                        />
+                        <input
+                          value={timeOffReason}
+                          onChange={(e) => setTimeOffReason(e.target.value)}
+                          placeholder="Motivo (opcional)"
+                          className="min-h-10 flex-1 rounded-lg border border-border bg-surface px-3 text-sm text-white outline-none focus:border-silver"
+                        />
+                        <button
+                          onClick={() => handleAddTimeOff(b.id)}
+                          disabled={!timeOffDate || savingTimeOff}
+                          className="bg-silver-gradient min-h-10 cursor-pointer rounded-lg px-4 font-heading text-[11px] font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {savingTimeOff ? "Salvando…" : "Salvar"}
+                        </button>
+                      </div>
+                    )}
+
+                    {timeOff.filter((t) => t.barber_id === b.id).length === 0 ? (
+                      <p className="m-0 text-[13px] text-muted">Nenhum dia fechado marcado.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {timeOff
+                          .filter((t) => t.barber_id === b.id)
+                          .map((t) => (
+                            <div key={t.id} className="flex items-center justify-between gap-2 text-[13px]">
+                              <span className="text-white">
+                                {formatDateBR(t.date)}
+                                {t.reason ? ` — ${t.reason}` : ""}
+                              </span>
+                              <button
+                                onClick={() => handleRemoveTimeOff(t.id)}
+                                className="cursor-pointer text-muted transition-colors hover:text-white"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

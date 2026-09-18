@@ -43,6 +43,14 @@ type BarberHoursRow = {
   slots: string[];
 };
 
+type BarberTimeOffRow = {
+  id: string;
+  barber_id: string;
+  date: string;
+  reason: string | null;
+  created_at: string;
+};
+
 type ServicesRow = {
   id: string;
   name: string;
@@ -164,6 +172,16 @@ export interface Database {
         Row: BarberHoursRow;
         Insert: Omit<BarberHoursRow, "id">;
         Update: Partial<BarberHoursRow>;
+        Relationships: [];
+      };
+      barber_time_off: {
+        Row: BarberTimeOffRow;
+        Insert: Omit<BarberTimeOffRow, "id" | "created_at" | "reason"> & {
+          id?: string;
+          created_at?: string;
+          reason?: string | null;
+        };
+        Update: Partial<BarberTimeOffRow>;
         Relationships: [];
       };
       services: {

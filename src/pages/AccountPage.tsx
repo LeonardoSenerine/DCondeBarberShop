@@ -373,19 +373,21 @@ export function AccountPage() {
               </div>
 
               <div className="mt-6 flex gap-2.5">
-                <button
-                  onClick={() =>
-                    navigate("/", { state: { rebook: { barberId: upcoming.barber_id, serviceId: upcoming.service_id } } })
-                  }
-                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg px-3 text-center font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
-                >
-                  Remarcar
-                </button>
+                {upcomingPending && (
+                  <button
+                    onClick={() =>
+                      navigate("/", { state: { rebook: { barberId: upcoming.barber_id, serviceId: upcoming.service_id } } })
+                    }
+                    className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg px-3 text-center font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
+                  >
+                    Remarcar
+                  </button>
+                )}
                 <button
                   onClick={() => setCancelling(true)}
                   className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border px-3 text-center font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                 >
-                  {upcomingPending ? "Cancelar solicitação" : "Cancelar"}
+                  {upcomingPending ? "Cancelar solicitação" : "Cancelar agendamento"}
                 </button>
               </div>
             </div>

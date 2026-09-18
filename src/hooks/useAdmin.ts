@@ -729,9 +729,14 @@ export function useFinance(
     const prev = byServiceMap.get(t.description) ?? { count: 0, value: 0 };
     byServiceMap.set(t.description, { count: prev.count + 1, value: prev.value + t.amount_cents });
   });
+  // Ranked and charted by how many times each service was performed, not by
+  // revenue — a R$200 "luzes" done twice shouldn't outrank a R$40 corte done
+  // 30 times on a "mais vendidos" list. pct is count relative to the busiest
+  // service (a bar-chart ratio), not a share of total revenue.
+  const maxServiceCount = Math.max(1, ...Array.from(byServiceMap.values()).map((v) => v.count));
   const byService: FinanceServiceSlice[] = Array.from(byServiceMap.entries())
-    .map(([name, { count, value }]) => ({ name, count, value, pct: serviceRevenue > 0 ? value / serviceRevenue : 0 }))
-    .sort((a, b) => b.value - a.value);
+    .map(([name, { count, value }]) => ({ name, count, value, pct: count / maxServiceCount }))
+    .sort((a, b) => b.count - a.count);
 
   return {
     transactions,
@@ -1141,17 +1146,33 @@ export async function toggleBarberHour(hours: BarberHours, defaultSlots: string[
   return { error: error?.message ?? null };
 }
 
-/** A one-off closure (holiday, day off) for a barber, on top of their weekly hours. */
-export async function addBarberTimeOff(barberId: string, date: string, reason: string) {
+const TIME_OFF_MAX_DAYS = 90;
+
+/**
+ * A one-off closure (holiday, vacation) for a barber, on top of their weekly
+ * hours — `from`/`to` can be the same day for a single closed day, or span a
+ * period (e.g. a week of vacation); one row per day gets stored, so the
+ * booking-availability check stays a simple per-date lookup.
+ */
+export async function addBarberTimeOff(barberId: string, from: string, to: string, reason: string) {
+  const dates: string[] = [];
+  let cursor = new Date(`${from}T00:00:00`);
+  const end = new Date(`${to}T00:00:00`);
+  while (cursor <= end) {
+    dates.push(dateKey(cursor));
+    cursor = new Date(cursor.getTime() + 86400000);
+    if (dates.length > TIME_OFF_MAX_DAYS) return { error: `Período muito longo — o máximo é ${TIME_OFF_MAX_DAYS} dias.` };
+  }
+  const trimmedReason = reason.trim() || null;
   const { error } = await supabase
     .from("barber_time_off")
-    .insert({ barber_id: barberId, date, reason: reason.trim() || null });
-  if (error?.code === "23505") return { error: "Esse dia já está marcado como fechado." };
+    .insert(dates.map((date) => ({ barber_id: barberId, date, reason: trimmedReason })));
+  if (error?.code === "23505") return { error: "Um ou mais desses dias já estão marcados como fechados." };
   return { error: error?.message ?? null };
 }
 
-export async function removeBarberTimeOff(id: string) {
-  const { error } = await supabase.from("barber_time_off").delete().eq("id", id);
+export async function removeBarberTimeOff(ids: string[]) {
+  const { error } = await supabase.from("barber_time_off").delete().in("id", ids);
   return { error: error?.message ?? null };
 }
 

@@ -64,10 +64,10 @@ export function ClientsTab() {
           <button
             key={c.customerId}
             onClick={() => setSelected(c)}
-            className="dc-admin-enter-item flex w-full cursor-pointer flex-col gap-2.5 border-t border-border py-4 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt sm:py-6"
+            className="dc-admin-enter-item flex w-full cursor-pointer flex-col gap-2.5 border-t border-border py-4 text-left transition-colors hover:border-t-transparent hover:bg-surface-alt sm:flex-row sm:items-center sm:gap-5 sm:py-6"
             style={{ animationDelay: `${index * 45}ms` }}
           >
-            <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="flex min-w-0 items-center gap-3.5 sm:flex-1 sm:gap-4">
               <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-surface-alt font-heading text-lg text-silver sm:h-14 sm:w-14 sm:text-xl">
                 {c.name.charAt(0).toUpperCase()}
               </span>
@@ -75,14 +75,17 @@ export function ClientsTab() {
                 <span className="block truncate text-lg text-white sm:text-xl">{c.name}</span>
                 <span className="block truncate text-[15px] text-muted sm:text-base">{c.phone}</span>
               </span>
-              <span className="flex-shrink-0 text-right font-heading text-lg text-white sm:text-2xl">
+              <span className="flex-shrink-0 text-right font-heading text-lg text-white sm:hidden">
                 {formatCents(c.totalCents)}
               </span>
             </div>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-[15px] text-muted sm:text-base">
+            <div className="flex flex-shrink-0 flex-wrap gap-x-5 gap-y-1 text-[15px] text-muted sm:whitespace-nowrap sm:text-base">
               <span>{c.visits} visitas</span>
               <span>Última: {formatDateBR(c.lastVisit)}</span>
             </div>
+            <span className="hidden flex-shrink-0 text-right font-heading text-lg text-white sm:block sm:text-2xl">
+              {formatCents(c.totalCents)}
+            </span>
           </button>
         ))}
         {clients.length > 0 && (

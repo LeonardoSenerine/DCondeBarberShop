@@ -69,7 +69,14 @@ function flyProductToCart(cardEl: HTMLElement) {
   anim.onfinish = () => clone.remove();
 }
 
-export function Shop() {
+interface ShopProps {
+  /** Opens the login/signup modal — checkout requires an account, since a
+   * reservation needs a customer_id to show up in "Meus pedidos" and the
+   * admin's Pedidos tab. */
+  onRequireAuth: () => void;
+}
+
+export function Shop({ onRequireAuth }: ShopProps) {
   const { data: products, loading } = useProducts();
   const { cart, add, decrement, clear, isEmpty } = useCart();
   const { session, profile } = useAuth();
@@ -105,37 +112,41 @@ export function Shop() {
   }, [itemCount]);
 
   async function handleCheckout() {
+    if (!session?.user) {
+      setMobileCartOpen(false);
+      onRequireAuth();
+      return;
+    }
+
     const itemLines = cartRows.map((row) => `${row.qty}x ${row.product.name}`).join("\n");
     const message =
       cartRows.length > 0
         ? `Olá! Vim pelo site da D'Conde Barbearia e quero reservar:\n\n${itemLines}\n\nTotal: ${formatCents(totalCents)}`
         : "Olá! Vim pelo site da D'Conde Barbearia.";
 
-    if (session?.user) {
-      setPlacing(true);
-      const { data: order } = await supabase
-        .from("orders")
-        .insert({
-          customer_id: session.user.id,
-          customer_name: profile?.full_name ?? "",
-          customer_phone: profile?.phone ?? "",
-          status: "pending",
-          total_cents: totalCents,
-        })
-        .select()
-        .single();
-      if (order) {
-        await supabase.from("order_items").insert(
-          cartRows.map((row) => ({
-            order_id: order.id,
-            product_id: row.product.id,
-            quantity: row.qty,
-            unit_price_cents: effectivePriceCents(row.product),
-          })),
-        );
-      }
-      setPlacing(false);
+    setPlacing(true);
+    const { data: order } = await supabase
+      .from("orders")
+      .insert({
+        customer_id: session.user.id,
+        customer_name: profile?.full_name ?? "",
+        customer_phone: profile?.phone ?? "",
+        status: "pending",
+        total_cents: totalCents,
+      })
+      .select()
+      .single();
+    if (order) {
+      await supabase.from("order_items").insert(
+        cartRows.map((row) => ({
+          order_id: order.id,
+          product_id: row.product.id,
+          quantity: row.qty,
+          unit_price_cents: effectivePriceCents(row.product),
+        })),
+      );
     }
+    setPlacing(false);
 
     window.open(whatsAppLink(BRAND.whatsapp, message), "_blank", "noopener");
     clear();

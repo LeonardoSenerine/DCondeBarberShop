@@ -163,7 +163,12 @@ export function SitePage() {
       <Ambiente onOpenLightbox={setLightbox} />
       <Gallery onOpenLightbox={setLightbox} />
       <LightBanner />
-      <Shop />
+      <Shop
+        onRequireAuth={() => {
+          setPendingBooking(null);
+          setAuthOpen(true);
+        }}
+      />
       <Perks />
       <Testimonials />
       <About />

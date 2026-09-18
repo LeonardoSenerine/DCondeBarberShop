@@ -384,6 +384,11 @@ create table if not exists public.orders (
   created_at timestamptz not null default now()
 );
 
+-- Set when the customer cancels their own reservation (see CancelOrderModal.tsx)
+-- — mirrors bookings.cancel_reason, so the barber sees why instead of just a
+-- silent cancellation.
+alter table public.orders add column if not exists cancel_reason text;
+
 -- migration safety net: add "confirmed" as an explicit accept step between a
 -- pending shop reservation and preparing it — mirrors bookings' pending ->
 -- confirmed step, so the barber reviews and accepts before marking it ready.

@@ -166,6 +166,11 @@ export function OrdersTab() {
                   <p className="m-0 mt-2.5 max-w-[60ch] text-[16px] leading-relaxed text-white">
                     {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
                   </p>
+                  {o.status === "cancelled" && o.cancelReason && (
+                    <p className="m-0 mt-1.5 max-w-[60ch] text-[14px] text-muted">
+                      Motivo do cancelamento: {o.cancelReason}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex shrink-0 flex-col items-start gap-2.5 sm:items-end">

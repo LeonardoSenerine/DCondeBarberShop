@@ -96,6 +96,7 @@ type OrdersRow = {
   status: OrderStatus;
   total_cents: number;
   created_at: string;
+  cancel_reason: string | null;
 };
 
 type OrderItemsRow = {
@@ -212,7 +213,11 @@ export interface Database {
       };
       orders: {
         Row: OrdersRow;
-        Insert: Omit<OrdersRow, "id" | "created_at"> & { id?: string; created_at?: string };
+        Insert: Omit<OrdersRow, "id" | "created_at" | "cancel_reason"> & {
+          id?: string;
+          created_at?: string;
+          cancel_reason?: string | null;
+        };
         Update: Partial<OrdersRow>;
         Relationships: [];
       };

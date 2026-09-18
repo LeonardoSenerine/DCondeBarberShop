@@ -13,9 +13,11 @@ import {
 import { useMyReviews, submitReview, dismissReviewPrompt } from "@/hooks/useReviews";
 import { BookingWizard, type BookingDraft } from "@/components/BookingWizard";
 import { CancelBookingModal } from "@/components/CancelBookingModal";
+import { CancelOrderModal } from "@/components/CancelOrderModal";
 import { BookingStatusBadge, OrderStatusBadge } from "@/components/StatusBadge";
 import { StarRating } from "@/components/StarRating";
 import { Toast } from "@/components/admin/Toast";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import {
   dateKey,
   formatCents,
@@ -54,6 +56,7 @@ export function AccountPage() {
   const [dismissingReviewId, setDismissingReviewId] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [dismissingDecline, setDismissingDecline] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<MyOrder | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
   if (loading) return null;
@@ -102,14 +105,19 @@ export function AccountPage() {
     reload();
   }
 
-  async function handleCancelOrder(order: MyOrder) {
-    setCancellingOrderId(order.id);
-    const { error } = await cancelMyOrder(order.id);
+  /** Only for the "aguardando análise" case — no reason to collect yet since
+   * the barber hasn't started anything. Once accepted/ready, cancelling goes
+   * through CancelOrderModal instead, which asks why. */
+  async function handleConfirmCancelAnalysis() {
+    if (!orderToCancel) return;
+    setCancellingOrderId(orderToCancel.id);
+    const { error } = await cancelMyOrder(orderToCancel.id);
     setCancellingOrderId(null);
     if (error) {
       setActionError(`Não foi possível cancelar o pedido: ${error}`);
       return;
     }
+    setOrderToCancel(null);
     reloadOrders();
   }
 
@@ -467,33 +475,29 @@ export function AccountPage() {
             </div>
 
             <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-stretch md:gap-6">
-              {activeOrders.map((o) => {
-                const busy = cancellingOrderId === o.id;
-                return (
-                  <div key={o.id} className="flex h-full flex-col rounded-xl border border-border bg-surface-alt p-5 md:p-7">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <OrderStatusBadge status={o.status} />
-                      <span className="text-[13px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
-                    </div>
-                    <p className="m-0 mt-3.5 text-[15px] leading-relaxed text-white">
-                      {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
-                    </p>
-                    <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-                      <span className="flex items-baseline gap-1.5">
-                        <span className="text-[13px] text-muted">Total:</span>
-                        <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
-                      </span>
-                      <button
-                        onClick={() => handleCancelOrder(o)}
-                        disabled={busy}
-                        className="flex min-h-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {busy ? "Cancelando…" : o.status === "pending" ? "Cancelar análise" : "Cancelar pedido"}
-                      </button>
-                    </div>
+              {activeOrders.map((o) => (
+                <div key={o.id} className="flex h-full flex-col rounded-xl border border-border bg-surface-alt p-5 md:p-7">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <OrderStatusBadge status={o.status} />
+                    <span className="text-[13px] text-muted">{formatDateBR(dateKey(new Date(o.createdAt)))}</span>
                   </div>
-                );
-              })}
+                  <p className="m-0 mt-3.5 text-[15px] leading-relaxed text-white">
+                    {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
+                  </p>
+                  <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="text-[13px] text-muted">Total:</span>
+                      <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
+                    </span>
+                    <button
+                      onClick={() => setOrderToCancel(o)}
+                      className="flex min-h-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                    >
+                      {o.status === "pending" ? "Cancelar análise" : "Cancelar pedido"}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -767,6 +771,29 @@ export function AccountPage() {
           onCancelled={() => {
             setCancelling(false);
             reload();
+          }}
+        />
+      )}
+
+      {orderToCancel && orderToCancel.status === "pending" && (
+        <ConfirmModal
+          title="Cancelar solicitação?"
+          message={`Tem certeza que deseja cancelar "${orderToCancel.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}"? Essa ação não pode ser desfeita.`}
+          confirmLabel="Cancelar solicitação"
+          cancelLabel="Voltar"
+          busy={cancellingOrderId === orderToCancel.id}
+          onConfirm={handleConfirmCancelAnalysis}
+          onClose={() => setOrderToCancel(null)}
+        />
+      )}
+
+      {orderToCancel && orderToCancel.status !== "pending" && (
+        <CancelOrderModal
+          order={orderToCancel}
+          onClose={() => setOrderToCancel(null)}
+          onCancelled={() => {
+            setOrderToCancel(null);
+            reloadOrders();
           }}
         />
       )}

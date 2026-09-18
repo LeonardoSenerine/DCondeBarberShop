@@ -880,6 +880,7 @@ export interface AdminOrder {
   status: OrderStatus;
   totalCents: number;
   createdAt: string;
+  cancelReason: string | null;
   items: AdminOrderItem[];
 }
 
@@ -894,7 +895,7 @@ export function useAdminOrders() {
     supabase
       .from("orders")
       .select(
-        "id, customer_name, customer_phone, status, total_cents, created_at, order_items(product_id, quantity, unit_price_cents, products(name))",
+        "id, customer_name, customer_phone, status, total_cents, created_at, cancel_reason, order_items(product_id, quantity, unit_price_cents, products(name))",
       )
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -905,6 +906,7 @@ export function useAdminOrders() {
           status: OrderStatus;
           total_cents: number;
           created_at: string;
+          cancel_reason: string | null;
           order_items:
             | { product_id: string; quantity: number; unit_price_cents: number; products: { name: string } | null }[]
             | null;
@@ -916,6 +918,7 @@ export function useAdminOrders() {
           status: o.status,
           totalCents: o.total_cents,
           createdAt: o.created_at,
+          cancelReason: o.cancel_reason,
           items: (o.order_items ?? []).map((it) => ({
             productId: it.product_id,
             name: it.products?.name ?? "Produto removido",

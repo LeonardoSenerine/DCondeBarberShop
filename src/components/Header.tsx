@@ -60,7 +60,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
               style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
             />
           </a>
-  
+
           <nav className="flex items-center gap-8">
             <div className="hidden items-center gap-8 md:flex">
               {NAV_LINKS.map((link) => (
@@ -90,7 +90,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
               ) : (
                 <button
                   onClick={onOpenAuth}
-                  className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                  className="cursor-pointer font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
                 >
                   {accountLabel}
                 </button>
@@ -104,14 +104,14 @@ export function Header({ onOpenAuth }: HeaderProps) {
                 </button>
               )}
             </div>
-  
+
             <a
               href="#agendar"
               className="bg-silver-gradient hidden h-11 items-center rounded-lg px-7 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:flex"
             >
               Agendar
             </a>
-  
+
             {session ? (
               <Link
                 to="/conta"
@@ -122,12 +122,12 @@ export function Header({ onOpenAuth }: HeaderProps) {
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="bg-silver-gradient flex h-11 items-center rounded-lg px-6 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:hidden"
+                className="bg-silver-gradient flex h-11 cursor-pointer items-center rounded-lg px-6 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:hidden"
               >
                 Entrar
               </button>
             )}
-  
+
             <button
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Menu"
@@ -139,7 +139,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
             </button>
           </nav>
         </div>
-  
+
         {menuOpen && (
           <div className="flex flex-col border-t border-border bg-ink px-6 pt-3 pb-5 md:hidden">
             {NAV_LINKS.map((link) => (
@@ -175,7 +175,7 @@ export function Header({ onOpenAuth }: HeaderProps) {
                   setMenuOpen(false);
                   onOpenAuth();
                 }}
-                className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
+                className="cursor-pointer py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
               >
                 {accountLabel}
               </button>

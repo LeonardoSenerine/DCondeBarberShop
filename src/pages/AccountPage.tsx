@@ -372,18 +372,18 @@ export function AccountPage() {
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2.5">
+              <div className="mt-6 flex gap-2.5">
                 <button
                   onClick={() =>
                     navigate("/", { state: { rebook: { barberId: upcoming.barber_id, serviceId: upcoming.service_id } } })
                   }
-                  className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
+                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg px-3 text-center font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
                 >
                   Remarcar
                 </button>
                 <button
                   onClick={() => setCancelling(true)}
-                  className="flex min-h-12 cursor-pointer items-center rounded-lg border border-border px-6.5 font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border px-3 text-center font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                 >
                   {upcomingPending ? "Cancelar solicitação" : "Cancelar"}
                 </button>
@@ -499,14 +499,14 @@ export function AccountPage() {
                   <p className="m-0 mt-3.5 text-[15px] leading-relaxed text-white">
                     {o.items.map((it) => `${it.quantity}x ${it.name}`).join(", ")}
                   </p>
-                  <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+                  <div className="mt-auto flex flex-col gap-3 pt-4">
                     <span className="flex items-baseline gap-1.5">
                       <span className="text-sm text-muted">Total:</span>
                       <span className="font-heading text-xl font-semibold text-white">{formatCents(o.totalCents)}</span>
                     </span>
                     <button
                       onClick={() => setOrderToCancel(o)}
-                      className="flex min-h-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                      className="flex min-h-10 w-full cursor-pointer items-center justify-center rounded-lg border border-border px-4 font-heading text-xs tracking-[0.14em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                     >
                       {o.status === "pending" ? "Cancelar análise" : "Cancelar pedido"}
                     </button>

@@ -478,9 +478,9 @@ export function AccountPage() {
         {activeOrders.length > 0 && (
           <div className="mb-5 rounded-2xl border border-silver bg-surface p-7 md:p-10">
             <div className="mb-6 flex items-center gap-3">
-              <span className="font-heading text-xs tracking-[0.24em] text-muted-2 uppercase">Meus pedidos</span>
+              <span className="font-heading text-xl font-medium tracking-[0.16em] text-silver uppercase">Meus pedidos</span>
               <span
-                className="flex h-6 min-w-6 items-center justify-center rounded-full px-2 font-heading text-xs font-semibold tabular-nums"
+                className="flex h-7 min-w-7 items-center justify-center rounded-full px-2 font-heading text-sm font-semibold tabular-nums"
                 style={{ background: "rgba(224,179,65,0.16)", color: "#E0B341" }}
               >
                 {activeOrders.length}
@@ -499,8 +499,8 @@ export function AccountPage() {
                   </p>
                   <div className="mt-auto flex items-end justify-between gap-3 pt-4">
                     <span className="flex items-baseline gap-1.5">
-                      <span className="text-[13px] text-muted">Total:</span>
-                      <span className="font-heading text-lg text-white">{formatCents(o.totalCents)}</span>
+                      <span className="text-sm text-muted">Total:</span>
+                      <span className="font-heading text-xl font-semibold text-white">{formatCents(o.totalCents)}</span>
                     </span>
                     <button
                       onClick={() => setOrderToCancel(o)}

@@ -71,6 +71,8 @@ export function AccountPage() {
   const [dismissingDecline, setDismissingDecline] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<MyOrder | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   if (loading) return null;
   // Barbers/admins have no personal customer bookings — send them to their
@@ -240,7 +242,7 @@ export function AccountPage() {
               Ver site
             </Link>
             <button
-              onClick={() => signOut().then(() => navigate("/"))}
+              onClick={() => setConfirmingSignOut(true)}
               className="flex min-h-11 items-center rounded-lg border border-border px-4.5 font-heading text-xs tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
             >
               Sair
@@ -808,6 +810,25 @@ export function AccountPage() {
             setOrderToCancel(null);
             reloadOrders();
           }}
+        />
+      )}
+
+      {confirmingSignOut && (
+        <ConfirmModal
+          title="Sair da conta?"
+          message="Você vai precisar entrar de novo para ver seus agendamentos e pedidos."
+          confirmLabel="Sair"
+          cancelLabel="Cancelar"
+          busy={signingOut}
+          onConfirm={() => {
+            setSigningOut(true);
+            signOut().then(() => {
+              setSigningOut(false);
+              setConfirmingSignOut(false);
+              navigate("/");
+            });
+          }}
+          onClose={() => setConfirmingSignOut(false)}
         />
       )}
 

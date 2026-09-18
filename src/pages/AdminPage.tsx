@@ -15,6 +15,7 @@ import { GalleryTab } from "@/components/admin/GalleryTab";
 import { BarbersTab } from "@/components/admin/BarbersTab";
 import { ReviewsTab } from "@/components/admin/ReviewsTab";
 import { NewBookingAlert } from "@/components/admin/NewBookingAlert";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 interface IncomingBooking {
   customer_name: string;
@@ -44,6 +45,8 @@ export function AdminPage() {
   const [tab, setTab] = useState<TabId>("agenda");
   const [incoming, setIncoming] = useState<IncomingBooking | null>(null);
   const [navOpen, setNavOpen] = useState(false);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   // Live alert when a new booking request comes in — RLS scopes what each
   // session receives, so staff only ever hears about their own barber's.
@@ -85,45 +88,9 @@ export function AdminPage() {
   const roleLabel = isOwner ? "Dono" : "Barbeiro";
 
   return (
-    <div className="bg-ink text-white lg:flex lg:h-screen lg:overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border bg-surface px-5 py-4 lg:hidden">
-        <div className="flex items-center gap-3">
-          <img
-            src="/img/monogram.jpg"
-            alt="D'Conde Barbearia"
-            className="h-10 w-11 object-contain"
-            style={{
-              filter: "brightness(1.25) contrast(3.4)",
-              mixBlendMode: "screen",
-            }}
-          />
-          <span className="font-heading text-base tracking-[0.2em] text-white uppercase">
-            Painel
-          </span>
-        </div>
-        <button
-          onClick={() => setNavOpen(true)}
-          aria-label="Abrir menu"
-          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver"
-        >
-          <List size={22} />
-        </button>
-      </div>
-
-      {navOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
-          onClick={() => setNavOpen(false)}
-          aria-hidden
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-surface transition-transform duration-300 lg:static lg:z-auto lg:h-screen lg:w-[264px] lg:translate-x-0 ${
-          navOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-5">
+    <>
+      <div className="bg-ink text-white lg:flex lg:h-screen lg:overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border bg-surface px-5 py-4 lg:hidden">
           <div className="flex items-center gap-3">
             <img
               src="/img/monogram.jpg"
@@ -139,134 +106,191 @@ export function AdminPage() {
             </span>
           </div>
           <button
-            onClick={() => setNavOpen(false)}
-            aria-label="Fechar menu"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:text-white lg:hidden"
+            onClick={() => setNavOpen(true)}
+            aria-label="Abrir menu"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-border text-white transition-colors hover:border-silver"
           >
-            <X size={20} />
+            <List size={22} />
           </button>
         </div>
-
-        <nav className="flex flex-col gap-1.5 overflow-y-auto p-3 lg:flex-1">
-          {TABS.map((t) => {
-            const on = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => {
-                  setTab(t.id);
-                  setNavOpen(false);
-                }}
-                className="flex min-h-[54px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
-                style={{
-                  background: on ? "var(--color-silver)" : "transparent",
-                  color: on ? "#0A0A0A" : "#9E9E9E",
-                }}
-              >
-                <span className="grid h-6 w-6 place-items-center" aria-hidden>
-                  {t.icon()}
-                </span>
-                {t.name}
-              </button>
-            );
-          })}
-        </nav>
-
-        {profile && (
-          <div className="flex items-center gap-3 border-t border-border p-4">
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-base text-silver">
-              {myBarber?.photo_path ? (
-                <img
-                  src={myBarber.photo_path}
-                  alt={myBarber.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                (profile.full_name || profile.email || "?")
-                  .charAt(0)
-                  .toUpperCase()
-              )}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-heading text-base text-white">
-                {profile.full_name || profile.email}
-              </span>
-              <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">
-                {roleLabel}
-              </span>
-            </span>
-          </div>
+  
+        {navOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+            onClick={() => setNavOpen(false)}
+            aria-hidden
+          />
         )}
-
-        <div className="flex flex-col gap-1.5 border-t border-border p-3">
-          <Link
-            to="/"
-            state={{ fromAdmin: true }}
-            onClick={() => setNavOpen(false)}
-            className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <span className="grid h-6 w-6 place-items-center" aria-hidden>
-              {iconExternal()}
-            </span>
-            Ver site
-          </Link>
-          <button
-            onClick={() => {
-              setNavOpen(false);
-              signOut().then(() => navigate("/"));
+  
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-border bg-surface transition-transform duration-300 lg:static lg:z-auto lg:h-screen lg:w-[264px] lg:translate-x-0 ${
+            navOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-5">
+            <div className="flex items-center gap-3">
+              <img
+                src="/img/monogram.jpg"
+                alt="D'Conde Barbearia"
+                className="h-10 w-11 object-contain"
+                style={{
+                  filter: "brightness(1.25) contrast(3.4)",
+                  mixBlendMode: "screen",
+                }}
+              />
+              <span className="font-heading text-base tracking-[0.2em] text-white uppercase">
+                Painel
+              </span>
+            </div>
+            <button
+              onClick={() => setNavOpen(false)}
+              aria-label="Fechar menu"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:text-white lg:hidden"
+            >
+              <X size={20} />
+            </button>
+          </div>
+  
+          <nav className="flex flex-col gap-1.5 overflow-y-auto p-3 lg:flex-1">
+            {TABS.map((t) => {
+              const on = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    setTab(t.id);
+                    setNavOpen(false);
+                  }}
+                  className="flex min-h-[54px] flex-shrink-0 cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] whitespace-nowrap uppercase transition-colors"
+                  style={{
+                    background: on ? "var(--color-silver)" : "transparent",
+                    color: on ? "#0A0A0A" : "#9E9E9E",
+                  }}
+                >
+                  <span className="grid h-6 w-6 place-items-center" aria-hidden>
+                    {t.icon()}
+                  </span>
+                  {t.name}
+                </button>
+              );
+            })}
+          </nav>
+  
+          {profile && (
+            <div className="flex items-center gap-3 border-t border-border p-4">
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-alt font-heading text-base text-silver">
+                {myBarber?.photo_path ? (
+                  <img
+                    src={myBarber.photo_path}
+                    alt={myBarber.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  (profile.full_name || profile.email || "?")
+                    .charAt(0)
+                    .toUpperCase()
+                )}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-heading text-base text-white">
+                  {profile.full_name || profile.email}
+                </span>
+                <span className="block text-[13px] tracking-[0.1em] text-muted-2 uppercase">
+                  {roleLabel}
+                </span>
+              </span>
+            </div>
+          )}
+  
+          <div className="flex flex-col gap-1.5 border-t border-border p-3">
+            <Link
+              to="/"
+              state={{ fromAdmin: true }}
+              onClick={() => setNavOpen(false)}
+              className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <span className="grid h-6 w-6 place-items-center" aria-hidden>
+                {iconExternal()}
+              </span>
+              Ver site
+            </Link>
+            <button
+              onClick={() => {
+                setNavOpen(false);
+                setConfirmingSignOut(true);
+              }}
+              className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <span className="grid h-6 w-6 place-items-center" aria-hidden>
+                {iconLogout()}
+              </span>
+              Sair
+            </button>
+          </div>
+  
+          {/* Keeps the panel's own background filling the screen below "Sair"
+              on mobile, instead of ending mid-screen and exposing the dimmed
+              backdrop there — desktop already reaches the bottom via nav's
+              lg:flex-1 above, so this collapses to nothing there. */}
+          <div className="flex-1 lg:hidden" aria-hidden />
+        </aside>
+  
+        <main className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
+          <header className="sticky top-0 z-10 border-b border-border bg-ink/95 px-6 py-6 backdrop-blur lg:px-10">
+            <h1 className="m-0 font-heading text-[38px] font-semibold tracking-[0.05em] text-white uppercase">
+              {active.name}
+            </h1>
+            <p className="mt-1.5 text-lg text-muted first-letter:uppercase">
+              {dateLabel}
+            </p>
+          </header>
+          <div className={`mx-auto px-6 py-9 pb-24 lg:px-10 ${tab === "agenda" || tab === "fin" ? "max-w-375" : "max-w-295"}`}>
+  
+            {tab === "agenda" && <AgendaTab />}
+            {tab === "fin" && <FinanceTab />}
+            {tab === "clientes" && <ClientsTab />}
+            {tab === "produtos" && <ProductsTab />}
+            {tab === "pedidos" && <OrdersTab />}
+            {tab === "servicos" && <ServicesTab />}
+            {tab === "galeria" && <GalleryTab />}
+            {tab === "barbeiros" && <BarbersTab />}
+            {tab === "avaliacoes" && <ReviewsTab />}
+          </div>
+        </main>
+  
+        {incoming && (
+          <NewBookingAlert
+            customerName={incoming.customer_name}
+            date={incoming.scheduled_date}
+            time={incoming.scheduled_time}
+            onView={() => {
+              setTab("agenda");
+              setIncoming(null);
             }}
-            className="flex min-h-[54px] cursor-pointer items-center gap-3.5 rounded-lg px-4 font-heading text-base tracking-[0.12em] text-muted uppercase transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <span className="grid h-6 w-6 place-items-center" aria-hidden>
-              {iconLogout()}
-            </span>
-            Sair
-          </button>
-        </div>
+            onDismiss={() => setIncoming(null)}
+          />
+        )}
+      </div>
 
-        {/* Keeps the panel's own background filling the screen below "Sair"
-            on mobile, instead of ending mid-screen and exposing the dimmed
-            backdrop there — desktop already reaches the bottom via nav's
-            lg:flex-1 above, so this collapses to nothing there. */}
-        <div className="flex-1 lg:hidden" aria-hidden />
-      </aside>
-
-      <main className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
-        <header className="sticky top-0 z-10 border-b border-border bg-ink/95 px-6 py-6 backdrop-blur lg:px-10">
-          <h1 className="m-0 font-heading text-[38px] font-semibold tracking-[0.05em] text-white uppercase">
-            {active.name}
-          </h1>
-          <p className="mt-1.5 text-lg text-muted first-letter:uppercase">
-            {dateLabel}
-          </p>
-        </header>
-        <div className={`mx-auto px-6 py-9 pb-24 lg:px-10 ${tab === "agenda" || tab === "fin" ? "max-w-375" : "max-w-295"}`}>
-
-          {tab === "agenda" && <AgendaTab />}
-          {tab === "fin" && <FinanceTab />}
-          {tab === "clientes" && <ClientsTab />}
-          {tab === "produtos" && <ProductsTab />}
-          {tab === "pedidos" && <OrdersTab />}
-          {tab === "servicos" && <ServicesTab />}
-          {tab === "galeria" && <GalleryTab />}
-          {tab === "barbeiros" && <BarbersTab />}
-          {tab === "avaliacoes" && <ReviewsTab />}
-        </div>
-      </main>
-
-      {incoming && (
-        <NewBookingAlert
-          customerName={incoming.customer_name}
-          date={incoming.scheduled_date}
-          time={incoming.scheduled_time}
-          onView={() => {
-            setTab("agenda");
-            setIncoming(null);
+      {confirmingSignOut && (
+        <ConfirmModal
+          title="Sair da conta?"
+          message="Você vai precisar entrar de novo para acessar o painel."
+          confirmLabel="Sair"
+          cancelLabel="Cancelar"
+          busy={signingOut}
+          onConfirm={() => {
+            setSigningOut(true);
+            signOut().then(() => {
+              setSigningOut(false);
+              setConfirmingSignOut(false);
+              navigate("/");
+            });
           }}
-          onDismiss={() => setIncoming(null)}
+          onClose={() => setConfirmingSignOut(false)}
         />
       )}
-    </div>
+    </>
   );
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { NAV_LINKS } from "@/data/content";
 import { useAuth } from "@/context/AuthContext";
+import { ConfirmModal } from "@/components/admin/ConfirmModal";
 
 interface HeaderProps {
   onOpenAuth: () => void;
@@ -10,12 +11,23 @@ interface HeaderProps {
 export function Header({ onOpenAuth }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const { session, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   function handleSignOut() {
     setMenuOpen(false);
-    signOut().then(() => navigate("/"));
+    setConfirmingSignOut(true);
+  }
+
+  function confirmSignOut() {
+    setSigningOut(true);
+    signOut().then(() => {
+      setSigningOut(false);
+      setConfirmingSignOut(false);
+      navigate("/");
+    });
   }
 
   useEffect(() => {
@@ -30,31 +42,112 @@ export function Header({ onOpenAuth }: HeaderProps) {
   const firstName = profile?.full_name?.trim().split(/\s+/)[0];
 
   return (
-    <header
-      className="fixed inset-x-0 top-0 z-[80] border-b transition-all duration-300"
-      style={{
-        background: scrolled ? "rgba(10,10,10,0.82)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px)" : "none",
-        borderColor: scrolled ? "var(--color-border)" : "transparent",
-      }}
-    >
-      <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-6 py-3.5">
-        <a href="#inicio" className="flex h-11 flex-shrink-0 items-center">
-          <img
-            src="/img/monogram.jpg"
-            alt="D'Conde Barbearia"
-            className="h-11 w-[52px] object-contain"
-            style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
-          />
-        </a>
-
-        <nav className="flex items-center gap-8">
-          <div className="hidden items-center gap-8 md:flex">
+    <>
+      <header
+        className="fixed inset-x-0 top-0 z-[80] border-b transition-all duration-300"
+        style={{
+          background: scrolled ? "rgba(10,10,10,0.82)" : "transparent",
+          backdropFilter: scrolled ? "blur(14px)" : "none",
+          borderColor: scrolled ? "var(--color-border)" : "transparent",
+        }}
+      >
+        <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-6 py-3.5">
+          <a href="#inicio" className="flex h-11 flex-shrink-0 items-center">
+            <img
+              src="/img/monogram.jpg"
+              alt="D'Conde Barbearia"
+              className="h-11 w-[52px] object-contain"
+              style={{ filter: "brightness(1.25) contrast(3.4)", mixBlendMode: "screen" }}
+            />
+          </a>
+  
+          <nav className="flex items-center gap-8">
+            <div className="hidden items-center gap-8 md:flex">
+              {NAV_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="font-heading text-[13px] tracking-[0.18em] text-white uppercase transition-colors hover:text-muted-2"
+                >
+                  {link.label}
+                </a>
+              ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="font-heading text-[13px] tracking-[0.18em] text-white uppercase transition-colors hover:text-muted-2"
+                >
+                  Painel da barbearia
+                </Link>
+              )}
+              {accountHref ? (
+                <Link
+                  to={accountHref}
+                  className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                >
+                  {accountLabel}
+                </Link>
+              ) : (
+                <button
+                  onClick={onOpenAuth}
+                  className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                >
+                  {accountLabel}
+                </button>
+              )}
+              {session && (
+                <button
+                  onClick={handleSignOut}
+                  className="cursor-pointer font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                >
+                  Sair
+                </button>
+              )}
+            </div>
+  
+            <a
+              href="#agendar"
+              className="bg-silver-gradient hidden h-11 items-center rounded-lg px-7 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:flex"
+            >
+              Agendar
+            </a>
+  
+            {session ? (
+              <Link
+                to="/conta"
+                className="flex h-11 max-w-[40vw] items-center truncate rounded-lg border border-border px-4 font-heading text-[13px] tracking-[0.16em] text-white uppercase md:hidden"
+              >
+                {firstName ?? "Agendamentos"}
+              </Link>
+            ) : (
+              <button
+                onClick={onOpenAuth}
+                className="bg-silver-gradient flex h-11 items-center rounded-lg px-6 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:hidden"
+              >
+                Entrar
+              </button>
+            )}
+  
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Menu"
+              className="flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-lg border border-border md:hidden"
+            >
+              <span className="block h-px w-[18px] bg-white" />
+              <span className="block h-px w-[18px] bg-white" />
+              <span className="block h-px w-[18px] bg-white" />
+            </button>
+          </nav>
+        </div>
+  
+        {menuOpen && (
+          <div className="flex flex-col border-t border-border bg-ink px-6 pt-3 pb-5 md:hidden">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="font-heading text-[13px] tracking-[0.18em] text-white uppercase transition-colors hover:text-muted-2"
+                onClick={() => setMenuOpen(false)}
+                className="border-b border-white/5 py-3.5 font-heading text-[15px] tracking-[0.18em] text-white uppercase"
               >
                 {link.label}
               </a>
@@ -62,7 +155,8 @@ export function Header({ onOpenAuth }: HeaderProps) {
             {isAdmin && (
               <Link
                 to="/admin"
-                className="font-heading text-[13px] tracking-[0.18em] text-white uppercase transition-colors hover:text-muted-2"
+                onClick={() => setMenuOpen(false)}
+                className="border-b border-white/5 py-3.5 font-heading text-[15px] tracking-[0.18em] text-white uppercase"
               >
                 Painel da barbearia
               </Link>
@@ -70,14 +164,18 @@ export function Header({ onOpenAuth }: HeaderProps) {
             {accountHref ? (
               <Link
                 to={accountHref}
-                className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                onClick={() => setMenuOpen(false)}
+                className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
               >
                 {accountLabel}
               </Link>
             ) : (
               <button
-                onClick={onOpenAuth}
-                className="font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onOpenAuth();
+                }}
+                className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
               >
                 {accountLabel}
               </button>
@@ -85,98 +183,26 @@ export function Header({ onOpenAuth }: HeaderProps) {
             {session && (
               <button
                 onClick={handleSignOut}
-                className="cursor-pointer font-heading text-[13px] tracking-[0.18em] text-muted uppercase transition-colors hover:text-white"
+                className="cursor-pointer py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
               >
                 Sair
               </button>
             )}
           </div>
+        )}
+      </header>
 
-          <a
-            href="#agendar"
-            className="bg-silver-gradient hidden h-11 items-center rounded-lg px-7 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:flex"
-          >
-            Agendar
-          </a>
-
-          {session ? (
-            <Link
-              to="/conta"
-              className="flex h-11 max-w-[40vw] items-center truncate rounded-lg border border-border px-4 font-heading text-[13px] tracking-[0.16em] text-white uppercase md:hidden"
-            >
-              {firstName ?? "Agendamentos"}
-            </Link>
-          ) : (
-            <button
-              onClick={onOpenAuth}
-              className="bg-silver-gradient flex h-11 items-center rounded-lg px-6 font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 md:hidden"
-            >
-              Entrar
-            </button>
-          )}
-
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Menu"
-            className="flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-lg border border-border md:hidden"
-          >
-            <span className="block h-px w-[18px] bg-white" />
-            <span className="block h-px w-[18px] bg-white" />
-            <span className="block h-px w-[18px] bg-white" />
-          </button>
-        </nav>
-      </div>
-
-      {menuOpen && (
-        <div className="flex flex-col border-t border-border bg-ink px-6 pt-3 pb-5 md:hidden">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="border-b border-white/5 py-3.5 font-heading text-[15px] tracking-[0.18em] text-white uppercase"
-            >
-              {link.label}
-            </a>
-          ))}
-          {isAdmin && (
-            <Link
-              to="/admin"
-              onClick={() => setMenuOpen(false)}
-              className="border-b border-white/5 py-3.5 font-heading text-[15px] tracking-[0.18em] text-white uppercase"
-            >
-              Painel da barbearia
-            </Link>
-          )}
-          {accountHref ? (
-            <Link
-              to={accountHref}
-              onClick={() => setMenuOpen(false)}
-              className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
-            >
-              {accountLabel}
-            </Link>
-          ) : (
-            <button
-              onClick={() => {
-                setMenuOpen(false);
-                onOpenAuth();
-              }}
-              className="py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
-            >
-              {accountLabel}
-            </button>
-          )}
-          {session && (
-            <button
-              onClick={handleSignOut}
-              className="cursor-pointer py-3.5 text-left font-heading text-[15px] tracking-[0.18em] text-muted uppercase"
-            >
-              Sair
-            </button>
-          )}
-        </div>
+      {confirmingSignOut && (
+        <ConfirmModal
+          title="Sair da conta?"
+          message="Você vai precisar entrar de novo para ver seus agendamentos e pedidos."
+          confirmLabel="Sair"
+          cancelLabel="Cancelar"
+          busy={signingOut}
+          onConfirm={confirmSignOut}
+          onClose={() => setConfirmingSignOut(false)}
+        />
       )}
-    </header>
+    </>
   );
 }

@@ -21,6 +21,15 @@ function shortMoney(cents: number) {
   return String(Math.round(v));
 }
 
+/** A product-order description is a comma list ("2x Pomada, 1x Óleo, …") that can run long
+ * enough to truncate mid-word — shows the first couple of items plus a count instead. */
+function summarizeItems(description: string, maxItems = 2): string {
+  const items = description.split(", ");
+  if (items.length <= maxItems) return description;
+  const rest = items.length - maxItems;
+  return `${items.slice(0, maxItems).join(", ")} +${rest} ${rest === 1 ? "item" : "itens"}`;
+}
+
 function AnimatedMoney({ cents }: { cents: number }) {
   const [displayed, setDisplayed] = useState(0);
   const lastValue = useRef(0);
@@ -653,7 +662,7 @@ export function FinanceTab() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-base text-white sm:text-lg" title={t.description}>
-                        {t.description}
+                        {t.order_id ? summarizeItems(t.description) : t.description}
                       </span>
                       <span className="block truncate text-sm text-muted">
                         {t.customer_name ?? "Balcão"}

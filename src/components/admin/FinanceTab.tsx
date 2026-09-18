@@ -77,6 +77,7 @@ export function FinanceTab() {
     serviceCount,
     chart,
     byMethod,
+    byService,
     transactions,
   } = useFinance(period, custom, barberId);
 
@@ -504,41 +505,78 @@ export function FinanceTab() {
             )}
           </div>
 
-          {/* payment + ledger */}
+          {/* payment + top services + ledger */}
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.6fr)]">
-            <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
-              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                Formas de pagamento
-              </span>
-              <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
-                {byMethod.map((m) => (
-                  <div key={m.method}>
-                    <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
-                      <span className="text-base text-white sm:text-lg">
-                        {m.method}
-                      </span>
-                      <span className="text-sm text-muted sm:text-base">
-                        <span className="tabular-nums">
-                          {Math.round(m.pct * 100)}%
-                        </span>{" "}
-                        ·{" "}
-                        <span className="text-white tabular-nums">
-                          {formatCents(m.value)}
+            <div className="flex flex-col gap-6">
+              <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "230ms" }}>
+                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                  Formas de pagamento
+                </span>
+                <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
+                  {byMethod.map((m) => (
+                    <div key={m.method}>
+                      <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
+                        <span className="text-base text-white sm:text-lg">
+                          {m.method}
                         </span>
-                      </span>
+                        <span className="text-sm text-muted sm:text-base">
+                          <span className="tabular-nums">
+                            {Math.round(m.pct * 100)}%
+                          </span>{" "}
+                          ·{" "}
+                          <span className="text-white tabular-nums">
+                            {formatCents(m.value)}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
+                        <div
+                          className="dc-finance-progress h-full rounded-full"
+                          style={{
+                            width: `${Math.round(m.pct * 100)}%`,
+                            background: "var(--color-silver)",
+                            opacity: 0.7,
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
-                      <div
-                        className="dc-finance-progress h-full rounded-full"
-                        style={{
-                          width: `${Math.round(m.pct * 100)}%`,
-                          background: "var(--color-silver)",
-                          opacity: 0.7,
-                        }}
-                      />
-                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="dc-finance-card rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "260ms" }}>
+                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                  Serviços mais vendidos
+                </span>
+                {byService.length === 0 ? (
+                  <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
+                ) : (
+                  <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
+                    {byService.slice(0, 6).map((s) => (
+                      <div key={s.name}>
+                        <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
+                          <span className="min-w-0 truncate text-base text-white sm:text-lg">
+                            {s.name}
+                          </span>
+                          <span className="flex-shrink-0 text-sm text-muted sm:text-base">
+                            <span className="tabular-nums">{s.count}x</span> ·{" "}
+                            <span className="text-white tabular-nums">{formatCents(s.value)}</span>
+                          </span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
+                          <div
+                            className="dc-finance-progress h-full rounded-full"
+                            style={{
+                              width: `${Math.round(s.pct * 100)}%`,
+                              background: "var(--color-silver)",
+                              opacity: 0.7,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             </div>
 

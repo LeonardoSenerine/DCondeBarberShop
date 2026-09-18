@@ -29,6 +29,28 @@ const STATUS_BADGE: Record<OrderStatus, { label: string; bg: string; color: stri
   cancelled: { label: "Cancelado", bg: "rgba(255,255,255,0.06)", color: "#9E9E9E" },
 };
 
+/** Days since an order arrived, for flagging one that's been sitting without action. */
+function daysOpen(createdAt: string): number {
+  const ms = Date.now() - new Date(createdAt).getTime();
+  return Math.floor(ms / 86400000);
+}
+
+function StaleBadge({ days }: { days: number }) {
+  if (days < 1) return null;
+  const stale = days >= 3;
+  return (
+    <span
+      className="rounded-full px-2 py-0.5 text-[12px] font-medium tracking-[0.04em]"
+      style={{
+        background: stale ? "rgba(217,122,108,0.14)" : "rgba(224,179,65,0.14)",
+        color: stale ? "#D97A6C" : "#E0B341",
+      }}
+    >
+      parado há {days} dia{days === 1 ? "" : "s"}
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: OrderStatus }) {
   const s = STATUS_BADGE[status];
   return (
@@ -98,6 +120,13 @@ export function OrdersTab() {
     window.open(whatsAppLink(toWhatsAppPhone(order.customerPhone), message), "_blank", "noopener");
   }
 
+  function handleRemind(order: AdminOrder) {
+    if (!order.customerPhone) return;
+    const items = order.items.map((it) => `${it.quantity}x ${it.name}`).join(", ");
+    const message = `Olá, ${order.customerName || "tudo bem"}! Passando pra lembrar que seu pedido (${items}) está pronto pra retirada na D'Conde Barbearia. Te esperamos!`;
+    window.open(whatsAppLink(toWhatsAppPhone(order.customerPhone), message), "_blank", "noopener");
+  }
+
   async function handleConfirmCancel() {
     if (!cancelling) return;
     setActing(cancelling.id);
@@ -164,6 +193,9 @@ export function OrdersTab() {
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="font-heading text-lg text-white">{o.customerName || "Cliente"}</span>
                     <StatusBadge status={o.status} />
+                    {(o.status === "pending" || o.status === "confirmed" || o.status === "ready") && (
+                      <StaleBadge days={daysOpen(o.createdAt)} />
+                    )}
                   </div>
                   <span className="mt-1 block text-[15px] text-muted">
                     {o.customerPhone} · {dateLabel} às {timeLabel}
@@ -201,13 +233,22 @@ export function OrdersTab() {
                         </button>
                       )}
                       {o.status === "ready" && (
-                        <button
-                          onClick={() => setCompleting(o)}
-                          disabled={busy}
-                          className="bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Concluir pedido
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleRemind(o)}
+                            disabled={busy || !o.customerPhone}
+                            className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-border px-4.5 font-heading text-sm tracking-[0.14em] text-white uppercase transition-colors hover:border-silver disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Lembrar
+                          </button>
+                          <button
+                            onClick={() => setCompleting(o)}
+                            disabled={busy}
+                            className="bg-silver-gradient flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4.5 font-heading text-sm font-semibold tracking-[0.14em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Concluir pedido
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => setCancelling(o)}

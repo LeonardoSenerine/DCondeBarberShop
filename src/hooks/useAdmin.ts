@@ -647,7 +647,8 @@ export interface FinanceMethodSlice {
   pct: number;
 }
 
-export interface FinanceServiceSlice {
+/** Shared shape for a "mais vendidos" ranking, whether it's services or products. */
+export interface FinanceRankItem {
   name: string;
   count: number;
   value: number;
@@ -660,6 +661,16 @@ export interface FinanceBar {
   value: number;
 }
 
+/** The equivalent period immediately before `range`, same length — for the "vs. período anterior" comparison. */
+function previousRange(range: FinanceRange): { from: string; to: string } {
+  const from = new Date(`${range.from}T00:00:00`);
+  const to = new Date(`${range.to}T00:00:00`);
+  const spanDays = Math.round((to.getTime() - from.getTime()) / 86400000) + 1;
+  const prevTo = new Date(from.getTime() - 86400000);
+  const prevFrom = new Date(prevTo.getTime() - (spanDays - 1) * 86400000);
+  return { from: dateKey(prevFrom), to: dateKey(prevTo) };
+}
+
 export function useFinance(
   period: FinancePeriod = "30d",
   custom?: { from: string; to: string },
@@ -668,6 +679,8 @@ export function useFinance(
   const [allTx, setAllTx] = useState<FinanceTx[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSample, setIsSample] = useState(false);
+  const [previousRevenue, setPreviousRevenue] = useState<number | null>(null);
+  const [productItems, setProductItems] = useState<{ name: string; quantity: number; unitCents: number; orderId: string }[]>([]);
   const range = financeRange(period, custom);
 
   useEffect(() => {
@@ -701,13 +714,71 @@ export function useFinance(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range.from, range.to]);
 
+  // Just the total for the "vs. período anterior" badge — no need for full rows.
+  useEffect(() => {
+    let active = true;
+    const prev = previousRange(range);
+    supabase
+      .from("transactions")
+      .select("amount_cents, barber_id")
+      .gte("occurred_on", prev.from)
+      .lte("occurred_on", prev.to)
+      .then(({ data }) => {
+        if (!active) return;
+        const rows = (data ?? []) as { amount_cents: number; barber_id: string | null }[];
+        const scoped = barberId === "all" ? rows : rows.filter((r) => r.barber_id === barberId);
+        setPreviousRevenue(scoped.reduce((s, r) => s + r.amount_cents, 0));
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range.from, range.to, barberId]);
+
   const transactions = barberId === "all" ? allTx : allTx.filter((t) => t.barber_id === barberId);
   const revenue = transactions.reduce((s, t) => s + t.amount_cents, 0);
   const serviceRows = transactions.filter((t) => t.booking_id);
   const serviceCount = serviceRows.length;
   const serviceRevenue = serviceRows.reduce((s, t) => s + t.amount_cents, 0);
-  const productRevenue = transactions.filter((t) => t.order_id).reduce((s, t) => s + t.amount_cents, 0);
+  const productOrderRows = transactions.filter((t) => t.order_id);
+  const productRevenue = productOrderRows.reduce((s, t) => s + t.amount_cents, 0);
   const avgTicket = serviceCount > 0 ? Math.round(serviceRevenue / serviceCount) : 0;
+  const revenueChangePct = previousRevenue && previousRevenue > 0 ? (revenue - previousRevenue) / previousRevenue : null;
+
+  // Each transaction with an order_id can bundle several products together
+  // (its description is a comma list, e.g. "2x Pomada, 1x Óleo"), so a
+  // per-product ranking needs the actual order_items — fetched separately
+  // once we know which orders fall in this period/barber.
+  const productOrderIds = productOrderRows.map((t) => t.order_id as string);
+  const productOrderIdsKey = [...new Set(productOrderIds)].sort().join(",");
+
+  useEffect(() => {
+    let active = true;
+    if (productOrderIds.length === 0) {
+      setProductItems([]);
+      return;
+    }
+    supabase
+      .from("order_items")
+      .select("order_id, quantity, unit_price_cents, products(name)")
+      .in("order_id", [...new Set(productOrderIds)])
+      .then(({ data }) => {
+        if (!active) return;
+        type Row = { order_id: string; quantity: number; unit_price_cents: number; products: { name: string } | null };
+        setProductItems(
+          ((data ?? []) as Row[]).map((it) => ({
+            orderId: it.order_id,
+            name: it.products?.name ?? "Produto removido",
+            quantity: it.quantity,
+            unitCents: it.unit_price_cents,
+          })),
+        );
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productOrderIdsKey]);
 
   const byDayMap = new Map<string, number>();
   transactions.forEach((t) => byDayMap.set(t.occurred_on, (byDayMap.get(t.occurred_on) ?? 0) + t.amount_cents));
@@ -720,26 +791,37 @@ export function useFinance(
     return { method, value, pct: revenue > 0 ? value / revenue : 0 };
   }).sort((a, b) => b.value - a.value);
 
+  function rankByCount(entries: Map<string, { count: number; value: number }>): FinanceRankItem[] {
+    const max = Math.max(1, ...Array.from(entries.values()).map((v) => v.count));
+    return Array.from(entries.entries())
+      .map(([name, { count, value }]) => ({ name, count, value, pct: count / max }))
+      .sort((a, b) => b.count - a.count);
+  }
+
   // Grouped by description rather than a join to services — completeBooking()
   // writes the service actually performed as the transaction's description
   // (see CompleteBookingModal's "Serviço realizado"), so this already
-  // reflects a swapped service correctly without extra joins.
+  // reflects a swapped service correctly without extra joins. Ranked by how
+  // many times each service was performed, not by revenue — a R$200 "luzes"
+  // done twice shouldn't outrank a R$40 corte done 30 times on a "mais
+  // vendidos" list.
   const byServiceMap = new Map<string, { count: number; value: number }>();
   serviceRows.forEach((t) => {
     const prev = byServiceMap.get(t.description) ?? { count: 0, value: 0 };
     byServiceMap.set(t.description, { count: prev.count + 1, value: prev.value + t.amount_cents });
   });
-  // Ranked and charted by how many times each service was performed, not by
-  // revenue — a R$200 "luzes" done twice shouldn't outrank a R$40 corte done
-  // 30 times on a "mais vendidos" list. pct is count relative to the busiest
-  // service (a bar-chart ratio), not a share of total revenue.
-  const maxServiceCount = Math.max(1, ...Array.from(byServiceMap.values()).map((v) => v.count));
-  const byService: FinanceServiceSlice[] = Array.from(byServiceMap.entries())
-    .map(([name, { count, value }]) => ({ name, count, value, pct: count / maxServiceCount }))
-    .sort((a, b) => b.count - a.count);
+  const byService = rankByCount(byServiceMap);
+
+  const byProductMap = new Map<string, { count: number; value: number }>();
+  productItems.forEach((it) => {
+    const prev = byProductMap.get(it.name) ?? { count: 0, value: 0 };
+    byProductMap.set(it.name, { count: prev.count + it.quantity, value: prev.value + it.quantity * it.unitCents });
+  });
+  const byProduct = rankByCount(byProductMap);
 
   return {
     transactions,
+    revenueChangePct,
     loading,
     isSample,
     range,
@@ -750,6 +832,7 @@ export function useFinance(
     chart,
     byMethod,
     byService,
+    byProduct,
   };
 }
 

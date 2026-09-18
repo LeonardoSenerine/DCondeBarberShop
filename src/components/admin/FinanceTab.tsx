@@ -51,6 +51,27 @@ function AnimatedMoney({ cents }: { cents: number }) {
   return <>{formatCents(displayed)}</>;
 }
 
+/** One row of a ranked bar list (Formas de pagamento, mais vendidos…) — the leader (rank 0) is highlighted in green. */
+function RankBar({ label, meta, pct, highlight }: { label: string; meta: React.ReactNode; pct: number; highlight: boolean }) {
+  const barColor = highlight ? "#7FC98F" : "var(--color-silver)";
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
+        <span className="min-w-0 truncate text-base sm:text-lg" style={{ color: highlight ? "#7FC98F" : "#FFFFFF" }}>
+          {label}
+        </span>
+        <span className="flex-shrink-0 text-sm text-muted sm:text-base">{meta}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
+        <div
+          className="dc-finance-progress h-full rounded-full"
+          style={{ width: `${Math.round(pct * 100)}%`, background: barColor, opacity: highlight ? 0.9 : 0.7 }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function FinanceTab() {
   const [period, setPeriod] = useState<FinancePeriod>("30d");
   const today = useMemo(() => dateKey(new Date()), []);
@@ -72,12 +93,14 @@ export function FinanceTab() {
     isSample,
     range,
     revenue,
+    revenueChangePct,
     productRevenue,
     avgTicket,
     serviceCount,
     chart,
     byMethod,
     byService,
+    byProduct,
     transactions,
   } = useFinance(period, custom, barberId);
 
@@ -281,9 +304,22 @@ export function FinanceTab() {
           {/* hero + stat grid */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
             <div className="dc-finance-card flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 sm:p-8">
-              <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
-                Receita no período
-              </span>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                  Receita no período
+                </span>
+                {revenueChangePct != null && (
+                  <span
+                    className="flex items-center gap-1 rounded-full px-2.5 py-1 font-heading text-[13px] font-semibold tabular-nums"
+                    style={{
+                      background: revenueChangePct >= 0 ? "rgba(127,201,143,0.16)" : "rgba(229,72,77,0.16)",
+                      color: revenueChangePct >= 0 ? "#7FC98F" : "#E5484D",
+                    }}
+                  >
+                    {revenueChangePct >= 0 ? "▲" : "▼"} {Math.abs(Math.round(revenueChangePct * 100))}%
+                  </span>
+                )}
+              </div>
               <div className="dc-finance-value mt-4 font-heading text-[42px] leading-none font-semibold text-white tabular-nums sm:text-[58px]">
                 <AnimatedMoney cents={revenue} />
               </div>
@@ -293,7 +329,7 @@ export function FinanceTab() {
                   <>
                     <br />
                     Pico dia {peak.label}:{" "}
-                    <span className="text-white tabular-nums">
+                    <span className="font-semibold tabular-nums" style={{ color: "#7FC98F" }}>
                       {formatCents(peak.value)}
                     </span>
                   </>
@@ -513,33 +549,19 @@ export function FinanceTab() {
                   Formas de pagamento
                 </span>
                 <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
-                  {byMethod.map((m) => (
-                    <div key={m.method}>
-                      <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
-                        <span className="text-base text-white sm:text-lg">
-                          {m.method}
-                        </span>
-                        <span className="text-sm text-muted sm:text-base">
-                          <span className="tabular-nums">
-                            {Math.round(m.pct * 100)}%
-                          </span>{" "}
-                          ·{" "}
-                          <span className="text-white tabular-nums">
-                            {formatCents(m.value)}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
-                        <div
-                          className="dc-finance-progress h-full rounded-full"
-                          style={{
-                            width: `${Math.round(m.pct * 100)}%`,
-                            background: "var(--color-silver)",
-                            opacity: 0.7,
-                          }}
-                        />
-                      </div>
-                    </div>
+                  {byMethod.map((m, i) => (
+                    <RankBar
+                      key={m.method}
+                      label={m.method}
+                      pct={m.pct}
+                      highlight={i === 0 && m.value > 0}
+                      meta={
+                        <>
+                          <span className="tabular-nums">{Math.round(m.pct * 100)}%</span> ·{" "}
+                          <span className="text-white tabular-nums">{formatCents(m.value)}</span>
+                        </>
+                      }
+                    />
                   ))}
                 </div>
               </div>
@@ -552,28 +574,45 @@ export function FinanceTab() {
                   <p className="mt-5 text-muted">Nenhum serviço concluído no período.</p>
                 ) : (
                   <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
-                    {byService.slice(0, 6).map((s) => (
-                      <div key={s.name}>
-                        <div className="mb-2 flex items-baseline justify-between gap-3 sm:mb-2.5">
-                          <span className="min-w-0 truncate text-base text-white sm:text-lg">
-                            {s.name}
-                          </span>
-                          <span className="flex-shrink-0 text-sm text-muted sm:text-base">
+                    {byService.slice(0, 6).map((s, i) => (
+                      <RankBar
+                        key={s.name}
+                        label={s.name}
+                        pct={s.pct}
+                        highlight={i === 0}
+                        meta={
+                          <>
                             <span className="tabular-nums">{s.count}x</span> ·{" "}
                             <span className="text-white tabular-nums">{formatCents(s.value)}</span>
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-surface-alt sm:h-3">
-                          <div
-                            className="dc-finance-progress h-full rounded-full"
-                            style={{
-                              width: `${Math.round(s.pct * 100)}%`,
-                              background: "var(--color-silver)",
-                              opacity: 0.7,
-                            }}
-                          />
-                        </div>
-                      </div>
+                          </>
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="dc-finance-card flex flex-1 flex-col rounded-2xl border border-border bg-surface p-5 sm:p-8" style={{ animationDelay: "280ms" }}>
+                <span className="font-heading text-[15px] font-medium tracking-[0.16em] text-muted-2 uppercase">
+                  Produtos mais vendidos
+                </span>
+                {byProduct.length === 0 ? (
+                  <p className="mt-5 text-muted">Nenhum produto vendido no período.</p>
+                ) : (
+                  <div className="mt-5 flex flex-1 flex-col justify-center gap-4 sm:mt-6 sm:gap-6">
+                    {byProduct.slice(0, 6).map((p, i) => (
+                      <RankBar
+                        key={p.name}
+                        label={p.name}
+                        pct={p.pct}
+                        highlight={i === 0}
+                        meta={
+                          <>
+                            <span className="tabular-nums">{p.count}x</span> ·{" "}
+                            <span className="text-white tabular-nums">{formatCents(p.value)}</span>
+                          </>
+                        }
+                      />
                     ))}
                   </div>
                 )}

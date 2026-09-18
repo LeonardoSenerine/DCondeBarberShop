@@ -273,75 +273,74 @@ export function AccountPage() {
               <Skeleton className="mt-3 h-12 w-full" />
             </div>
           ) : upcoming ? (
-            <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
-              <div>
-                <div className="font-heading text-[clamp(24px,3.2vw,38px)] leading-tight font-medium tracking-[0.04em] text-white uppercase">
-                  {upcoming.services?.name}
+            <div>
+              <div className="font-heading text-[clamp(24px,3.2vw,38px)] leading-tight font-medium tracking-[0.04em] text-white uppercase">
+                {upcoming.services?.name}
+              </div>
+              <div className="mt-4 flex w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt">
+                <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
+                  <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">
+                    {MONTH_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getMonth()].slice(0, 3)}
+                  </span>
+                  <span className="font-heading text-[38px] leading-none text-white tabular-nums">
+                    {upcoming.scheduled_date.slice(8, 10)}
+                  </span>
+                  <span className="mt-1 text-[13px] text-muted-2 capitalize">
+                    {WEEKDAY_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getDay()].slice(0, 3)}
+                  </span>
                 </div>
-                <div className="mt-4 flex w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt">
-                  <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
-                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">
-                      {MONTH_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getMonth()].slice(0, 3)}
-                    </span>
-                    <span className="font-heading text-[38px] leading-none text-white tabular-nums">
-                      {upcoming.scheduled_date.slice(8, 10)}
-                    </span>
-                    <span className="mt-1 text-[13px] text-muted-2 capitalize">
-                      {WEEKDAY_LABELS[new Date(`${upcoming.scheduled_date}T00:00:00`).getDay()].slice(0, 3)}
-                    </span>
-                  </div>
-                  <div className="w-px flex-shrink-0 bg-border" aria-hidden />
-                  <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
-                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Horário</span>
-                    <span className="font-heading text-[38px] leading-none text-white tabular-nums">
-                      {formatTimeShort(upcoming.scheduled_time)}
-                    </span>
-                  </div>
-                </div>
-                {upcomingPending && (
-                  <p className="mt-3 text-[13px]" style={{ color: "#E0B341" }}>
-                    Aguardando o barbeiro aceitar a solicitação.
-                  </p>
-                )}
-                <div className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2 md:hidden">
-                  {[
-                    { k: "Barbeiro", v: upcoming.barbers?.name ?? "—" },
-                    { k: "Valor", v: formatCents(upcoming.price_cents) },
-                  ].map((row) => (
-                    <div key={row.k} className="flex items-baseline justify-between gap-3 border-t border-border pt-2.5">
-                      <span className="text-[13px] text-muted">{row.k}</span>
-                      <span className="font-heading text-sm tracking-[0.06em] text-white">{row.v}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 hidden w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt md:flex">
-                  <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
-                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Barbeiro</span>
-                    <span className="max-w-full truncate font-heading text-2xl leading-tight text-white">
-                      {upcoming.barbers?.name ?? "—"}
-                    </span>
-                  </div>
-                  <div className="w-px flex-shrink-0 bg-border" aria-hidden />
-                  <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
-                    <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Valor</span>
-                    <span className="font-heading text-2xl leading-tight text-white">
-                      {formatCents(upcoming.price_cents)}
-                    </span>
-                  </div>
+                <div className="w-px flex-shrink-0 bg-border" aria-hidden />
+                <div className="flex flex-1 flex-col items-center justify-center px-5 py-4 text-center">
+                  <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Horário</span>
+                  <span className="font-heading text-[38px] leading-none text-white tabular-nums">
+                    {formatTimeShort(upcoming.scheduled_time)}
+                  </span>
                 </div>
               </div>
-              <div className="flex gap-2.5 md:w-[190px] md:flex-col">
+              {upcomingPending && (
+                <p className="mt-3 text-[13px]" style={{ color: "#E0B341" }}>
+                  Aguardando o barbeiro aceitar a solicitação.
+                </p>
+              )}
+              <div className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2 md:hidden">
+                {[
+                  { k: "Barbeiro", v: upcoming.barbers?.name ?? "—" },
+                  { k: "Valor", v: formatCents(upcoming.price_cents) },
+                ].map((row) => (
+                  <div key={row.k} className="flex items-baseline justify-between gap-3 border-t border-border pt-2.5">
+                    <span className="text-[13px] text-muted">{row.k}</span>
+                    <span className="font-heading text-sm tracking-[0.06em] text-white">{row.v}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 hidden w-full items-stretch overflow-hidden rounded-xl border border-border bg-surface-alt md:flex">
+                <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
+                  <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Barbeiro</span>
+                  <span className="max-w-full truncate font-heading text-2xl leading-tight text-white">
+                    {upcoming.barbers?.name ?? "—"}
+                  </span>
+                </div>
+                <div className="w-px flex-shrink-0 bg-border" aria-hidden />
+                <div className="flex flex-1 flex-col items-center justify-center gap-1 px-5 py-4 text-center">
+                  <span className="font-heading text-xs tracking-[0.16em] text-muted-2 uppercase">Valor</span>
+                  <span className="font-heading text-2xl leading-tight text-white">
+                    {formatCents(upcoming.price_cents)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2.5">
                 <button
                   onClick={() =>
                     navigate("/", { state: { rebook: { barberId: upcoming.barber_id, serviceId: upcoming.service_id } } })
                   }
-                  className="bg-silver-gradient flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase"
+                  className="bg-silver-gradient flex min-h-12 cursor-pointer items-center rounded-lg px-6.5 font-heading text-xs font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110"
                 >
                   Remarcar
                 </button>
                 <button
                   onClick={() => setCancelling(true)}
-                  className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
+                  className="flex min-h-12 cursor-pointer items-center rounded-lg border border-border px-6.5 font-heading text-xs tracking-[0.2em] text-muted uppercase transition-colors hover:border-silver hover:text-white"
                 >
                   {upcomingPending ? "Cancelar solicitação" : "Cancelar"}
                 </button>

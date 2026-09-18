@@ -213,7 +213,7 @@ export function OrdersTab() {
                 <div className="flex shrink-0 flex-col items-start gap-2.5 sm:items-end">
                   <span className="font-heading text-lg text-white tabular-nums">{formatCents(o.totalCents)}</span>
                   {(o.status === "pending" || o.status === "confirmed" || o.status === "ready") && (
-                    <span className="flex gap-2">
+                    <span className="flex flex-wrap justify-end gap-2">
                       {o.status === "pending" && (
                         <button
                           onClick={() => handleAccept(o)}

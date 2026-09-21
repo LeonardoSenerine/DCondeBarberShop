@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { SitePage } from "@/pages/SitePage";
@@ -25,6 +26,7 @@ export default function App() {
           </Suspense>
         </BrowserRouter>
         <CookieConsent />
+        <Analytics />
       </CartProvider>
     </AuthProvider>
   );

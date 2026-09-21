@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { BRAND } from "@/data/content";
 import { whatsAppLink } from "@/lib/format";
+
+const ctaClass =
+  "bg-silver-gradient flex min-h-[52px] items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.22em] text-ink uppercase";
 
 const waHref = whatsAppLink(BRAND.whatsapp, `Olá, quero agendar um horário na ${BRAND.name}`);
 
@@ -20,7 +24,11 @@ export function WhatsAppButton() {
   );
 }
 
-export function MobileBottomBar() {
+export function MobileBottomBar({ standalone = false }: { standalone?: boolean }) {
+  // `standalone` is for pages other than the home (404, termos, privacidade):
+  // there's no #agendar section to jump to, so the button goes back to the
+  // site and scrolls to the booking section (SitePage reads scrollToBooking).
+  //
   // Hides while the booking section itself is on screen — no point showing a
   // shortcut to something already in view — and slides back in once the
   // person scrolls away from it, up or down.
@@ -39,12 +47,15 @@ export function MobileBottomBar() {
       className={`fixed inset-x-0 bottom-0 z-[85] border-t border-border px-4 pt-3 backdrop-blur-lg transition-transform duration-300 md:hidden ${hidden ? "translate-y-full" : "translate-y-0"}`}
       style={{ background: "rgba(10,10,10,0.92)", paddingBottom: "calc(12px + env(safe-area-inset-bottom))" }}
     >
-      <a
-        href="#agendar"
-        className="bg-silver-gradient flex min-h-[52px] items-center justify-center rounded-lg font-heading text-sm font-semibold tracking-[0.22em] text-ink uppercase"
-      >
-        Agendar horário
-      </a>
+      {standalone ? (
+        <Link to="/" state={{ scrollToBooking: true }} className={ctaClass}>
+          Agendar horário
+        </Link>
+      ) : (
+        <a href="#agendar" className={ctaClass}>
+          Agendar horário
+        </a>
+      )}
     </div>
   );
 }

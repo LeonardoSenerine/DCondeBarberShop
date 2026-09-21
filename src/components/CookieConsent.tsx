@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const STORAGE_KEY = "cookie-consent";
 
@@ -41,7 +42,11 @@ export function CookieConsent() {
       <div className="mx-auto flex max-w-4xl flex-col items-start gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
         <p className="text-sm text-muted">
           Usamos cookies para melhorar sua experiência de navegação e agendamento. Ao continuar, você concorda com o
-          uso de cookies.
+          uso de cookies.{" "}
+          <Link to="/privacidade#cookies" className="text-white underline underline-offset-2 hover:text-silver">
+            Saiba mais na Política de privacidade
+          </Link>
+          .
         </p>
         <div className="flex w-full shrink-0 gap-3 md:w-auto">
           <button

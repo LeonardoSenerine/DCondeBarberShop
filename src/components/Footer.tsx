@@ -50,6 +50,7 @@ export function Footer({ onOpenAuth }: FooterProps) {
               { href: "#agendar", label: "Agendamento" },
               { href: "#galeria", label: "Galeria" },
               { href: "#sobre", label: "Sobre" },
+              { href: "#faq", label: "Perguntas frequentes" },
             ]}
           />
 
@@ -99,6 +100,14 @@ export function Footer({ onOpenAuth }: FooterProps) {
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5.5">
           <span className="text-[13px] text-faint">© 2026 {BRAND.name}. Todos os direitos reservados.</span>
+          <nav aria-label="Páginas legais" className="flex gap-6 text-[13px]">
+            <Link to="/termos" className="text-muted transition-colors hover:text-white">
+              Termos de uso
+            </Link>
+            <Link to="/privacidade" className="text-muted transition-colors hover:text-white">
+              Privacidade
+            </Link>
+          </nav>
           <span className="flex items-center gap-3.5">
             <span aria-hidden className="h-px w-11.5" style={{ background: "linear-gradient(90deg,rgba(42,42,42,0),#3A3A3A)" }} />
             <span className="font-heading text-[11px] tracking-[0.36em] text-muted-2 uppercase">

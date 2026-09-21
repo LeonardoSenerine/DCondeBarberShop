@@ -16,8 +16,11 @@ banco de dados.
 - **Supabase** como banco de dados: Postgres com RLS, autenticação de clientes
   por e-mail (código OTP, sem custo — usa o e-mail embutido do Supabase) e
   Storage para as fotos da galeria/produtos.
-- **react-router-dom** para as rotas `/` (site), `/conta` (área do cliente) e
-  `/admin` (painel da barbearia).
+- **react-router-dom** para as rotas `/` (site), `/conta` (área do cliente),
+  `/admin` (painel da barbearia), `/termos` (termos de uso), `/privacidade`
+  (política de privacidade) e uma página 404 personalizada para qualquer outra.
+  Título e meta description de cada página vêm de `usePageMeta`
+  (`src/hooks/usePageMeta.ts`); `public/robots.txt` bloqueia `/admin` e `/conta`.
 
 ## Estrutura
 

@@ -98,3 +98,26 @@ export const NAV_LINKS = [
   { href: "#sobre", label: "Sobre" },
   { href: "#contato", label: "Contato" },
 ];
+
+export const FAQ_ITEMS = [
+  {
+    q: "Como faço para agendar meu horário?",
+    a: "Na seção de agendamento, escolha o barbeiro, o serviço, o dia e o horário. Você confirma seu e-mail com um código de 6 dígitos e pronto: o barbeiro confirma o pedido e você recebe um lembrete por e-mail antes do horário. Se ninguém confirmar em 24 horas, ou até o horário marcado (o que vier primeiro), a solicitação é cancelada automaticamente e o horário volta a ficar livre.",
+  },
+  {
+    q: "Preciso de hora marcada?",
+    a: "Sim. Atendemos somente com horário marcado, um cliente por vez. Por isso você não pega fila e é atendido no horário combinado.",
+  },
+  {
+    q: "Como cancelo ou remarco meu horário?",
+    a: "Em Meus agendamentos você cancela informando o motivo, e remarca enquanto o pedido ainda aguarda confirmação. Se já estiver confirmado, chame a gente no WhatsApp. Avise o quanto antes para liberar o horário para outro cliente.",
+  },
+  {
+    q: "Quais são as formas de pagamento?",
+    a: "O pagamento é feito na barbearia, em Pix, débito, crédito ou dinheiro. Os produtos da loja são reservados pelo site e retirados aqui.",
+  },
+  {
+    q: "Onde fica e qual o horário de atendimento?",
+    a: "Estamos na Avenida Campo Sales, 303, Sala 04, em Itatiba/SP. Atendemos de segunda a sexta, das 09h às 20h, e aos sábados, das 08h às 18h. Domingo fechado.",
+  },
+];

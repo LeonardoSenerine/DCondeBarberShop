@@ -10,6 +10,7 @@ import { LightBanner } from "@/components/LightBanner";
 import { Perks } from "@/components/Perks";
 import { About } from "@/components/About";
 import { Contact } from "@/components/Contact";
+import { FAQ } from "@/components/FAQ";
 import { Shop } from "@/components/Shop";
 import { Testimonials } from "@/components/Testimonials";
 import { Footer } from "@/components/Footer";
@@ -20,6 +21,7 @@ import { Toast } from "@/components/admin/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { useCreateBooking } from "@/hooks/useBooking";
 import { useGallery } from "@/hooks/useCatalog";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { clearPendingBooking, peekPendingBooking } from "@/lib/pendingBooking";
 import { friendlyBookingError } from "@/lib/format";
 import { isViewingSiteAsAdmin, markViewingSiteAsAdmin } from "@/lib/adminSiteView";
@@ -30,6 +32,11 @@ export function SitePage() {
   const { session, profile, isAdmin } = useAuth();
   const { createBooking } = useCreateBooking();
   const { data: photos } = useGallery();
+
+  usePageMeta(
+    "D'Conde Barbearia em Itatiba/SP | Agende seu horário online",
+    "Barbearia em Itatiba/SP: fade, barba, desenho e pigmentação só com hora marcada. Escolha seu barbeiro e agende online em menos de um minuto.",
+  );
 
   const [authOpen, setAuthOpen] = useState(false);
   const [pendingBooking, setPendingBooking] = useState<BookingDraft | null>(null);
@@ -179,6 +186,7 @@ export function SitePage() {
       <Testimonials />
       <About />
       <Contact />
+      <FAQ />
       <Footer onOpenAuth={() => setAuthOpen(true)} />
       <MobileBottomBar />
       <WhatsAppButton />

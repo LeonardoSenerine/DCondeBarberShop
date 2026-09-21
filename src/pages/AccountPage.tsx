@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { ScrollFadeX } from "@/components/ScrollFadeX";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
 import { isViewingSiteAsAdmin } from "@/lib/adminSiteView";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const HISTORY_COLS = "88px minmax(0,1fr) 120px 150px 100px";
 const ORDER_COLS = "88px minmax(0,1fr) 190px 100px";
@@ -36,6 +37,7 @@ const ORDER_COLS = "88px minmax(0,1fr) 190px 100px";
 export function AccountPage() {
   const { session, profile, loading, isAdmin, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
+  usePageMeta("Meus agendamentos | D'Conde Barbearia", "Acompanhe seus agendamentos, pedidos e avaliações na D'Conde Barbearia.", { noindex: true });
   const { bookings, loading: bookingsLoading, reload } = useMyBookings(session?.user.id ?? null);
   const { orders: myOrders, loading: ordersLoading, reload: reloadOrders } = useMyOrders(session?.user.id ?? null);
   const { reviewsByBooking, reload: reloadReviews } = useMyReviews(session?.user.id ?? null);
@@ -280,7 +282,7 @@ export function AccountPage() {
               <span className="flex flex-wrap items-center gap-2.5">
                 {upcomingPending && (
                   <span className="text-[13px]" style={{ color: "#E0B341" }}>
-                    Aguardando o barbeiro aceitar a solicitação
+                    Aguardando o barbeiro aceitar a solicitação · cancela sozinha em 24h ou se o horário passar
                   </span>
                 )}
                 <BookingStatusBadge status={upcoming.status} />

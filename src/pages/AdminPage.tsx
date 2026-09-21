@@ -16,6 +16,7 @@ import { BarbersTab } from "@/components/admin/BarbersTab";
 import { ReviewsTab } from "@/components/admin/ReviewsTab";
 import { LiveAlert } from "@/components/admin/LiveAlert";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface IncomingBooking {
   customer_name: string;
@@ -48,6 +49,7 @@ export function AdminPage() {
   const { session, profile, loading, isAdmin, isOwner, signOut } = useAuth();
   const { data: barbers } = useBarbers();
   const navigate = useNavigate();
+  usePageMeta("Painel da barbearia | D'Conde Barbearia", "Painel administrativo da D'Conde Barbearia.", { noindex: true });
   const [tab, setTab] = useState<TabId>("agenda");
   const [incoming, setIncoming] = useState<IncomingBooking | null>(null);
   const [incomingOrder, setIncomingOrder] = useState<IncomingOrder | null>(null);

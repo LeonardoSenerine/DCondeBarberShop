@@ -24,7 +24,8 @@ export function LegalDocument({ title, intro, updatedAt, sections }: LegalDocume
   // to the fragment on its own.
   useEffect(() => {
     if (!hash) {
-      window.scrollTo(0, 0);
+      // "instant": opening a new page shouldn't animate through html's smooth scroll-behavior
+      window.scrollTo({ top: 0, behavior: "instant" });
       return;
     }
     document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" });

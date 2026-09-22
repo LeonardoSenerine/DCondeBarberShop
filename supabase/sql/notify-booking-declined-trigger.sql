@@ -37,6 +37,7 @@ set search_path = public
 as $$
 declare
   service_role_key text;
+  webhook_secret text;
   -- Troque pela URL real depois de implantar a function (Edge Functions →
   -- notify-booking-declined → copiar a URL) — o nome que ela recebe no
   -- painel pode não ser exatamente "notify-booking-declined", igual
@@ -47,8 +48,13 @@ begin
   from vault.decrypted_secrets
   where name = 'notify_new_booking_service_role_key';
 
-  if service_role_key is null then
-    raise warning 'notify_booking_declined: service_role key não encontrada no Vault, pulando aviso.';
+  -- Ver supabase/sql/webhook-secret.sql — sem ele a Edge Function recusa a chamada.
+  select decrypted_secret into webhook_secret
+  from vault.decrypted_secrets
+  where name = 'edge_webhook_secret';
+
+  if service_role_key is null or webhook_secret is null then
+    raise warning 'notify_booking_declined: service_role key ou edge_webhook_secret não encontrado no Vault, pulando aviso.';
     return new;
   end if;
 
@@ -56,7 +62,8 @@ begin
     url := function_url,
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || service_role_key
+      'Authorization', 'Bearer ' || service_role_key,
+      'x-webhook-secret', webhook_secret
     ),
     body := jsonb_build_object(
       'type', 'UPDATE',

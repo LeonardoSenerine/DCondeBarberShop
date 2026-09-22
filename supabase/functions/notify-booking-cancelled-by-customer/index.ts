@@ -21,8 +21,9 @@
 // 2) SEGREDOS — reaproveita os mesmos de notify-new-booking (Edge Functions
 //    → notify-booking-cancelled-by-customer → Secrets, ou
 //    `supabase secrets set`): SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
-//    SMTP_FROM. SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já vêm prontos em
-//    toda Edge Function.
+//    SMTP_FROM e WEBHOOK_SECRET (ver supabase/sql/webhook-secret.sql).
+//    SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já vêm prontos em toda Edge
+//    Function.
 //
 // 3) CRIAR O DATABASE WEBHOOK
 //
@@ -35,6 +36,8 @@
 //      Headers:   Authorization: Bearer <SERVICE_ROLE_KEY do projeto>
 //                 (Settings → API → Project API keys → service_role — sem
 //                 isso a invocação volta 401.)
+//                 x-webhook-secret: <valor do WEBHOOK_SECRET>
+//                 (sem ele a própria função responde 401)
 //
 //    A função já ignora sozinha qualquer UPDATE que não seja um
 //    cancelamento feito pelo cliente (só dispara quando status virou
@@ -96,9 +99,38 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+// The gateway accepts any valid project JWT — including the public anon key
+// shipped in the site's JS — so that alone doesn't prove the call came from
+// our own trigger. Only the database (Vault) and this function know
+// WEBHOOK_SECRET. Both sides are hashed first so the comparison runs in
+// constant time regardless of the received value's length.
+async function hasValidWebhookSecret(req: Request, expected: string): Promise<boolean> {
+  const received = req.headers.get("x-webhook-secret");
+  if (!received) return false;
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
+    crypto.subtle.digest("SHA-256", enc.encode(received)),
+  ]);
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
+  }
+
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+  if (!webhookSecret) {
+    console.error("notify-booking-cancelled-by-customer: WEBHOOK_SECRET not configured, refusing every call");
+    return new Response(JSON.stringify({ error: "Function not configured" }), { status: 500 });
+  }
+  if (!(await hasValidWebhookSecret(req, webhookSecret))) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   let payload: WebhookPayload;
@@ -108,14 +140,11 @@ Deno.serve(async (req) => {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  const booking = payload.record;
+  // wasCancelled guards against firing again on some unrelated later update
+  // to the same row. old_record is the only thing still read from the
+  // payload — the database no longer has the pre-update status.
   const wasCancelled = payload.old_record?.status === "cancelled";
-  // Only the customer self-cancel flow sets cancel_reason — the barber's
-  // own decline flow sets decline_reason instead (see
-  // notify-booking-declined), so this never double-fires for that case.
-  // wasCancelled guards against firing again on some unrelated later
-  // update to the same row.
-  if (!booking || booking.status !== "cancelled" || !booking.cancel_reason || wasCancelled) {
+  if (!payload.record?.id || wasCancelled) {
     return new Response(JSON.stringify({ skipped: true }), { status: 200 });
   }
 
@@ -133,6 +162,23 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+  // Re-read the row instead of trusting the payload: only the id is taken
+  // from the request, everything that ends up in the e-mail comes from the
+  // database.
+  const { data: booking, error: bookingErr } = await supabase
+    .from("bookings")
+    .select("id, status, cancel_reason, barber_id, service_id, scheduled_date, scheduled_time, customer_name, customer_phone")
+    .eq("id", payload.record.id)
+    .maybeSingle<BookingRow>();
+  if (bookingErr) console.error("notify-booking-cancelled-by-customer: booking lookup failed", bookingErr);
+
+  // Only the customer self-cancel flow sets cancel_reason — the barber's
+  // own decline flow sets decline_reason instead (see
+  // notify-booking-declined), so this never double-fires for that case.
+  if (!booking || booking.status !== "cancelled" || !booking.cancel_reason) {
+    return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+  }
 
   const [{ data: barber, error: barberErr }, { data: service, error: serviceErr }] = await Promise.all([
     supabase.from("barbers").select("name, email").eq("id", booking.barber_id).maybeSingle(),

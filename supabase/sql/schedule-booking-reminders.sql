@@ -48,6 +48,11 @@ select cron.schedule(
       'Authorization', 'Bearer ' || (
         select decrypted_secret from vault.decrypted_secrets
         where name = 'notify_new_booking_service_role_key'
+      ),
+      -- Ver supabase/sql/webhook-secret.sql — sem ele a Edge Function recusa a chamada.
+      'x-webhook-secret', (
+        select decrypted_secret from vault.decrypted_secrets
+        where name = 'edge_webhook_secret'
       )
     ),
     body := '{}'::jsonb

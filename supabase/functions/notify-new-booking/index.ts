@@ -22,6 +22,9 @@
 //      SMTP_USER   — usuário de autenticação do SMTP
 //      SMTP_PASS   — senha/senha de app do SMTP
 //      SMTP_FROM   — remetente, ex: "D'Conde Barbearia <no-reply@seudominio.com>"
+//      WEBHOOK_SECRET — obrigatório; o mesmo valor do Vault
+//                    'edge_webhook_secret' (ver supabase/sql/webhook-secret.sql).
+//                    Sem ele a função recusa toda chamada.
 //      SITE_URL    — opcional, ex: https://dcondebarbearia.com — se definido,
 //                    o e-mail inclui um link direto pro painel; se ausente o
 //                    e-mail sai sem esse link, sem quebrar nada.
@@ -41,6 +44,8 @@
 //                 (Settings → API → Project API keys → service_role — é o
 //                 que faz o painel aceitar a chamada; sem isso a invocação
 //                 volta 401.)
+//                 x-webhook-secret: <valor do WEBHOOK_SECRET>
+//                 (sem ele a própria função responde 401)
 //
 //    A função já ignora sozinha qualquer INSERT que não seja um pedido de
 //    cliente aguardando confirmação (status diferente de "pending"), então
@@ -100,9 +105,38 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+// The gateway accepts any valid project JWT — including the public anon key
+// shipped in the site's JS — so that alone doesn't prove the call came from
+// our own trigger. Only the database (Vault) and this function know
+// WEBHOOK_SECRET. Both sides are hashed first so the comparison runs in
+// constant time regardless of the received value's length.
+async function hasValidWebhookSecret(req: Request, expected: string): Promise<boolean> {
+  const received = req.headers.get("x-webhook-secret");
+  if (!received) return false;
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
+    crypto.subtle.digest("SHA-256", enc.encode(received)),
+  ]);
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
+  }
+
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+  if (!webhookSecret) {
+    console.error("notify-new-booking: WEBHOOK_SECRET not configured, refusing every call");
+    return new Response(JSON.stringify({ error: "Function not configured" }), { status: 500 });
+  }
+  if (!(await hasValidWebhookSecret(req, webhookSecret))) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   let payload: WebhookPayload;
@@ -112,10 +146,7 @@ Deno.serve(async (req) => {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  const booking = payload.record;
-  // Só avisa sobre pedidos novos aguardando o barbeiro aceitar — mesmo
-  // filtro do alerta em tempo real do painel (AdminPage.tsx).
-  if (!booking || booking.status !== "pending") {
+  if (!payload.record?.id) {
     return new Response(JSON.stringify({ skipped: true }), { status: 200 });
   }
 
@@ -134,6 +165,22 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+  // Re-read the row instead of trusting the payload: only the id is taken
+  // from the request, everything that ends up in the e-mail comes from the
+  // database.
+  const { data: booking, error: bookingErr } = await supabase
+    .from("bookings")
+    .select("id, barber_id, service_id, scheduled_date, scheduled_time, status, price_cents, customer_name, customer_phone")
+    .eq("id", payload.record.id)
+    .maybeSingle<BookingRow>();
+  if (bookingErr) console.error("notify-new-booking: booking lookup failed", bookingErr);
+
+  // Só avisa sobre pedidos novos aguardando o barbeiro aceitar — mesmo
+  // filtro do alerta em tempo real do painel (AdminPage.tsx).
+  if (!booking || booking.status !== "pending") {
+    return new Response(JSON.stringify({ skipped: true }), { status: 200 });
+  }
 
   const [{ data: barber }, { data: service }] = await Promise.all([
     supabase.from("barbers").select("name").eq("id", booking.barber_id).maybeSingle(),

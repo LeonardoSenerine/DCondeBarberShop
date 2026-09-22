@@ -17,8 +17,9 @@
 //
 // 2) SEGREDOS — reaproveita os mesmos de notify-new-booking (Edge Functions
 //    → send-booking-reminders → Secrets): SMTP_HOST, SMTP_PORT, SMTP_USER,
-//    SMTP_PASS, SMTP_FROM. SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já vêm
-//    prontos em toda Edge Function.
+//    SMTP_PASS, SMTP_FROM e WEBHOOK_SECRET (ver
+//    supabase/sql/webhook-secret.sql). SUPABASE_URL e
+//    SUPABASE_SERVICE_ROLE_KEY já vêm prontos em toda Edge Function.
 //
 // 3) AGENDAR A EXECUÇÃO
 //
@@ -89,9 +90,38 @@ function localParts(instant: Date): { date: string; time: string } {
   return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
 }
 
+// The gateway accepts any valid project JWT — including the public anon key
+// shipped in the site's JS — so that alone doesn't prove the call came from
+// our own cron job. Only the database (Vault) and this function know
+// WEBHOOK_SECRET. Both sides are hashed first so the comparison runs in
+// constant time regardless of the received value's length.
+async function hasValidWebhookSecret(req: Request, expected: string): Promise<boolean> {
+  const received = req.headers.get("x-webhook-secret");
+  if (!received) return false;
+  const enc = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(expected)),
+    crypto.subtle.digest("SHA-256", enc.encode(received)),
+  ]);
+  const x = new Uint8Array(a);
+  const y = new Uint8Array(b);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
+  }
+
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+  if (!webhookSecret) {
+    console.error("send-booking-reminders: WEBHOOK_SECRET not configured, refusing every call");
+    return new Response(JSON.stringify({ error: "Function not configured" }), { status: 500 });
+  }
+  if (!(await hasValidWebhookSecret(req, webhookSecret))) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");

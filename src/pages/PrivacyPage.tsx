@@ -86,8 +86,7 @@ const SECTIONS: LegalSection[] = [
             de cookies.
           </li>
           <li>
-            <strong>Google Fonts e OpenStreetMap:</strong> carregam as fontes e o mapa da página de contato, e por isso
-            recebem seu endereço IP.
+            <strong>OpenStreetMap:</strong> carrega o mapa da página de contato, e por isso recebe seu endereço IP.
           </li>
         </ul>
         <p>
@@ -218,7 +217,7 @@ export function PrivacyPage() {
   return (
     <LegalDocument
       title="Política de privacidade"
-      updatedAt="21 de setembro de 2026"
+      updatedAt="22 de setembro de 2026"
       intro="Aqui explicamos, em linguagem simples, quais dados pedimos, por quê, com quem eles passam e o que você pode fazer sobre eles."
       sections={SECTIONS}
     />

@@ -1,13 +1,14 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 /* ---------------------------------------------------------------------- */
 /* Design tokens — D'Conde Barbearia                                      */
 /* ---------------------------------------------------------------------- */
 @theme {
-  --font-heading: "Oswald", sans-serif;
-  --font-body: "Archivo", system-ui, sans-serif;
-  --font-serif: "Newsreader", Georgia, serif;
-  --font-display: "Pirata One", serif;
+  --font-heading: "Oswald", "Oswald Fallback", "Oswald Fallback Android", sans-serif;
+  --font-body: "Archivo", "Archivo Fallback", "Archivo Fallback Android", system-ui, sans-serif;
+  --font-serif: "Newsreader", "Newsreader Fallback", "Newsreader Fallback Android", Georgia, serif;
+  --font-display: "Pirata One", "Pirata One Fallback", "Pirata One Fallback Android", serif;
 
   --color-ink: #0a0a0a;
   --color-surface: #141414;

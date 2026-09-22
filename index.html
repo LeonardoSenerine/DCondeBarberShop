@@ -5,12 +5,10 @@
     <link rel="icon" href="/img/monogram.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Barbearia em Itatiba/SP: fade, barba, desenho e pigmentação só com hora marcada. Escolha seu barbeiro e agende online." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Archivo:wght@400;500;600&family=Newsreader:ital,wght@0,300;0,400;1,300&family=Pirata+One&family=Poppins:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fontes do topo da página: baixam junto com o HTML, sem esperar o JS (evita o "flick") -->
+    <link rel="preload" href="/fonts/oswald-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/pirata-one-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/newsreader-latin-400.woff2" as="font" type="font/woff2" crossorigin />
     <title>D'Conde Barbearia em Itatiba/SP | Agende seu horário online</title>
   </head>
   <body>

@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets and local environment — never commit real keys.
+# Keys live in Vercel (Environment Variables) and Supabase (Edge Function Secrets / Vault).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+supabase/.temp
+supabase/.branches
+supabase/functions/.env
+.vercel

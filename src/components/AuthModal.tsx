@@ -4,6 +4,7 @@ import type { BookingDraft } from "@/components/BookingWizard";
 import { formatCents, formatPhoneBR } from "@/lib/format";
 import { savePendingBooking } from "@/lib/pendingBooking";
 import { useFormErrors, fieldClass } from "@/hooks/useFormErrors";
+import { Turnstile, TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 import "@/styles/shake.css";
 
 type Phase = "dados" | "enviado";
@@ -23,6 +24,16 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
   const [phone, setPhone] = useState("");
   const { message: error, fail, clear, clearField, fieldProps } = useFormErrors();
   const [busy, setBusy] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaFailed, setCaptchaFailed] = useState(false);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const needsCaptcha = Boolean(TURNSTILE_SITE_KEY);
+  const waitingCaptcha = needsCaptcha && !captchaToken && !captchaFailed;
+
+  function handleCaptchaToken(token: string | null) {
+    setCaptchaToken(token);
+    if (token) setCaptchaFailed(false);
+  }
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -33,14 +44,25 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
     if (mode === "cadastro" && !name.trim()) return fail("Digite seu nome.", ["name"]);
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return fail("Digite um e-mail válido.", ["email"]);
     if (mode === "cadastro" && phone.replace(/\D/g, "").length < 10) return fail("Digite o celular com DDD.", ["phone"]);
+    if (needsCaptcha && !captchaToken) {
+      return fail(
+        captchaFailed
+          ? "Não foi possível carregar a verificação de segurança. Desative bloqueadores de anúncio e recarregue a página."
+          : "Aguarde a verificação de segurança terminar.",
+      );
+    }
 
     setBusy(true);
     const { error: err } = await sendMagicLink(email.trim(), {
       fullName: mode === "cadastro" ? name.trim() : undefined,
       phone: mode === "cadastro" ? phone.trim() : undefined,
       shouldCreateUser: mode === "cadastro",
+      captchaToken: captchaToken ?? undefined,
     });
     setBusy(false);
+    // A Turnstile token is single-use, win or lose: the next send needs a new one.
+    setCaptchaToken(null);
+    setCaptchaReset((n) => n + 1);
     if (err) return fail(err, ["email"]);
 
     if (pendingBooking) {
@@ -171,12 +193,19 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 {error}
               </span>
             )}
+            <Turnstile onToken={handleCaptchaToken} onError={() => setCaptchaFailed(true)} resetKey={captchaReset} />
             <button
               onClick={handleSendLink}
-              disabled={busy}
+              disabled={busy || waitingCaptcha}
               className="bg-silver-gradient flex min-h-[54px] cursor-pointer items-center justify-center rounded-lg font-heading text-[13px] font-semibold tracking-[0.2em] text-ink uppercase transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy ? "Enviando…" : mode === "cadastro" ? "Enviar link por e-mail" : "Enviar link de acesso"}
+              {busy
+                ? "Enviando…"
+                : waitingCaptcha
+                  ? "Verificando…"
+                  : mode === "cadastro"
+                    ? "Enviar link por e-mail"
+                    : "Enviar link de acesso"}
             </button>
           </div>
         )}
@@ -188,12 +217,13 @@ export function AuthModal({ pendingBooking, onClose }: AuthModalProps) {
                 {error}
               </span>
             )}
+            <Turnstile onToken={handleCaptchaToken} onError={() => setCaptchaFailed(true)} resetKey={captchaReset} />
             <button
               onClick={handleSendLink}
-              disabled={busy}
+              disabled={busy || waitingCaptcha}
               className="flex min-h-[52px] cursor-pointer items-center justify-center rounded-lg border border-border font-heading text-xs font-semibold tracking-[0.2em] text-white uppercase transition-colors hover:border-silver disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {busy ? "Reenviando…" : "Reenviar link"}
+              {busy ? "Reenviando…" : waitingCaptcha ? "Verificando…" : "Reenviar link"}
             </button>
             <button
               onClick={() => {

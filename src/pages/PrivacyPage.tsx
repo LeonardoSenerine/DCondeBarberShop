@@ -88,6 +88,10 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>OpenStreetMap:</strong> carrega o mapa da página de contato, e por isso recebe seu endereço IP.
           </li>
+          <li>
+            <strong>Cloudflare Turnstile:</strong> verificação de segurança exibida ao entrar ou se cadastrar, que
+            impede o uso automatizado do envio de códigos. Recebe seu endereço IP e dados técnicos do navegador.
+          </li>
         </ul>
         <p>
           Alguns desses provedores podem operar servidores fora do Brasil. Nesses casos, buscamos fornecedores que

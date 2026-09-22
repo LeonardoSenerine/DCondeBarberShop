@@ -17,7 +17,7 @@ interface AuthContextValue {
   barberId: string | null;
   sendMagicLink: (
     email: string,
-    opts?: { fullName?: string; phone?: string; shouldCreateUser?: boolean },
+    opts?: { fullName?: string; phone?: string; shouldCreateUser?: boolean; captchaToken?: string },
   ) => Promise<{ error: string | null }>;
   updateProfile: (patch: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -105,6 +105,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             },
             emailRedirectTo: window.location.origin,
             shouldCreateUser,
+            // Required once Captcha protection is on in Supabase Auth (see Turnstile.tsx).
+            captchaToken: opts?.captchaToken,
           },
         });
         return { error: error ? traduzErroAuth(error.message) : null };
@@ -133,6 +135,7 @@ export function useAuth() {
 
 function traduzErroAuth(message: string): string {
   if (/rate limit/i.test(message)) return "Muitas tentativas. Aguarde um instante e tente de novo.";
+  if (/captcha/i.test(message)) return "A verificação de segurança falhou. Tente de novo.";
   if (/user not found|not.*found/i.test(message))
     return 'Não encontramos uma conta com esse e-mail. Use "Cadastro" para criar a sua.';
   if (/email/i.test(message)) return "Confira o e-mail digitado.";
